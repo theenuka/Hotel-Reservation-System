@@ -76,7 +76,10 @@ const run = async () => {
     facilities: hotelDoc.facilities,
     pricePerNight: unwrap(hotelDoc.pricePerNight),
     starRating: unwrap(hotelDoc.starRating),
-    imageUrls: hotelDoc.imageUrls,
+    // Normalize image URLs to https (avoid mixed-content issues)
+    imageUrls: (hotelDoc.imageUrls || []).map((u: string) =>
+      typeof u === "string" ? u.replace(/^http:\/\//, "https://") : u
+    ),
     lastUpdated: unwrap(hotelDoc.lastUpdated)
   } as any;
 

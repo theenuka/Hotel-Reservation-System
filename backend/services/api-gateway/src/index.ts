@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken";
 const app = express();
 app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], credentials: true }));
 app.use(morgan("dev"));
+// Parse JSON bodies for logging and optional downstream forward
+app.use(express.json({ limit: "1mb" }));
 
 // Service URLs (env or defaults)
 // Attach user id from JWT (if present) to downstream request headers

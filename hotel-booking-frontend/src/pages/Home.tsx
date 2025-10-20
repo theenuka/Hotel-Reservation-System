@@ -28,11 +28,15 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {hotels?.map((hotel) => (
-              <LatestDestinationCard key={hotel._id} hotel={hotel} />
-            ))}
-          </div>
+          {(!hotels || hotels.length === 0) ? (
+            <div className="text-center text-gray-500 py-8">No hotels found yet. Add one from My Hotels or seed the database.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {hotels.map((hotel) => (
+                <LatestDestinationCard key={hotel._id} hotel={hotel} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>
