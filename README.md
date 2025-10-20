@@ -13,6 +13,54 @@ A modern hotel booking platform with a React + Vite frontend and Node/Express mi
   - booking-service (7104) and notification-service (7101) are optional for local quick start
 - Database: MongoDB Docker container at localhost:27018
 
+## Project structure
+
+```
+.
+├─ docker-compose.yml              # MongoDB (27018 -> 27017 in container)
+├─ package.json                    # Root scripts (dev, dev:core, seed, compose)
+├─ scripts/
+│  └─ seed-local.ts               # Seeds a user + a sample hotel (https image URLs)
+├─ data/                           # Seed fixtures and sample images
+├─ e2e-tests/                      # Playwright tests
+├─ shared/
+│  └─ types.ts                     # Shared TS types
+├─ backend/
+│  ├─ .env.example                 # Copy to .env.local and fill
+│  └─ services/
+│     ├─ api-gateway/              # Port 7008 (proxy to downstream services)
+│     ├─ identity-service/         # Port 7102 (auth/users)
+│     ├─ hotel-service/            # Port 7103 (hotels & owner ops)
+│     ├─ booking-service/          # Port 7104 (optional locally)
+│     ├─ search-service/           # Port 7105 (search queries)
+│     └─ notification-service/     # Port 7101 (optional locally)
+└─ hotel-booking-frontend/         # React + Vite app (5174)
+```
+
+## Scripts
+
+From the repo root:
+
+```
+# Start MongoDB container
+npm run compose:up
+
+# Stop and remove MongoDB container and volume
+npm run compose:down
+
+# Start core services (gateway, identity, hotel, search)
+npm run dev:core
+
+# Start all services (includes booking and notification)
+npm run dev
+
+# Kill any stray dev service ports
+npm run kill:ports
+
+# Seed a user and one hotel (expects Mongo on 27018)
+npm run seed:local
+```
+
 ## Quick start
 
 Prereqs: Node 18+, Docker Desktop
