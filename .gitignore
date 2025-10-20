@@ -24,7 +24,7 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
-.env.e2e
+
+
 node_modules
 .cursorignore
