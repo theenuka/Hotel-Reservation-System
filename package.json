@@ -1,0 +1,25 @@
+{
+  "name": "hotel-booking-microservices",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:gateway\" \"npm:dev:identity\" \"npm:dev:hotel\" \"npm:dev:booking\" \"npm:dev:search\" \"npm:dev:notify\"",
+    "dev:gateway": "cd backend/services/api-gateway && npm run dev",
+    "dev:identity": "cd backend/services/identity-service && npm run dev",
+    "dev:hotel": "cd backend/services/hotel-service && npm run dev",
+    "dev:booking": "cd backend/services/booking-service && npm run dev",
+    "dev:search": "cd backend/services/search-service && npm run dev",
+    "dev:notify": "cd backend/services/notification-service && npm run dev",
+    "compose:up": "docker compose up -d",
+    "compose:down": "docker compose down -v",
+    "seed:local": "TS_NODE_TRANSPILE_ONLY=1 ts-node scripts/seed-local.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "mongoose": "^7.8.0"
+  }
+}

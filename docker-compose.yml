@@ -1,0 +1,14 @@
+version: '3.9'
+services:
+  mongo:
+    image: mongo:7
+    container_name: hotel-booking-mongo
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: hotel-booking
+    volumes:
+      - mongo-data:/data/db
+volumes:
+  mongo-data:
