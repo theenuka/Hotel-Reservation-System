@@ -134,19 +134,19 @@ const ImagesSection = () => {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-3">Images</h2>
-      <div className="border rounded-lg p-6 flex flex-col gap-6">
+      <h2 className="mb-3 text-2xl font-bold">Images</h2>
+      <div className="flex flex-col gap-6 p-6 border rounded-lg">
         {/* Upload Area */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+        <div className="p-8 text-center transition-colors border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400">
           <div className="flex flex-col items-center gap-4">
-            <div className="p-3 bg-blue-50 rounded-full">
+            <div className="p-3 rounded-full bg-blue-50">
               <Upload className="w-8 h-8 text-blue-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <h3 className="mb-2 text-lg font-semibold text-gray-700">
                 Upload Hotel Images
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="mb-4 text-gray-500">
                 Select multiple images to upload. You can upload up to 6 images
                 total.
               </p>
@@ -178,24 +178,24 @@ const ImagesSection = () => {
                 Selected Images ({totalImages}/6)
               </h3>
               {totalImages > 6 && (
-                <span className="text-red-500 text-sm font-medium">
+                <span className="text-sm font-medium text-red-500">
                   Maximum 6 images allowed
                 </span>
               )}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {imagePreviews.map((image) => (
                 <div
                   key={image.id}
-                  className="relative group bg-gray-50 rounded-lg overflow-hidden border"
+                  className="relative overflow-hidden border rounded-lg group bg-gray-50"
                 >
                   <img
                     src={image.url}
                     alt="Hotel preview"
-                    className="w-full h-32 object-cover"
+                    className="object-cover w-full h-32"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center transition-all duration-200 bg-black bg-opacity-0 group-hover:bg-opacity-50">
                     <Button
                       onClick={(e) => {
                         e.preventDefault();
@@ -203,7 +203,7 @@ const ImagesSection = () => {
                       }}
                       variant="destructive"
                       size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="transition-opacity duration-200 opacity-0 group-hover:opacity-100"
                     >
                       <X className="w-4 h-4 text-white" />
                     </Button>
@@ -224,7 +224,7 @@ const ImagesSection = () => {
 
         {/* Error Message */}
         {errors.imageFiles && (
-          <div className="text-red-500 text-sm font-medium bg-red-50 p-3 rounded-lg">
+          <div className="p-3 text-sm font-medium text-red-500 rounded-lg bg-red-50">
             {errors.imageFiles.message}
           </div>
         )}

@@ -19,6 +19,30 @@ export const fetchCurrentUser = async (): Promise<UserType> => {
 
 export const register = async (formData: RegisterFormData) => {
   const response = await axiosInstance.post("/api/users/register", formData);
+
+  // Store JWT token from response body in localStorage (same as signIn)
+  const token = response.data?.token;
+  if (token) {
+    localStorage.setItem("session_id", token);
+    console.log("JWT token stored in localStorage after registration");
+  }
+
+  // Store user info for incognito mode fallback
+  if (response.data?.userId) {
+    localStorage.setItem("user_id", response.data.userId);
+  }
+
+  // Optionally validate token to refresh React Query caches
+  try {
+    const validationResult = await validateToken();
+    console.log("Token validation after register:", validationResult);
+    // Invalidate and refetch to update any UI depending on auth state
+    queryClient.invalidateQueries("validateToken");
+    await queryClient.refetchQueries("validateToken");
+  } catch (err) {
+    console.log("Token validation failed after registration");
+  }
+
   return response.data;
 };
 

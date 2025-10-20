@@ -45,32 +45,49 @@ const forwardBodyIfPresent = (proxyReq: any, req: any) => {
 };
 
 // Route mapping
+// Auth endpoints -> identity-service; because Express strips mount path, manually rewrite to /auth/*
 app.use(
   "/api/auth",
   createProxyMiddleware({
     target: IDENTITY_URL,
     changeOrigin: true,
-    pathRewrite: { "^/api": "" },
+    pathRewrite: (path) => {
+      // When mounted, Express strips the mount path, so path may be '/validate-token'.
+      // Ensure the downstream path always starts with '/auth'.
+      if (path.startsWith("/auth")) return path; // already correct
+      return `/auth${path}`;
+    },
     on: { proxyReq: forwardBodyIfPresent },
   })
 );
+// User endpoints -> identity-service; rewrite to /users/*
 app.use(
   "/api/users",
   createProxyMiddleware({
     target: IDENTITY_URL,
     changeOrigin: true,
-    pathRewrite: { "^/api": "" },
+    pathRewrite: (path) => {
+      // Ensure downstream path starts with '/users'
+      if (path.startsWith("/users")) return path;
+      return `/users${path}`;
+    },
     on: { proxyReq: forwardBodyIfPresent },
   })
 );
 
 // Search goes to search-service
+// Search endpoint -> search-service; rewrite to /hotels/search
 app.use(
   "/api/hotels/search",
   createProxyMiddleware({
     target: SEARCH_URL,
     changeOrigin: true,
-    pathRewrite: { "^/api": "" },
+    pathRewrite: (path) => {
+      // When mounted, path may be '/' or '' — normalize to '/hotels/search' + remainder
+      if (path === "/" || path === "") return "/hotels/search";
+      if (path.startsWith("/hotels/search")) return path;
+      return `/hotels/search${path}`;
+    },
     on: { proxyReq: forwardBodyIfPresent },
   })
 );
