@@ -108,7 +108,7 @@ const Header = () => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
-              <button className="text-white p-2 rounded-lg hover:bg-white/10 transition-colors">
+              <button aria-label="Open menu" className="text-white p-2 rounded-lg hover:bg-white/10 transition-colors">
                 <svg
                   className="w-6 h-6"
                   fill="none"

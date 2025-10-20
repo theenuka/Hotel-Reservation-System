@@ -29,7 +29,7 @@ connectWithRetry();
 app.get("/health", (_req: Request, res: Response) => res.json({ status: "ok", service: "hotel-service" }));
 
 app.get("/hotels", async (_req: Request, res: Response) => {
-  const hotels = await Hotel.find().sort("-lastUpdated");
+  const hotels = await Hotel.find({ imageUrls: { $exists: true, $ne: [] } }).sort("-lastUpdated");
   res.json(hotels);
 });
 
@@ -113,14 +113,16 @@ app.get("/my-hotels/:id", verifyToken, async (req: Request & { userId?: string }
 
 app.post("/my-hotels", verifyToken, upload.array("imageFiles", 6), async (req: Request & { userId?: string }, res: Response) => {
   const uploaded = await uploadToCloudinary((req.files as Express.Multer.File[]) || []);
-  const imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
+  let imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
+  if (!Array.isArray(imageUrls)) imageUrls = imageUrls ? [imageUrls as any] : [];
   const hotel = await new Hotel({ ...req.body, imageUrls, userId: req.userId, lastUpdated: new Date() }).save();
   res.json(hotel);
 });
 
 app.put("/my-hotels/:id", verifyToken, upload.array("imageFiles", 6), async (req: Request & { userId?: string }, res: Response) => {
   const uploaded = await uploadToCloudinary((req.files as Express.Multer.File[]) || []);
-  const imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
+  let imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
+  if (!Array.isArray(imageUrls)) imageUrls = imageUrls ? [imageUrls as any] : [];
   const updated = await Hotel.findOneAndUpdate(
     { _id: req.params.id, userId: req.userId },
     { ...req.body, imageUrls, lastUpdated: new Date() },

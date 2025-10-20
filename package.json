@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "concurrently -k \"npm:dev:gateway\" \"npm:dev:identity\" \"npm:dev:hotel\" \"npm:dev:booking\" \"npm:dev:search\" \"npm:dev:notify\"",
+    "dev:core": "concurrently -k \"npm:dev:gateway\" \"npm:dev:identity\" \"npm:dev:hotel\" \"npm:dev:search\"",
+    "kill:ports": "for p in 7008 7101 7102 7103 7104 7105; do lsof -ti tcp:$p | xargs -I {} kill -9 {} || true; done",
     "dev:gateway": "cd backend/services/api-gateway && npm run dev",
     "dev:identity": "cd backend/services/identity-service && npm run dev",
     "dev:hotel": "cd backend/services/hotel-service && npm run dev",
@@ -12,7 +14,7 @@
     "dev:notify": "cd backend/services/notification-service && npm run dev",
     "compose:up": "docker compose up -d",
     "compose:down": "docker compose down -v",
-    "seed:local": "TS_NODE_TRANSPILE_ONLY=1 ts-node scripts/seed-local.ts"
+  "seed:local": "TS_NODE_TRANSPILE_ONLY=1 ts-node --compiler-options '{\"module\":\"commonjs\",\"moduleResolution\":\"node\"}' scripts/seed-local.ts"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

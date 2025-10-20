@@ -1,140 +1,121 @@
-# Hotel Booking Management System - React, Express.js FullStack MERN Project (including Business-Insights Dashboard)
+# Phoenix Booking – MERN microservices
 
-![Screenshot 2025-09-04 at 12 02 23](https://github.com/user-attachments/assets/7b87581f-8a1a-4de4-99c3-ba5fab14f20d)
-![Screenshot 2025-09-04 at 12 03 00](https://github.com/user-attachments/assets/76e284bb-4324-4798-8e87-0079aab65a57)
-![Screenshot 2025-09-04 at 12 03 48](https://github.com/user-attachments/assets/c35d0786-f80d-493e-815c-7a594253183c)
-![Screenshot 2025-09-04 at 12 04 14](https://github.com/user-attachments/assets/d02e0687-8bd6-4924-8b07-9311c0308e11)
-![Screenshot 2025-09-04 at 12 04 37](https://github.com/user-attachments/assets/2adc94fe-7bd8-4622-9d7e-2342ef5a7bd5)
-![Screenshot 2025-09-04 at 12 05 31](https://github.com/user-attachments/assets/34fd12ca-9c3e-4242-960d-dfdfe5447299)
-![Screenshot 2025-09-04 at 12 05 59](https://github.com/user-attachments/assets/ff330293-fe8e-487f-a73a-1a1c4ade0fc1)
-![Screenshot 2025-09-04 at 12 06 36](https://github.com/user-attachments/assets/7b8c1b80-e395-4d46-b9f7-2b93211612eb)
-![Screenshot 2025-09-04 at 12 07 06](https://github.com/user-attachments/assets/1b15e2b6-5ad0-42a7-b121-c54d9ddf623a)
-![Screenshot 2025-09-04 at 12 07 24](https://github.com/user-attachments/assets/09e10d64-9c1d-4f0f-a167-a92d18caa85e)
-![Screenshot 2025-09-04 at 12 07 44](https://github.com/user-attachments/assets/9cb2e884-759e-4545-a963-11df51aa9785)
-![Screenshot 2025-09-04 at 12 08 32](https://github.com/user-attachments/assets/e89dd5df-c14f-4304-a012-9f3d35417182)
-![Screenshot 2025-09-04 at 12 09 52](https://github.com/user-attachments/assets/a4729503-28f4-489e-bc8f-d5a3e3bea93a)
-![Screenshot 2025-09-04 at 12 10 04](https://github.com/user-attachments/assets/68552511-83ac-42fa-8f54-99c926e3015d)
-![Screenshot 2025-09-04 at 12 10 20](https://github.com/user-attachments/assets/a5d236d7-3a07-493d-b966-afdafa83b383)
-![Screenshot 2025-09-04 at 12 10 33](https://github.com/user-attachments/assets/539c4d39-ca89-4383-9abd-1fa3dc184e50)
-![Screenshot 2025-09-04 at 12 10 51](https://github.com/user-attachments/assets/22ea115f-3383-4dcb-9540-448d4639383f)
-![Screenshot 2025-09-04 at 12 11 04](https://github.com/user-attachments/assets/20c8c57e-c224-4abe-b64d-1c0eb3fbcc91)
+A modern hotel booking platform with a React + Vite frontend and Node/Express microservices. Includes authentication, hotel search, owner management, and booking flows. Local setup uses MongoDB via Docker and an API Gateway in front of services.
 
----
+## What’s inside
 
-A comprehensive, production-ready hotel booking platform built with the MERN stack (MongoDB, Express.js, React, Node.js) featuring advanced search, booking management, analytics dashboard, and payment integration.
+- Frontend: React + Vite + TypeScript + React Query + Tailwind (`hotel-booking-frontend`)
+- Services (Node + Express + TypeScript) under `backend/services`:
+  - api-gateway (7008)
+  - identity-service (auth/users, 7102)
+  - hotel-service (hotels & owner ops, 7103)
+  - search-service (search queries, 7105)
+  - booking-service (7104) and notification-service (7101) are optional for local quick start
+- Database: MongoDB Docker container at localhost:27018
 
-- **Frontend-Live-Demo:** [https://mern-booking-hotel.netlify.app/](https://mern-booking-hotel.netlify.app/)
-- **Backend-Live-Demo:** [https://mern-hotel-booking-68ej.onrender.com](https://mern-hotel-booking-68ej.onrender.com)
+## Quick start
 
-![MernHolidays](https://img.shields.io/badge/MERN-Stack-blue?style=for-the-badge&logo=mongodb&logoColor=white)
-![React](https://img.shields.io/badge/React-18.2.0-blue?style=for-the-badge&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.5-38B2AC?style=for-the-badge&logo=tailwind-css)
+Prereqs: Node 18+, Docker Desktop
 
----
-
-## 🎯 Project Overview
-
-### **What is this Project?**
-
-The **Hotel Booking Management System** is a full-stack web application that revolutionizes the way hotels are discovered, booked, and managed. Built with modern web technologies, it provides a seamless experience for travelers seeking accommodations and hotel owners managing their properties.
-
-### **Core Purpose & Vision**
-
-This project serves as a **comprehensive hotel booking ecosystem** that bridges the gap between travelers and hotel owners. It's designed to be:
-
-- **User-Centric**: Intuitive interface for travelers to find and book hotels
-- **Owner-Friendly**: Powerful tools for hotel owners to manage their properties
-- **Data-Driven**: Advanced analytics for business insights and decision-making
-- **Scalable**: Built to handle growth from small boutique hotels to large chains
-
-### **Key Problems Solved**
-
-#### 🏨 **For Travelers:**
-
-- **Discovery**: Advanced search with multiple filters (price, location, amenities, ratings)
-- **Booking**: Seamless booking process with secure payment integration
-- **Management**: Easy access to booking history and travel plans
-- **Trust**: Transparent pricing, reviews, and hotel information
-
-#### 🏢 **For Hotel Owners:**
-
-- **Property Management**: Complete CRUD operations for hotel listings
-- **Booking Management**: Real-time booking tracking and guest information
-- **Analytics**: Comprehensive business insights and performance metrics
-- **Revenue Optimization**: Pricing strategies and occupancy analysis
-
-#### 🔧 **For Developers:**
-
-- **Learning Resource**: Complete MERN stack implementation
-- **Best Practices**: Modern development patterns and architecture
-- **Production Ready**: Deployment strategies and optimization techniques
-- **Extensible**: Modular design for easy feature additions
-
-### **Target Audience**
-
-#### **Primary Users:**
-
-- **Travelers**: Individuals and families looking for hotel accommodations
-- **Hotel Owners**: Small to medium hotel proprietors and managers
-- **Travel Agencies**: Organizations managing multiple bookings
-
-#### **Secondary Users:**
-
-- **Developers**: Learning full-stack development with MERN stack
-- **Students**: Understanding modern web application architecture
-- **Entrepreneurs**: Building similar booking platforms
-
-### **Business Model & Value Proposition**
-
-#### **Revenue Streams:**
-
-- **Commission-based**: Percentage fee on successful bookings
-- **Subscription**: Premium features for hotel owners
-- **Advertising**: Featured hotel listings and promotions
-- **Analytics**: Premium business insights and reporting
-
-#### **Competitive Advantages:**
-
-- **Advanced Search**: Multi-criteria filtering and smart recommendations
-- **Real-time Analytics**: Live business insights and performance tracking
-- **Mobile-First**: Responsive design optimized for all devices
-- **Security**: Enterprise-grade authentication and data protection
-
-### **Technical Architecture**
-
-#### **Frontend Architecture:**
+1) Start MongoDB
 
 ```bash
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React App     │    │  React Query    │    │  Tailwind CSS   │
-│   (TypeScript)  │◄──►│  (State Mgmt)   │◄──►│   (Styling)     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  React Router   │    │   Shadcn UI     │    │   Vite Build    │
-│  (Navigation)   │    │  (Components)   │    │   (Dev Server)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+docker compose up -d
 ```
 
-#### **Backend Architecture:**
+2) Create env files
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Express.js    │    │   MongoDB      │    │   JWT Auth      │
-│   (API Server)  │◄──►│   (Database)   │◄──►│   (Security)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Multer        │    │   Cloudinary    │    │   Stripe        │
-│  (File Upload)  │    │  (Image Mgmt)   │    │  (Payments)     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+- Backend (shared):
+
+```bash
+cp backend/.env.example backend/.env.local
 ```
 
-### **Feature Highlights**
+Key fields in `backend/.env.local`:
 
+```
+MONGODB_CONNECTION_STRING=mongodb://localhost:27018/hotel-booking
+FRONTEND_URL=http://localhost:5174
+JWT_SECRET_KEY=dev_secret
+# Optional (pick one style):
+# CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>?secure=true
+# CLOUDINARY_CLOUD_NAME=your_cloud
+# CLOUDINARY_API_KEY=your_key
+# CLOUDINARY_API_SECRET=your_secret
+```
+
+- Frontend:
+
+```bash
+cp hotel-booking-frontend/.env.example hotel-booking-frontend/.env.local
+```
+
+`hotel-booking-frontend/.env.local`:
+
+```
+VITE_API_BASE_URL=http://localhost:7008
+```
+
+3) Start core services (gateway, identity, hotel, search)
+
+```bash
+npm run kill:ports
+npm run dev:core
+```
+
+4) Seed sample data (optional)
+
+```bash
+npm run seed:local
+```
+
+5) Start the frontend
+
+```bash
+cd hotel-booking-frontend
+npm run dev
+```
+
+Open http://localhost:5174
+
+## Service map and routes
+
+- Gateway 7008 proxies:
+  - `/api/auth/*`, `/api/users/*` → identity-service (7102)
+  - `/api/hotels/search` → search-service (7105)
+  - `/api/hotels`, `/api/my-hotels` → hotel-service (7103)
+- JWT is stored in `localStorage` under `session_id` for the frontend.
+- CORS allows `FRONTEND_URL`.
+
+## Troubleshooting
+
+- Port already in use (EADDRINUSE):
+
+```bash
+npm run kill:ports
+```
+
+- Health checks:
+
+```bash
+curl -sS http://localhost:7008/health
+curl -sS http://localhost:7102/health
+curl -sS http://localhost:7103/health
+curl -sS http://localhost:7105/health
+```
+
+- 504s from gateway usually mean a downstream service isn’t running yet.
+- No hotel images? Ensure `imageUrls` exist or set Cloudinary vars and re-seed.
+- Exit code 137/143 means a process was killed (often from port killers); restart with the scripts above.
+
+## Notes
+
+- This fork is branded “Phoenix Booking.” Update favicon/logo under `hotel-booking-frontend/public` if desired.
+- The previous monolith and archived folders were removed to avoid duplication.
+
+## License
+
+MIT
 #### 🌟 **Innovative Features:**
 
 - **Smart Search Algorithm**: AI-powered hotel recommendations

@@ -12,6 +12,10 @@ node_modules
 dist
 dist-ssr
 *.local
+.archive/
+backend/services/**/.env
+backend/.env.local
+hotel-booking-frontend/.env.local
 
 # Editor directories and files
 .vscode/*
@@ -24,7 +28,5 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
-.env.e2e
 node_modules
 .cursorignore

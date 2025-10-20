@@ -30,24 +30,32 @@ const Footer = () => {
               <a
                 href="#"
                 className="text-gray-300 hover:text-white transition-colors"
+                title="Facebook"
+                aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="text-gray-300 hover:text-white transition-colors"
+                title="Twitter"
+                aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="text-gray-300 hover:text-white transition-colors"
+                title="Instagram"
+                aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="text-gray-300 hover:text-white transition-colors"
+                title="LinkedIn"
+                aria-label="LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
               </a>
