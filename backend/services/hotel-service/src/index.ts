@@ -7,6 +7,7 @@ import Hotel from "./models/hotel";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import jwt from "jsonwebtoken";
+import Maintenance from "./models/maintenance";
 
 const app = express();
 app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], credentials: true }));
@@ -41,17 +42,25 @@ app.get("/hotels/:id", async (req: Request, res: Response) => {
 
 // JWT middleware (shared secret for demo)
 const JWT_SECRET = process.env.JWT_SECRET_KEY || "dev_secret";
-const verifyToken = (req: Request & { userId?: string }, res: Response, next: NextFunction) => {
+const verifyToken = (req: Request & { userId?: string; role?: string }, res: Response, next: NextFunction) => {
   const auth = req.headers.authorization;
   const token = auth?.startsWith("Bearer ") ? auth.split(" ")[1] : undefined;
   if (!token) return res.status(401).json({ message: "unauthorized" });
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role?: string };
     req.userId = decoded.userId;
+    req.role = decoded.role;
     next();
   } catch {
     return res.status(401).json({ message: "invalid token" });
   }
+};
+
+// Guard: only hotel owners (or admins) can manage my-hotels
+const requireOwner = (req: Request & { role?: string }, res: Response, next: NextFunction) => {
+  const roleHeader = (req.headers["x-user-role"] as string | undefined) || req.role;
+  if (roleHeader === "hotel_owner" || roleHeader === "admin") return next();
+  return res.status(403).json({ message: "forbidden: owner role required" });
 };
 
 // Multer for multipart forms (we ignore file bytes for now and use provided imageUrls)
@@ -100,18 +109,18 @@ const uploadToCloudinary = async (files: Express.Multer.File[]): Promise<string[
 };
 
 // My Hotels (owner)
-app.get("/my-hotels", verifyToken, async (req: Request & { userId?: string }, res: Response) => {
+app.get("/my-hotels", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
   const hotels = await Hotel.find({ userId: req.userId }).sort("-lastUpdated");
   res.json(hotels);
 });
 
-app.get("/my-hotels/:id", verifyToken, async (req: Request & { userId?: string }, res: Response) => {
+app.get("/my-hotels/:id", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
   const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
   if (!hotel) return res.status(404).json({ message: "Hotel not found" });
   res.json(hotel);
 });
 
-app.post("/my-hotels", verifyToken, upload.array("imageFiles", 6), async (req: Request & { userId?: string }, res: Response) => {
+app.post("/my-hotels", verifyToken, requireOwner, upload.array("imageFiles", 6), async (req: Request & { userId?: string }, res: Response) => {
   const uploaded = await uploadToCloudinary((req.files as Express.Multer.File[]) || []);
   let imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
   if (!Array.isArray(imageUrls)) imageUrls = imageUrls ? [imageUrls as any] : [];
@@ -119,7 +128,7 @@ app.post("/my-hotels", verifyToken, upload.array("imageFiles", 6), async (req: R
   res.json(hotel);
 });
 
-app.put("/my-hotels/:id", verifyToken, upload.array("imageFiles", 6), async (req: Request & { userId?: string }, res: Response) => {
+app.put("/my-hotels/:id", verifyToken, requireOwner, upload.array("imageFiles", 6), async (req: Request & { userId?: string }, res: Response) => {
   const uploaded = await uploadToCloudinary((req.files as Express.Multer.File[]) || []);
   let imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
   if (!Array.isArray(imageUrls)) imageUrls = imageUrls ? [imageUrls as any] : [];
@@ -132,5 +141,46 @@ app.put("/my-hotels/:id", verifyToken, upload.array("imageFiles", 6), async (req
   res.json(updated);
 });
 
+// Delete a hotel
+app.delete("/my-hotels/:id", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+  const deleted = await Hotel.findOneAndDelete({ _id: req.params.id, userId: req.userId });
+  if (!deleted) return res.status(404).json({ message: "Hotel not found" });
+  res.json({ success: true });
+});
+
 const port = process.env.PORT || 7103;
 app.listen(port, () => console.log(`hotel-service listening on :${port}`));
+
+// --- Maintenance (owner) ---
+// List maintenance windows for a hotel
+app.get("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+  const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
+  if (!hotel) return res.status(404).json({ message: "Hotel not found" });
+  const items = await Maintenance.find({ hotelId: req.params.id }).sort({ startDate: 1 });
+  res.json(items);
+});
+
+// Create maintenance window
+app.post("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+  const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
+  if (!hotel) return res.status(404).json({ message: "Hotel not found" });
+  const { startDate, endDate, reason } = req.body || {};
+  const sd = new Date(startDate); const ed = new Date(endDate);
+  if (!startDate || !endDate || isNaN(sd.getTime()) || isNaN(ed.getTime()) || sd >= ed) {
+    return res.status(400).json({ message: "Invalid start/end dates" });
+  }
+  // Optional: ensure no overlap with existing maintenance
+  const overlap = await Maintenance.findOne({ hotelId: req.params.id, startDate: { $lt: ed }, endDate: { $gt: sd } });
+  if (overlap) return res.status(409).json({ message: "Maintenance window overlaps existing" });
+  const item = await new Maintenance({ hotelId: req.params.id, startDate: sd, endDate: ed, reason }).save();
+  res.status(201).json(item);
+});
+
+// Delete maintenance window
+app.delete("/my-hotels/:id/maintenance/:maintenanceId", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+  const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
+  if (!hotel) return res.status(404).json({ message: "Hotel not found" });
+  const deleted = await Maintenance.findOneAndDelete({ _id: req.params.maintenanceId, hotelId: req.params.id });
+  if (!deleted) return res.status(404).json({ message: "Maintenance not found" });
+  res.json({ success: true });
+});

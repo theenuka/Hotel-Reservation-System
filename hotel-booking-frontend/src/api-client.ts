@@ -46,6 +46,16 @@ export const register = async (formData: RegisterFormData) => {
   return response.data;
 };
 
+// Dev utility: register a hotel owner (works only if backend ALLOW_ROLE_FROM_REGISTER=true)
+export const registerOwner = async (formData: RegisterFormData) => {
+  const response = await axiosInstance.post("/api/users/register", { ...formData, role: "hotel_owner" });
+  const token = response.data?.token;
+  if (token) localStorage.setItem("session_id", token);
+  if (response.data?.userId) localStorage.setItem("user_id", response.data.userId);
+  try { await validateToken(); queryClient.invalidateQueries("validateToken"); await queryClient.refetchQueries("validateToken"); } catch {}
+  return response.data;
+};
+
 export const signIn = async (formData: SignInFormData) => {
   const response = await axiosInstance.post("/api/auth/login", formData);
 
@@ -152,6 +162,11 @@ export const updateMyHotelById = async (hotelFormData: FormData) => {
       },
     }
   );
+  return response.data;
+};
+
+export const deleteMyHotelById = async (hotelId: string) => {
+  const response = await axiosInstance.delete(`/api/my-hotels/${hotelId}`);
   return response.data;
 };
 

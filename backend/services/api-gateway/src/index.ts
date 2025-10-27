@@ -18,10 +18,9 @@ app.use((req, _res, next) => {
   const token = auth?.startsWith("Bearer ") ? auth.split(" ")[1] : undefined;
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY || "dev_secret") as { userId?: string };
-      if (decoded?.userId) {
-        req.headers["x-user-id"] = decoded.userId;
-      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY || "dev_secret") as { userId?: string; role?: string };
+      if (decoded?.userId) req.headers["x-user-id"] = decoded.userId;
+      if (decoded?.role) req.headers["x-user-role"] = decoded.role;
     } catch {
       // ignore invalid tokens, downstream will handle auth
     }

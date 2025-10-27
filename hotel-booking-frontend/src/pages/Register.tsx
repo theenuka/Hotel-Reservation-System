@@ -43,6 +43,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [registerAsOwner, setRegisterAsOwner] = useState(false);
 
   const {
     register,
@@ -73,9 +74,17 @@ const Register = () => {
 
   const onSubmit = handleSubmit((data) => {
     setIsLoading(true);
-    mutation.mutate(data, {
+    const action = !import.meta.env.PROD && registerAsOwner ? apiClient.registerOwner : apiClient.register;
+    // use the same mutation machinery but call the selected action
+    // We don't change the mutation instance for simplicity
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    mutation.mutateAsync
+      ? // if our hook exposes mutateAsync, prefer it to await
+        (action as any)(data).then(() => mutation.options.onSuccess?.(undefined as any)).catch((e: any) => mutation.options.onError?.(e)).finally(() => setIsLoading(false))
+      : mutation.mutate(action === apiClient.register ? data : (data as any), {
       onSettled: () => setIsLoading(false),
-    });
+      });
   });
 
   const password = watch("password");
@@ -117,6 +126,22 @@ const Register = () => {
           {/* Form */}
           <CardContent className="space-y-6">
             <form className="space-y-6" onSubmit={onSubmit}>
+              {/* Dev-only: Register as Hotel Owner */}
+              {!import.meta.env.PROD && (
+                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <input
+                    id="registerAsOwner"
+                    type="checkbox"
+                    className="h-4 w-4"
+                    aria-label="Register as Hotel Owner"
+                    checked={registerAsOwner}
+                    onChange={(e) => setRegisterAsOwner(e.target.checked)}
+                  />
+                  <Label htmlFor="registerAsOwner" className="text-sm text-blue-800">
+                    Register as Hotel Owner (dev only)
+                  </Label>
+                </div>
+              )}
               {/* Name Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">

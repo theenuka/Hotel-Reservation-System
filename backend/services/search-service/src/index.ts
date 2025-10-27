@@ -33,9 +33,24 @@ const Hotel = mongoosePkg.model("Hotel", new mongoosePkg.Schema({
   type: [String],
 }, { strict: false }), "hotels");
 
+// Light Booking model for availability checks
+const Booking = mongoosePkg.model("Booking", new mongoosePkg.Schema({
+  hotelId: String,
+  checkIn: Date,
+  checkOut: Date,
+  status: String,
+}, { strict: false }), "bookings");
+
+// Maintenance model lightweight for availability
+const Maintenance = mongoosePkg.model("Maintenance", new mongoosePkg.Schema({
+  hotelId: String,
+  startDate: Date,
+  endDate: Date,
+}, { strict: false }), "maintenances");
+
 app.get("/hotels/search", async (req, res) => {
   const q: any = {};
-  const { destination, adultCount, childCount, facilities, types, stars, maxPrice, sortOption, page } = req.query as any;
+  const { destination, adultCount, childCount, facilities, types, stars, maxPrice, sortOption, page, checkIn, checkOut } = req.query as any;
   if (destination && destination.trim() !== "") {
     q.$or = [
       { city: { $regex: destination, $options: "i" } },
@@ -60,9 +75,33 @@ app.get("/hotels/search", async (req, res) => {
   const pageNumber = parseInt(page || "1");
   const skip = (pageNumber - 1) * pageSize;
 
+  // Availability: exclude hotels that have overlapping bookings in the requested window
+  let unavailableHotelIds: string[] = [];
+  if (checkIn && checkOut) {
+    const ci = new Date(checkIn);
+    const co = new Date(checkOut);
+    if (!isNaN(ci.getTime()) && !isNaN(co.getTime()) && ci < co) {
+      const overlaps = await Booking.distinct("hotelId", {
+        status: { $in: ["pending", "confirmed"] },
+        checkIn: { $lt: co },
+        checkOut: { $gt: ci },
+      });
+      const maintenanceBlocks = await Maintenance.distinct("hotelId", {
+        startDate: { $lt: co },
+        endDate: { $gt: ci },
+      });
+      unavailableHotelIds = [
+        ...new Set([...(overlaps as string[]), ...(maintenanceBlocks as string[])]),
+      ];
+      if (unavailableHotelIds.length > 0) {
+        q._id = { $nin: unavailableHotelIds.map((id) => new mongoosePkg.Types.ObjectId(id)) };
+      }
+    }
+  }
+
   const [data, total] = await Promise.all([
     Hotel.find(q).sort(sort).skip(skip).limit(pageSize),
-    Hotel.countDocuments(q)
+    Hotel.countDocuments(q),
   ]);
 
   res.json({ data, pagination: { total, page: pageNumber, pages: Math.ceil(total / pageSize) } });

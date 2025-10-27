@@ -50,12 +50,19 @@ app.get("/health", (_req, res) => res.json({ status: "ok", service: "identity-se
 // Support both /auth/register and /users/register (frontend uses /api/users/register)
 app.post(["/auth/register", "/users/register"], async (req, res) => {
   const { email, password, firstName, lastName } = req.body;
+  // Optional role for onboarding owners/admins; defaults to 'user'.
+  // Controlled by ALLOW_ROLE_FROM_REGISTER flag. Enabled by default unless NODE_ENV=production.
+  const allowRoleOverride = (process.env.ALLOW_ROLE_FROM_REGISTER ?? (process.env.NODE_ENV === 'production' ? 'false' : 'true')) === 'true';
+  const requestedRole = allowRoleOverride ? ((req.body?.role as string) || undefined) : undefined;
   const existing = await User.findOne({ email });
   if (existing) return res.status(400).json({ message: "Email already used" });
   const hashed = await bcrypt.hash(password, 10);
-  const user = await User.create({ email, password: hashed, firstName, lastName });
-  const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "7d" });
-  res.json({ token, userId: user._id, email: user.email, firstName, lastName });
+  const role = requestedRole && ["user", "admin", "hotel_owner"].includes(requestedRole)
+    ? requestedRole
+    : "user";
+  const user = await User.create({ email, password: hashed, firstName, lastName, role });
+  const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+  res.json({ token, userId: user._id, email: user.email, firstName, lastName, role: user.role });
 });
 
 app.post("/auth/login", async (req, res) => {
@@ -64,8 +71,8 @@ app.post("/auth/login", async (req, res) => {
   if (!user) return res.status(401).json({ message: "Invalid credentials" });
   const ok = await bcrypt.compare(password, user.password);
   if (!ok) return res.status(401).json({ message: "Invalid credentials" });
-  const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "7d" });
-  res.json({ token, userId: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+  const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+  res.json({ token, userId: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role });
 });
 
 app.get("/auth/validate-token", verifyToken, (_req, res) => res.json({ valid: true }));
