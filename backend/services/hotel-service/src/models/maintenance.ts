@@ -1,10 +1,12 @@
 import mongoose, { Document } from "mongoose";
 
 export interface IMaintenance extends Document {
+  _id: string;
   hotelId: string;
+  title: string;
+  description?: string;
   startDate: Date;
   endDate: Date;
-  reason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -12,9 +14,10 @@ export interface IMaintenance extends Document {
 const maintenanceSchema = new mongoose.Schema(
   {
     hotelId: { type: String, required: true, index: true },
+    title: { type: String, required: true },
+    description: { type: String },
     startDate: { type: Date, required: true, index: true },
     endDate: { type: Date, required: true },
-    reason: { type: String },
   },
   { timestamps: true }
 );

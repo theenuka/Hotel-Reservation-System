@@ -148,11 +148,7 @@ app.delete("/my-hotels/:id", verifyToken, requireOwner, async (req: Request & { 
   res.json({ success: true });
 });
 
-const port = process.env.PORT || 7103;
-app.listen(port, () => console.log(`hotel-service listening on :${port}`));
-
-// --- Maintenance (owner) ---
-// List maintenance windows for a hotel
+// --- Maintenance windows (owner) ---
 app.get("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
   const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
   if (!hotel) return res.status(404).json({ message: "Hotel not found" });
@@ -160,27 +156,28 @@ app.get("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: Req
   res.json(items);
 });
 
-// Create maintenance window
 app.post("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
   const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
   if (!hotel) return res.status(404).json({ message: "Hotel not found" });
-  const { startDate, endDate, reason } = req.body || {};
-  const sd = new Date(startDate); const ed = new Date(endDate);
+  const { title, description, startDate, endDate } = req.body || {};
+  const sd = new Date(startDate);
+  const ed = new Date(endDate);
   if (!startDate || !endDate || isNaN(sd.getTime()) || isNaN(ed.getTime()) || sd >= ed) {
     return res.status(400).json({ message: "Invalid start/end dates" });
   }
-  // Optional: ensure no overlap with existing maintenance
-  const overlap = await Maintenance.findOne({ hotelId: req.params.id, startDate: { $lt: ed }, endDate: { $gt: sd } });
-  if (overlap) return res.status(409).json({ message: "Maintenance window overlaps existing" });
-  const item = await new Maintenance({ hotelId: req.params.id, startDate: sd, endDate: ed, reason }).save();
+  const existing = await Maintenance.findOne({ hotelId: req.params.id, startDate: { $lt: ed }, endDate: { $gt: sd } });
+  if (existing) return res.status(409).json({ message: "Overlaps an existing maintenance window" });
+  const item = await new Maintenance({ hotelId: req.params.id, title, description, startDate: sd, endDate: ed }).save();
   res.status(201).json(item);
 });
 
-// Delete maintenance window
-app.delete("/my-hotels/:id/maintenance/:maintenanceId", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+app.delete("/my-hotels/:id/maintenance/:mid", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
   const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
   if (!hotel) return res.status(404).json({ message: "Hotel not found" });
-  const deleted = await Maintenance.findOneAndDelete({ _id: req.params.maintenanceId, hotelId: req.params.id });
+  const deleted = await Maintenance.findOneAndDelete({ _id: req.params.mid, hotelId: req.params.id });
   if (!deleted) return res.status(404).json({ message: "Maintenance not found" });
   res.json({ success: true });
 });
+
+const port = process.env.PORT || 7103;
+app.listen(port, () => console.log(`hotel-service listening on :${port}`));

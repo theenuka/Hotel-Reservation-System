@@ -1,13 +1,13 @@
 import mongoose, { Document } from "mongoose";
 
 export interface IWaitlist extends Document {
+  _id: string;
   hotelId: string;
-  userId?: string;
   email: string;
   firstName?: string;
   lastName?: string;
-  desiredCheckIn: Date;
-  desiredCheckOut: Date;
+  checkIn: Date;
+  checkOut: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,16 +15,15 @@ export interface IWaitlist extends Document {
 const waitlistSchema = new mongoose.Schema(
   {
     hotelId: { type: String, required: true, index: true },
-    userId: { type: String },
     email: { type: String, required: true, index: true },
     firstName: { type: String },
     lastName: { type: String },
-    desiredCheckIn: { type: Date, required: true, index: true },
-    desiredCheckOut: { type: Date, required: true },
+    checkIn: { type: Date, required: true, index: true },
+    checkOut: { type: Date, required: true },
   },
   { timestamps: true }
 );
 
-waitlistSchema.index({ hotelId: 1, desiredCheckIn: 1 });
+waitlistSchema.index({ hotelId: 1, email: 1, checkIn: 1 });
 
 export default mongoose.model<IWaitlist>("Waitlist", waitlistSchema);

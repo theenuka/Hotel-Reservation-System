@@ -88,5 +88,24 @@ app.get("/users/me", verifyToken, async (req: Request & { userId?: string }, res
   res.json({ _id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role });
 });
 
+// Update profile (first/last name)
+app.patch("/users/me", verifyToken, async (req: Request & { userId?: string }, res: Response) => {
+  const updates: any = {};
+  if (typeof req.body?.firstName === 'string') updates.firstName = req.body.firstName;
+  if (typeof req.body?.lastName === 'string') updates.lastName = req.body.lastName;
+  const user = await User.findByIdAndUpdate(req.userId, updates, { new: true });
+  if (!user) return res.status(404).json({ message: "not found" });
+  res.json({ _id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role });
+});
+
+// Add loyalty points to current user (demo)
+app.post("/users/me/loyalty/add", verifyToken, async (req: Request & { userId?: string }, res: Response) => {
+  const points = Number(req.body?.points || 0);
+  if (!Number.isFinite(points) || points <= 0) return res.status(400).json({ message: "points must be > 0" });
+  const user = await User.findByIdAndUpdate(req.userId, { $inc: { loyaltyPoints: points } }, { new: true });
+  if (!user) return res.status(404).json({ message: "not found" });
+  res.json({ loyaltyPoints: user.loyaltyPoints });
+});
+
 const port = process.env.PORT || 7102;
 app.listen(port, () => console.log(`identity-service listening on :${port}`));

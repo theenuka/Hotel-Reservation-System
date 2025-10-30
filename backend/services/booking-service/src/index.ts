@@ -313,11 +313,11 @@ app.post("/bookings/:bookingId/cancel", attachUser, async (req: Request & { user
 
 // Waitlist endpoints
 app.post("/hotels/:hotelId/waitlist", attachUser, async (req: Request & { userId?: string }, res) => {
-  const { email, firstName, lastName, desiredCheckIn, desiredCheckOut } = req.body || {};
-  if (!email || !desiredCheckIn || !desiredCheckOut) return res.status(400).json({ message: "Missing fields" });
-  const ci = new Date(desiredCheckIn); const co = new Date(desiredCheckOut);
+  const { email, firstName, lastName, checkIn, checkOut } = req.body || {};
+  if (!email || !checkIn || !checkOut) return res.status(400).json({ message: "Missing fields" });
+  const ci = new Date(checkIn); const co = new Date(checkOut);
   if (isNaN(ci.getTime()) || isNaN(co.getTime()) || ci >= co) return res.status(400).json({ message: "Invalid dates" });
-  const entry = await new Waitlist({ hotelId: req.params.hotelId, userId: req.userId, email, firstName, lastName, desiredCheckIn: ci, desiredCheckOut: co }).save();
+  const entry = await new Waitlist({ hotelId: req.params.hotelId, email, firstName, lastName, checkIn: ci, checkOut: co }).save();
   // Notify waitlist join
   try {
     const baseUrl = process.env.NOTIFICATION_SERVICE_URL || "http://localhost:7101";
@@ -329,7 +329,7 @@ app.post("/hotels/:hotelId/waitlist", attachUser, async (req: Request & { userId
         to: email,
         subject: "Added to Waitlist",
         message: `You're on the waitlist. We'll notify you if dates open up.`,
-        metadata: { hotelId: req.params.hotelId, desiredCheckIn: ci, desiredCheckOut: co }
+        metadata: { hotelId: req.params.hotelId, checkIn: ci, checkOut: co }
       })
     });
   } catch {}
