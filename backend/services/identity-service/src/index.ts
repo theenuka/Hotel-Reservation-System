@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
 import "dotenv/config";
 import User, { IUser } from "./models/user";
@@ -15,7 +15,7 @@ app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], cr
 app.use(express.json());
 app.use(morgan("dev"));
 
-const JWT_SECRET = process.env.JWT_SECRET_KEY || "dev_secret";
+const JWT_SECRET = (process.env.JWT_SECRET_KEY || "dev_secret") as jwt.Secret;
 const MONGO_URI = process.env.MONGODB_CONNECTION_STRING as string;
 const ACCESS_TOKEN_TTL = process.env.ACCESS_TOKEN_TTL || "15m";
 const REFRESH_TOKEN_TTL_DAYS = Number(process.env.REFRESH_TOKEN_TTL_DAYS || 30);
@@ -23,6 +23,7 @@ const PASSWORD_RESET_TOKEN_TTL_MINUTES = Number(process.env.PASSWORD_RESET_TOKEN
 const VERIFICATION_CODE_TTL_MINUTES = Number(process.env.VERIFICATION_CODE_TTL_MINUTES || 15);
 const REQUIRE_VERIFIED_LOGIN = (process.env.REQUIRE_VERIFIED_EMAIL_FOR_LOGIN || "false") === "true";
 const allowRoleOverride = (process.env.ALLOW_ROLE_FROM_REGISTER || "false") === "true";
+const INTERNAL_SERVICE_API_KEY = process.env.INTERNAL_SERVICE_API_KEY;
 
 if (!MONGO_URI) {
   console.error("MONGODB_CONNECTION_STRING missing");
@@ -47,6 +48,19 @@ const millis = (days: number) => days * 24 * 60 * 60 * 1000;
 const minutesToMillis = (minutes: number) => minutes * 60 * 1000;
 
 const sendEmail = async (to: string, subject: string, body: string) => {
+  const notificationServiceUrl = process.env.NOTIFICATION_SERVICE_URL;
+  if (notificationServiceUrl) {
+    try {
+      await fetch(`${notificationServiceUrl}/notify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "email", to, subject, message: body }),
+      });
+      return;
+    } catch (err) {
+      console.warn("notification-service-email-fallback", err);
+    }
+  }
   console.log(`[email] to=${to} subject="${subject}" body=${body}`);
 };
 
@@ -67,7 +81,8 @@ const attachTokens = (user: SanitizableUser, tokens: { accessToken: string; refr
   token: tokens.accessToken,
 });
 
-const createAccessToken = (user: IUser) => jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL });
+const createAccessToken = (user: IUser) =>
+  jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL as SignOptions["expiresIn"] });
 const randomToken = () => crypto.randomBytes(48).toString("hex");
 const hashToken = (token: string) => crypto.createHash("sha256").update(token).digest("hex");
 const generateVerificationCode = () => String(Math.floor(100000 + Math.random() * 900000));
@@ -104,9 +119,20 @@ const requireRole = (roles: Array<"user" | "admin" | "hotel_owner">) => (req: Au
   next();
 };
 
-app.get("/health", (_req, res) => res.json({ status: "ok", service: "identity-service" }));
+const verifyServiceKey = (req: Request, res: Response, next: NextFunction) => {
+  if (!INTERNAL_SERVICE_API_KEY) {
+    return res.status(503).json({ message: "service key not configured" });
+  }
+  const providedKey = req.header("x-service-key");
+  if (!providedKey || providedKey !== INTERNAL_SERVICE_API_KEY) {
+    return res.status(401).json({ message: "unauthorized" });
+  }
+  next();
+};
 
-app.post(["/auth/register", "/users/register"], async (req, res) => {
+app.get("/health", (_req: Request, res: Response) => res.json({ status: "ok", service: "identity-service" }));
+
+app.post(["/auth/register", "/users/register"], async (req: Request, res: Response) => {
   const { email, password, firstName, lastName } = req.body;
   if (!email || !password || !firstName || !lastName) {
     return res.status(400).json({ message: "Missing required fields" });
@@ -134,7 +160,7 @@ app.post(["/auth/register", "/users/register"], async (req, res) => {
   });
 });
 
-app.post("/auth/login", async (req, res) => {
+app.post("/auth/login", async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ message: "Invalid credentials" });
@@ -147,9 +173,9 @@ app.post("/auth/login", async (req, res) => {
   res.json(attachTokens(user, tokens));
 });
 
-app.get("/auth/validate-token", verifyToken, (_req, res) => res.json({ valid: true }));
+app.get("/auth/validate-token", verifyToken, (_req: Request, res: Response) => res.json({ valid: true }));
 
-app.post("/auth/logout", async (req, res) => {
+app.post("/auth/logout", async (req: Request, res: Response) => {
   const refreshToken = req.body?.refreshToken as string | undefined;
   if (refreshToken) {
     await RefreshToken.deleteOne({ tokenHash: hashToken(refreshToken) });
@@ -157,7 +183,7 @@ app.post("/auth/logout", async (req, res) => {
   res.json({ success: true });
 });
 
-app.post("/auth/refresh", async (req, res) => {
+app.post("/auth/refresh", async (req: Request, res: Response) => {
   const refreshToken = req.body?.refreshToken as string | undefined;
   if (!refreshToken) return res.status(400).json({ message: "refreshToken required" });
   const tokenHash = hashToken(refreshToken);
@@ -175,7 +201,7 @@ app.post("/auth/refresh", async (req, res) => {
   res.json(attachTokens(user, tokens));
 });
 
-app.post("/auth/request-verification", async (req, res) => {
+app.post("/auth/request-verification", async (req: Request, res: Response) => {
   const { email } = req.body || {};
   if (!email) return res.status(400).json({ message: "email required" });
   const user = await User.findOne({ email });
@@ -188,7 +214,7 @@ app.post("/auth/request-verification", async (req, res) => {
   res.json({ message: "verification code sent" });
 });
 
-app.post("/auth/verify-email", async (req, res) => {
+app.post("/auth/verify-email", async (req: Request, res: Response) => {
   const { email, code } = req.body || {};
   if (!email || !code) return res.status(400).json({ message: "email and code required" });
   const user = await User.findOne({ email });
@@ -206,7 +232,7 @@ app.post("/auth/verify-email", async (req, res) => {
   res.json({ ...sanitizeUser(user) });
 });
 
-app.post("/auth/request-password-reset", async (req, res) => {
+app.post("/auth/request-password-reset", async (req: Request, res: Response) => {
   const { email } = req.body || {};
   if (!email) return res.status(400).json({ message: "email required" });
   const user = await User.findOne({ email });
@@ -221,7 +247,7 @@ app.post("/auth/request-password-reset", async (req, res) => {
   res.json({ message: "If the account exists, a reset email was sent." });
 });
 
-app.post("/auth/reset-password", async (req, res) => {
+app.post("/auth/reset-password", async (req: Request, res: Response) => {
   const { token, password } = req.body || {};
   if (!token || !password) return res.status(400).json({ message: "token and password required" });
   const tokenHash = hashToken(token);
@@ -268,12 +294,12 @@ app.post("/users/me/loyalty/add", verifyToken, async (req: AuthedRequest, res: R
 });
 
 // Admin endpoints
-app.get("/admin/users", verifyToken, requireRole(["admin"]), async (_req, res) => {
+app.get("/admin/users", verifyToken, requireRole(["admin"]), async (_req: Request, res: Response) => {
   const users = await User.find({}).sort({ createdAt: -1 }).lean();
   res.json(users.map((u) => sanitizeUser(u as SanitizableUser)));
 });
 
-app.patch("/admin/users/:id/role", verifyToken, requireRole(["admin"]), async (req, res) => {
+app.patch("/admin/users/:id/role", verifyToken, requireRole(["admin"]), async (req: Request, res: Response) => {
   const { role } = req.body || {};
   if (!role || !["user", "admin", "hotel_owner"].includes(role)) {
     return res.status(400).json({ message: "invalid role" });
@@ -281,6 +307,20 @@ app.patch("/admin/users/:id/role", verifyToken, requireRole(["admin"]), async (r
   const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
   if (!user) return res.status(404).json({ message: "not found" });
   res.json(sanitizeUser(user));
+});
+
+app.post("/internal/users/:id/loyalty", verifyServiceKey, async (req: Request, res: Response) => {
+  const points = Number(req.body?.points ?? 0);
+  if (!Number.isFinite(points) || points <= 0) {
+    return res.status(400).json({ message: "points must be greater than 0" });
+  }
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { loyaltyPoints: points } },
+    { new: true }
+  );
+  if (!user) return res.status(404).json({ message: "not found" });
+  res.json({ userId: user._id, loyaltyPoints: user.loyaltyPoints });
 });
 
 const port = process.env.PORT || 7102;

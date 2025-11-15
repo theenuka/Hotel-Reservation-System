@@ -5,7 +5,8 @@ import mongoose from "mongoose";
 import Stripe from "stripe";
 import "dotenv/config";
 import Booking from "./models/booking";
-import Waitlist from "./models/waitlist";
+import Waitlist, { WaitlistStatus } from "./models/waitlist";
+import Maintenance from "./models/maintenance";
 import mongoosePkg from "mongoose";
 import jwt from "jsonwebtoken";
 
@@ -13,6 +14,11 @@ const app = express();
 app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], credentials: true }));
 app.use(express.json());
 app.use(morgan("dev"));
+
+const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || "http://localhost:7101";
+const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL || "http://localhost:7102";
+const INTERNAL_SERVICE_API_KEY = process.env.INTERNAL_SERVICE_API_KEY;
+const LOYALTY_POINTS_PER_CURRENCY = Number(process.env.LOYALTY_POINTS_PER_CURRENCY || "0.1");
 
 const MONGO_URI = process.env.MONGODB_CONNECTION_STRING as string;
 if (!MONGO_URI) { console.error("MONGODB_CONNECTION_STRING missing"); process.exit(1); }
@@ -26,6 +32,10 @@ const connectWithRetry = async () => {
   }
 };
 connectWithRetry();
+
+const HotelModel =
+  mongoosePkg.models.Hotel ||
+  mongoosePkg.model("Hotel", new mongoosePkg.Schema({}, { strict: false }), "hotels");
 
 const STRIPE_KEY = process.env.STRIPE_API_KEY;
 const stripe = STRIPE_KEY ? new Stripe(STRIPE_KEY) : undefined;

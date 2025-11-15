@@ -3,7 +3,14 @@ import cors from "cors";
 import morgan from "morgan";
 import mongoose from "mongoose";
 import "dotenv/config";
-import Hotel from "./models/hotel";
+import Hotel, {
+  AmenityGroups,
+  ContactInfo,
+  FacilitySpace,
+  HighlightInfo,
+  LocationInfo,
+  PolicyInfo,
+} from "./models/hotel";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import jwt from "jsonwebtoken";
@@ -66,96 +73,44 @@ const requireOwner = (req: Request & { role?: string }, res: Response, next: Nex
 // Multer for multipart forms (we ignore file bytes for now and use provided imageUrls)
 const upload = multer({ storage: multer.memoryStorage() });
 
-const extractIndexedValues = (body: any, key: string): string[] => {
-  const values: { index: number; value: string }[] = [];
-  const pattern = new RegExp(`^${key}\\[(\\d+)\\]$`);
-  Object.keys(body || {}).forEach((k) => {
-    const match = k.match(pattern);
-    if (match) {
-      values.push({ index: parseInt(match[1], 10), value: body[k] });
-    }
-  });
-  return values.sort((a, b) => a.index - b.index).map((entry) => entry.value).filter(Boolean);
-};
+const isEmpty = (value: unknown) => value === undefined || value === null || value === "";
 
-// Helper to extract imageUrls array from multipart fields like imageUrls[0], imageUrls[1]
-const extractImageUrls = (body: any): string[] => {
-  const direct = body.imageUrls;
-  if (Array.isArray(direct)) return direct.filter(Boolean);
-  if (typeof direct === "string" && direct.length > 0) return [direct];
-  return extractIndexedValues(body, "imageUrls");
-};
-
-const extractArrayField = (body: any, field: string): string[] => {
-  const direct = body[field];
-  if (Array.isArray(direct)) return direct.filter(Boolean);
-  if (typeof direct === "string" && direct.length > 0) return [direct];
-  return extractIndexedValues(body, field);
-};
-
-const toNumber = (value: any): number | undefined => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string" && value.trim().length > 0) {
-    const parsed = Number(value);
-    if (!Number.isNaN(parsed)) return parsed;
-  }
-  return undefined;
-};
-
-const toBoolean = (value: any): boolean | undefined => {
-  if (typeof value === "boolean") return value;
-  if (typeof value === "string" && value.trim().length > 0) {
-    const lowered = value.toLowerCase();
-    if (["true", "1", "yes", "on"].includes(lowered)) return true;
-    if (["false", "0", "no", "off"].includes(lowered)) return false;
-  }
-  return undefined;
-};
-
-const getNestedValue = (body: any, path: string): any => {
-  if (!body || typeof body !== "object") return undefined;
-  if (Object.prototype.hasOwnProperty.call(body, path)) return body[path];
-  const segments = path.split(".");
-  let cursor: any = body;
-  for (const segment of segments) {
-    if (cursor && typeof cursor === "object" && Object.prototype.hasOwnProperty.call(cursor, segment)) {
-      cursor = cursor[segment];
-    } else {
-      return undefined;
-    }
-  }
-  return cursor;
-};
-
-const sanitizeString = (value: any): string | undefined => {
+const normalizeArray = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value.map(String).map((v) => v.trim()).filter(Boolean);
   if (typeof value === "string") {
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : undefined;
+    return value
+      .split(/[,\n]/)
+      .map((v) => v.trim())
+      .filter(Boolean);
   }
-  return undefined;
+  return [];
 };
 
-const buildContact = (body: any) => {
-  const phone = sanitizeString(getNestedValue(body, "contact.phone"));
-  const email = sanitizeString(getNestedValue(body, "contact.email"));
-  const website = sanitizeString(getNestedValue(body, "contact.website"));
-  if (!phone && !email && !website) return undefined;
-  return { phone, email, website };
-};
-
-const buildPolicies = (body: any) => {
-  const policies = {
-    checkInTime: sanitizeString(getNestedValue(body, "policies.checkInTime")),
-    checkOutTime: sanitizeString(getNestedValue(body, "policies.checkOutTime")),
-    cancellationPolicy: sanitizeString(getNestedValue(body, "policies.cancellationPolicy")),
-    petPolicy: sanitizeString(getNestedValue(body, "policies.petPolicy")),
-    smokingPolicy: sanitizeString(getNestedValue(body, "policies.smokingPolicy")),
+const buildIndexedArrayExtractor = (key: string) => {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`^${escaped}\\[(\\d+)\\]$`);
+  return (body: any) => {
+    const direct = normalizeArray(body?.[key]);
+    if (direct.length) return direct;
+    const indexed: { index: number; value: string }[] = [];
+    Object.keys(body || {}).forEach((k) => {
+      const match = k.match(regex);
+      if (match) {
+        indexed.push({ index: Number(match[1]), value: body[k] });
+      }
+    });
+    return indexed.sort((a, b) => a.index - b.index).map((entry) => entry.value).filter(Boolean);
   };
-  if (Object.values(policies).every((value) => !value)) return undefined;
-  return policies;
 };
 
-const parseJsonIfNeeded = (value: any) => {
+const extractImageUrls = buildIndexedArrayExtractor("imageUrls");
+const extractFacilities = buildIndexedArrayExtractor("facilities");
+const extractTags = buildIndexedArrayExtractor("tags");
+const extractTypes = buildIndexedArrayExtractor("type");
+
+const parseJSONField = <T>(value: unknown): T | undefined => {
+  if (!value) return undefined;
+  if (typeof value === "object") return value as T;
   if (typeof value === "string") {
     try {
       return JSON.parse(value);
@@ -163,84 +118,185 @@ const parseJsonIfNeeded = (value: any) => {
       return undefined;
     }
   }
-  return typeof value === "object" ? value : undefined;
+  return undefined;
 };
 
-const buildLocation = (body: any) => {
-  const raw = parseJsonIfNeeded(body.location) || body.location;
-  const latitude = toNumber(raw?.latitude ?? getNestedValue(body, "location.latitude"));
-  const longitude = toNumber(raw?.longitude ?? getNestedValue(body, "location.longitude"));
-  const address = raw?.address || getNestedValue(body, "location.address");
-  const normalizedAddress = address && typeof address === "object" ? {
-    street: sanitizeString(address.street ?? getNestedValue(body, "location.address.street")),
-    city: sanitizeString(address.city ?? getNestedValue(body, "location.address.city")),
-    state: sanitizeString(address.state ?? getNestedValue(body, "location.address.state")),
-    country: sanitizeString(address.country ?? getNestedValue(body, "location.address.country")),
-    zipCode: sanitizeString(address.zipCode ?? getNestedValue(body, "location.address.zipCode")),
-  } : undefined;
-  if (!latitude && !longitude && (!normalizedAddress || Object.values(normalizedAddress).every((v) => !v))) {
-    return undefined;
+const coerceNumber = (value: unknown, fallback?: number) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+};
+
+const coerceBoolean = (value: unknown, fallback = false) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const lowered = value.toLowerCase();
+    if (["true", "1", "yes", "on"].includes(lowered)) return true;
+    if (["false", "0", "no", "off"].includes(lowered)) return false;
   }
-  return { latitude, longitude, address: normalizedAddress };
+  if (typeof value === "number") return value === 1;
+  return fallback;
 };
 
-const buildAmenities = (body: any) => {
-  const amenities = {
-    parking: toBoolean(getNestedValue(body, "amenities.parking")),
-    wifi: toBoolean(getNestedValue(body, "amenities.wifi")),
-    pool: toBoolean(getNestedValue(body, "amenities.pool")),
-    gym: toBoolean(getNestedValue(body, "amenities.gym")),
-    spa: toBoolean(getNestedValue(body, "amenities.spa")),
-    restaurant: toBoolean(getNestedValue(body, "amenities.restaurant")),
-    bar: toBoolean(getNestedValue(body, "amenities.bar")),
-    airportShuttle: toBoolean(getNestedValue(body, "amenities.airportShuttle")),
-    businessCenter: toBoolean(getNestedValue(body, "amenities.businessCenter")),
+const coerceString = (value: unknown) => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : undefined;
+  }
+  return undefined;
+};
+
+const buildContact = (body: any): ContactInfo | undefined => {
+  const parsed = parseJSONField<ContactInfo>(body.contact) || {};
+  const contact: ContactInfo = { ...parsed };
+  const assign = (key: keyof ContactInfo, ...sources: string[]) => {
+    for (const source of sources) {
+      const value = coerceString(body?.[source]);
+      if (!isEmpty(value)) {
+        contact[key] = value;
+        break;
+      }
+    }
   };
-  if (Object.values(amenities).every((value) => value === undefined)) return undefined;
-  return amenities;
+  assign("email", "contactEmail", "contact.email");
+  assign("phone", "contactPhone", "contact.phone");
+  assign("website", "contactWebsite", "contact.website");
+  assign("whatsapp", "contactWhatsapp", "contact.whatsapp");
+
+  const socials = parseJSONField<ContactInfo["socials"]>(body.contactSocials) || contact.socials || {};
+  [
+    ["facebook", "contact.facebook", "contactSocials.facebook"],
+    ["instagram", "contact.instagram", "contactSocials.instagram"],
+    ["twitter", "contact.twitter", "contactSocials.twitter"],
+    ["linkedin", "contact.linkedin", "contactSocials.linkedin"],
+  ].forEach(([key, ...sources]) => {
+    for (const source of sources) {
+      const value = coerceString(body?.[source]);
+      if (!isEmpty(value)) {
+        socials[key as keyof ContactInfo["socials"]] = value;
+        break;
+      }
+    }
+  });
+  if (Object.keys(socials).length) contact.socials = socials;
+  return Object.keys(contact).length ? contact : undefined;
+};
+
+const buildLocation = (body: any): LocationInfo | undefined => {
+  const parsed = parseJSONField<LocationInfo>(body.location) || {};
+  const location: LocationInfo = { ...parsed };
+  const assign = (key: keyof LocationInfo, ...sources: string[]) => {
+    for (const source of sources) {
+      const value = body?.[source];
+      if (!isEmpty(value)) {
+        if (key === "latitude" || key === "longitude") {
+          const num = coerceNumber(value);
+          if (num !== undefined) {
+            location[key] = num;
+            break;
+          }
+        } else {
+          location[key] = value;
+          break;
+        }
+      }
+    }
+  };
+  assign("addressLine1", "location.addressLine1", "addressLine1");
+  assign("addressLine2", "location.addressLine2", "addressLine2");
+  assign("city", "location.city", "city");
+  assign("state", "location.state", "state");
+  assign("postalCode", "location.postalCode", "postalCode");
+  assign("country", "location.country", "country");
+  assign("landmark", "location.landmark", "landmark");
+  assign("latitude", "location.latitude", "latitude");
+  assign("longitude", "location.longitude", "longitude");
+  return Object.keys(location).length ? location : undefined;
+};
+
+const buildPolicies = (body: any): PolicyInfo | undefined => {
+  const parsed = parseJSONField<PolicyInfo>(body.policies) || {};
+  const policies: PolicyInfo = { ...parsed };
+  const map: Array<[keyof PolicyInfo, string[]]> = [
+    ["checkInFrom", ["policies.checkInFrom", "checkInFrom", "checkInTime"]],
+    ["checkOutUntil", ["policies.checkOutUntil", "checkOutUntil", "checkOutTime"]],
+    ["cancellationPolicy", ["policies.cancellationPolicy", "cancellationPolicy"]],
+    ["petPolicy", ["policies.petPolicy", "petPolicy"]],
+    ["smokingPolicy", ["policies.smokingPolicy", "smokingPolicy"]],
+    ["childrenPolicy", ["policies.childrenPolicy", "childrenPolicy"]],
+    ["damagePolicy", ["policies.damagePolicy", "damagePolicy"]],
+  ];
+  map.forEach(([key, sources]) => {
+    for (const source of sources) {
+      const value = coerceString(body?.[source]);
+      if (!isEmpty(value)) {
+        policies[key] = value;
+        break;
+      }
+    }
+  });
+  return Object.keys(policies).length ? policies : undefined;
+};
+
+const buildAmenities = (body: any): AmenityGroups | undefined => {
+  const parsed = parseJSONField<AmenityGroups>(body.amenitiesDetail) || {};
+  const details: AmenityGroups = { ...parsed };
+  const sections = ["general", "room", "dining", "wellness", "business", "accessibility", "safety", "technology", "services"] as const;
+  sections.forEach((section) => {
+    const values = normalizeArray(body?.[`amenities.${section}`]);
+    if (values.length) {
+      details[section] = values;
+    }
+  });
+  return Object.keys(details).length ? details : undefined;
+};
+
+const buildHighlights = (body: any): HighlightInfo[] | undefined => {
+  const parsed = parseJSONField<HighlightInfo[]>(body.highlights);
+  if (Array.isArray(parsed) && parsed.length) return parsed;
+  const titles = buildIndexedArrayExtractor("highlights")(body);
+  if (!titles.length) return undefined;
+  return titles.map((title) => ({ title }));
+};
+
+const buildFacilitySpaces = (body: any): FacilitySpace[] | undefined => {
+  const parsed = parseJSONField<FacilitySpace[]>(body.facilitySpaces);
+  if (Array.isArray(parsed) && parsed.length) return parsed;
+  return undefined;
 };
 
 const buildHotelPayload = (body: any) => {
+  const location = buildLocation(body);
+  const contact = buildContact(body);
+  const policies = buildPolicies(body);
+  const amenitiesDetail = buildAmenities(body);
+  const facilitySpaces = buildFacilitySpaces(body);
+  const highlights = buildHighlights(body);
+  const facilities = extractFacilities(body);
+  const tags = extractTags(body);
+  const type = extractTypes(body);
+
   const payload: any = {
-    name: sanitizeString(body.name),
-    city: sanitizeString(body.city),
-    country: sanitizeString(body.country),
-    description: sanitizeString(body.description),
-    type: extractArrayField(body, "type"),
-    facilities: extractArrayField(body, "facilities"),
+    name: coerceString(body.name),
+    description: coerceString(body.description),
+    type: type.length ? type : normalizeArray(body.type),
+    city: coerceString(body.city) || location?.city,
+    country: coerceString(body.country) || location?.country,
+    adultCount: coerceNumber(body.adultCount, 1) ?? 1,
+    childCount: coerceNumber(body.childCount, 0) ?? 0,
+    facilities,
+    pricePerNight: coerceNumber(body.pricePerNight, 0) ?? 0,
+    starRating: coerceNumber(body.starRating, 0) ?? 0,
+    tags,
+    heroImage: coerceString(body.heroImage),
+    isFeatured: coerceBoolean(body.isFeatured, false),
+    contact,
+    policies,
+    location,
+    amenitiesDetail,
+    facilitySpaces,
+    highlights,
   };
 
-  const pricePerNight = toNumber(body.pricePerNight);
-  if (pricePerNight !== undefined) payload.pricePerNight = pricePerNight;
-
-  const starRating = toNumber(body.starRating);
-  if (starRating !== undefined) payload.starRating = starRating;
-
-  const adultCount = toNumber(body.adultCount);
-  if (adultCount !== undefined) payload.adultCount = adultCount;
-
-  const childCount = toNumber(body.childCount);
-  if (childCount !== undefined) payload.childCount = childCount;
-
-  const contact = buildContact(body);
-  if (contact) payload.contact = contact;
-
-  const policies = buildPolicies(body);
-  if (policies) payload.policies = policies;
-
-  const location = buildLocation(body);
-  if (location) payload.location = location;
-
-  const amenities = buildAmenities(body);
-  if (amenities) payload.amenities = amenities;
-
-  const isFeatured = toBoolean(body.isFeatured);
-  if (isFeatured !== undefined) payload.isFeatured = isFeatured;
-  Object.keys(payload).forEach((key) => {
-    if (payload[key] === undefined) {
-      delete payload[key];
-    }
-  });
   return payload;
 };
 
