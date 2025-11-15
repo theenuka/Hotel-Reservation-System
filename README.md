@@ -99,6 +99,7 @@ REDIS_URL=redis://localhost:6379/0
 NOTIFICATION_QUEUE_MODE=inline
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
+TWILIO_FROM_NUMBER=
 TWILIO_MESSAGING_SERVICE_SID=
 # Optional (pick one style):
 # CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>?secure=true

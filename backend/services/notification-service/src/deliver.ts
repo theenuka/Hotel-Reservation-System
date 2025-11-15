@@ -9,6 +9,7 @@ const FROM_NAME = process.env.NOTIFICATION_FROM_NAME || "Phoenix Booking";
 const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const TWILIO_FROM = process.env.TWILIO_FROM_NUMBER;
+const TWILIO_MESSAGING_SERVICE_SID = process.env.TWILIO_MESSAGING_SERVICE_SID;
 
 if (SENDGRID_KEY) {
   sgMail.setApiKey(SENDGRID_KEY);
@@ -54,11 +55,15 @@ export const sendEmail = async ({ to, subject, message, html }: NotificationJobP
 };
 
 export const sendSms = async ({ to, message }: NotificationJobPayload) => {
-  if (!twilioClient || !TWILIO_FROM) {
+  if (!twilioClient || (!TWILIO_FROM && !TWILIO_MESSAGING_SERVICE_SID)) {
     console.log("[notification:sms:mock]", { to, message });
     return { mocked: true };
   }
-  await twilioClient.messages.create({ to, from: TWILIO_FROM, body: message });
+  await twilioClient.messages.create({
+    to,
+    body: message,
+    ...(TWILIO_MESSAGING_SERVICE_SID ? { messagingServiceSid: TWILIO_MESSAGING_SERVICE_SID } : { from: TWILIO_FROM })
+  });
   return { mocked: false };
 };
 

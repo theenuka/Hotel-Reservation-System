@@ -15,9 +15,100 @@ export interface IHotel extends Document {
   starRating: number;
   imageUrls: string[];
   lastUpdated: Date;
+  contact?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+  policies?: {
+    checkInTime?: string;
+    checkOutTime?: string;
+    cancellationPolicy?: string;
+    petPolicy?: string;
+    smokingPolicy?: string;
+  };
+  location?: {
+    latitude?: number;
+    longitude?: number;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      country?: string;
+      zipCode?: string;
+    };
+  };
+  amenities?: {
+    parking?: boolean;
+    wifi?: boolean;
+    pool?: boolean;
+    gym?: boolean;
+    spa?: boolean;
+    restaurant?: boolean;
+    bar?: boolean;
+    airportShuttle?: boolean;
+    businessCenter?: boolean;
+  };
   totalBookings?: number;
   totalRevenue?: number;
 }
+
+const nestedOptions = { _id: false, id: false } as const;
+
+const contactSchema = new mongoose.Schema(
+  {
+    phone: { type: String },
+    email: { type: String },
+    website: { type: String },
+  },
+  nestedOptions
+);
+
+const addressSchema = new mongoose.Schema(
+  {
+    street: String,
+    city: String,
+    state: String,
+    country: String,
+    zipCode: String,
+  },
+  nestedOptions
+);
+
+const locationSchema = new mongoose.Schema(
+  {
+    latitude: Number,
+    longitude: Number,
+    address: addressSchema,
+  },
+  nestedOptions
+);
+
+const policiesSchema = new mongoose.Schema(
+  {
+    checkInTime: String,
+    checkOutTime: String,
+    cancellationPolicy: String,
+    petPolicy: String,
+    smokingPolicy: String,
+  },
+  nestedOptions
+);
+
+const amenitiesSchema = new mongoose.Schema(
+  {
+    parking: Boolean,
+    wifi: Boolean,
+    pool: Boolean,
+    gym: Boolean,
+    spa: Boolean,
+    restaurant: Boolean,
+    bar: Boolean,
+    airportShuttle: Boolean,
+    businessCenter: Boolean,
+  },
+  nestedOptions
+);
 
 const hotelSchema = new mongoose.Schema(
   {
@@ -35,7 +126,12 @@ const hotelSchema = new mongoose.Schema(
     imageUrls: [{ type: String }],
     lastUpdated: { type: Date, default: Date.now, index: true },
     totalBookings: { type: Number, default: 0 },
-    totalRevenue: { type: Number, default: 0 }
+    totalRevenue: { type: Number, default: 0 },
+    contact: contactSchema,
+    policies: policiesSchema,
+    location: locationSchema,
+    amenities: amenitiesSchema,
+    isFeatured: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
