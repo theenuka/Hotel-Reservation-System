@@ -6,6 +6,7 @@ import {
   Sparkles,
   Waves,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import AdvancedSearch from "./AdvancedSearch";
 
 const heroStats = [
@@ -32,8 +33,13 @@ const floatingDestinations = [
 ];
 
 const Hero = ({ onSearch }: { onSearch: (searchData: any) => void }) => {
+  const navigate = useNavigate();
+
+  const handlePrimaryCta = () => navigate("/search");
+  const handleSecondaryCta = () => navigate("/search?hotelType=Resort");
+
   return (
-    <section className="relative overflow-hidden bg-night-900 text-white">
+    <section id="hero" className="relative overflow-hidden bg-night-900 text-white">
       <div className="absolute inset-0 aurora-veil opacity-60 animate-aurora" />
       <div className="absolute inset-0 bg-gradient-to-br from-night-900/70 via-night-800/40 to-night-900" />
 
@@ -81,11 +87,17 @@ const Hero = ({ onSearch }: { onSearch: (searchData: any) => void }) => {
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
-              <button className="inline-flex items-center px-6 py-3 rounded-full bg-white text-night-900 font-semibold shadow-glow hover:-translate-y-0.5 transition-transform">
+              <button
+                onClick={handlePrimaryCta}
+                className="inline-flex items-center px-6 py-3 rounded-full bg-white text-night-900 font-semibold shadow-glow hover:-translate-y-0.5 transition-transform"
+              >
                 Plan a curated escape
                 <ArrowRight className="w-4 h-4 ml-2" />
               </button>
-              <button className="inline-flex items-center px-5 py-3 rounded-full border border-white/20 text-white/90 hover:border-white/50 transition-colors">
+              <button
+                onClick={handleSecondaryCta}
+                className="inline-flex items-center px-5 py-3 rounded-full border border-white/20 text-white/90 hover:border-white/50 transition-colors"
+              >
                 <Waves className="w-4 h-4 mr-2" />
                 Explore coastal villas
               </button>

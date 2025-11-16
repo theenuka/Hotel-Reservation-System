@@ -7,20 +7,29 @@ type Props = {
 
 const HotelTypesFilter = ({ selectedHotelTypes, onChange }: Props) => {
   return (
-    <div className="border-b border-slate-300 pb-5">
-      <h4 className="text-md font-semibold mb-2">Hotel Type</h4>
-      {hotelTypes.map((hotelType) => (
-        <label key={hotelType} className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            className="rounded"
-            value={hotelType}
-            checked={selectedHotelTypes.includes(hotelType)}
-            onChange={onChange}
-          />
-          <span>{hotelType}</span>
-        </label>
-      ))}
+    <div className="border-b border-white/10 pb-5">
+      <h4 className="text-xs uppercase tracking-[0.35em] text-white/50 mb-3">
+        Hotel Type
+      </h4>
+      <div className="space-y-2">
+        {hotelTypes.map((hotelType) => (
+          <label
+            key={hotelType}
+            className="flex items-center justify-between text-sm text-white/80"
+          >
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="rounded border-white/30 bg-transparent text-brand-400 focus:ring-brand-400 accent-brand-400"
+                value={hotelType}
+                checked={selectedHotelTypes.includes(hotelType)}
+                onChange={onChange}
+              />
+              <span>{hotelType}</span>
+            </div>
+          </label>
+        ))}
+      </div>
     </div>
   );
 };

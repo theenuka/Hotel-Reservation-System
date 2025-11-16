@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "react-query";
 import { Compass, Crown, Globe2, LampWallDown, Sparkles, Wifi } from "lucide-react";
 import * as apiClient from "../api-client";
 import LatestDestinationCard from "../components/LastestDestinationCard";
 import Hero from "../components/Hero";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const curatedCollections = [
   {
@@ -79,12 +80,27 @@ const testimonials = [
 
 const Home = () => {
   const { data: hotels } = useQuery("fetchQuery", () => apiClient.fetchHotels());
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const handleSearch = (searchData: any) => {
     console.log("Search initiated with:", searchData);
   };
 
   const destinations = useMemo(() => hotels ?? [], [hotels]);
+
+  useEffect(() => {
+    const section = (location.state as { section?: string } | null)?.section;
+    if (section) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(section);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   return (
     <div className="text-white bg-night-900">
@@ -103,7 +119,7 @@ const Home = () => {
       </div>
 
       {/* Collections */}
-      <section className="px-4 py-12 mx-auto space-y-8 max-w-7xl sm:px-6 lg:px-8 lg:py-20">
+      <section id="collections" className="px-4 py-12 mx-auto space-y-8 max-w-7xl sm:px-6 lg:px-8 lg:py-20">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-accentGlow uppercase text-xs tracking-[0.3em] mb-3">Collections</p>
@@ -136,7 +152,7 @@ const Home = () => {
       </section>
 
       {/* Experience grid */}
-      <section className="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-20">
+      <section id="experiences" className="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-20">
         <div className="glass-panel rounded-[36px] p-8 sm:p-12 space-y-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -170,7 +186,7 @@ const Home = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="px-4 sm:px-6 lg:px-8 py-14">
+      <section id="testimonials" className="px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid max-w-6xl gap-6 mx-auto md:grid-cols-2">
           {testimonials.map((testimonial) => (
             <div key={testimonial.name} className="glass-panel rounded-[32px] p-8 flex flex-col space-y-4">
@@ -186,7 +202,7 @@ const Home = () => {
       </section>
 
       {/* Latest Destinations */}
-      <section className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <section id="fresh-drops" className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 mb-10 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-accentGlow text-xs uppercase tracking-[0.35em] mb-2">Fresh drops</p>

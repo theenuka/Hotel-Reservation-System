@@ -38,113 +38,104 @@ const SearchResultsCard = ({ hotel }: Props) => {
   };
 
   return (
-    <div className="group bg-white rounded-2xl shadow-soft hover:shadow-large transition-all duration-300 border border-gray-100 overflow-hidden h-auto xl:h-[500px] flex">
-      <div className="grid grid-cols-1 xl:grid-cols-[2fr_3fr] gap-0 w-full h-full">
+    <div className="group rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden shadow-[0_25px_80px_rgba(2,6,23,0.45)] transition hover:border-white/30">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_1.5fr]">
         {/* Image Section */}
-        <div className="relative overflow-hidden h-64 xl:h-[500px]">
+        <div className="relative h-64 xl:h-full overflow-hidden">
           <img
             src={hotel.imageUrls[0]}
             className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-night-900/80 via-night-900/20 to-transparent" />
 
-          {/* Overlay Badges */}
-          <div className="absolute top-4 left-4 flex flex-col space-y-2">
-            <div className="bg-primary-600 text-white rounded-full px-3 py-1">
-              <span className="text-sm font-bold">£{hotel.pricePerNight}</span>
+          <div className="absolute top-4 left-4 flex flex-col gap-2 text-white">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/20">
+              {hotel.isFeatured ? "Spotlight" : "Collection"}
+            </span>
+            <div className="flex items-center gap-2 text-sm">
+              <AiFillStar className="text-yellow-300" />
+              <span>{hotel.starRating}.0 rating</span>
             </div>
-            {hotel.isFeatured && (
-              <div className="bg-yellow-500 text-white rounded-full px-3 py-1">
-                <span className="text-xs font-bold">Featured</span>
-              </div>
-            )}
           </div>
 
-          {/* Star Rating Badge */}
-          <div className="absolute top-4 right-4">
-            <div className="bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1">
-              <AiFillStar className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm font-semibold text-gray-800">
-                {hotel.starRating}
-              </span>
-            </div>
+          <div className="absolute bottom-4 left-4 text-white">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/60">
+              From
+            </p>
+            <p className="text-3xl font-semibold">
+              ${hotel.pricePerNight}
+              <span className="text-sm text-white/70"> / night</span>
+            </p>
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="p-6 flex flex-col justify-between h-auto xl:h-full overflow-hidden">
-          <div className="space-y-4 overflow-y-auto xl:flex-1">
-            {/* Header */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="flex">
-                    {Array.from({ length: hotel.starRating }).map((_, i) => (
-                      <AiFillStar key={i} className="w-4 h-4 text-yellow-400" />
-                    ))}
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {Array.isArray(hotel.type) ? (
-                      hotel.type.slice(0, 4).map((type) => (
-                        <Badge
-                          key={type}
-                          variant="default"
-                          className="text-xs px-2 py-1"
-                        >
-                          {type}
-                        </Badge>
-                      ))
-                    ) : (
-                      <Badge variant="default" className="text-xs px-2 py-1">
+        <div className="p-6 sm:p-8 flex flex-col gap-6 text-white">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1 text-accentGlow">
+                {Array.from({ length: hotel.starRating }).map((_, i) => (
+                  <AiFillStar key={i} className="w-4 h-4" />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                {Array.isArray(hotel.type)
+                  ? hotel.type.slice(0, 3).map((type) => (
+                      <Badge
+                        key={type}
+                        variant="outline"
+                        className="border-white/20 bg-white/5 text-white"
+                      >
+                        {type}
+                      </Badge>
+                    ))
+                  : (
+                      <Badge
+                        variant="outline"
+                        className="border-white/20 bg-white/5 text-white"
+                      >
                         {hotel.type}
                       </Badge>
                     )}
-                  </div>
-                </div>
-              </div>
-
-              <Link
-                to={`/detail/${hotel._id}`}
-                className="text-2xl font-bold text-gray-900 hover:text-primary-600 transition-colors cursor-pointer"
-              >
-                {hotel.name}
-              </Link>
-
-              <div className="flex items-center text-gray-600">
-                <MapPin className="w-4 h-4 mr-1" />
-                <span className="text-sm">
-                  {hotel.city}, {hotel.country}
-                </span>
               </div>
             </div>
 
-            {/* Description */}
-            <div className="text-gray-600 leading-relaxed line-clamp-3">
+            <Link
+              to={`/detail/${hotel._id}`}
+              className="text-3xl font-semibold font-display hover:text-brand-300 transition-colors"
+            >
+              {hotel.name}
+            </Link>
+
+            <div className="flex items-center text-white/70 text-sm">
+              <MapPin className="w-4 h-4 mr-2" />
+              {hotel.city}, {hotel.country}
+            </div>
+            <p className="text-white/70 leading-relaxed line-clamp-3">
               {hotel.description}
-            </div>
+            </p>
+          </div>
 
-            {/* Hotel Stats */}
-            <div className="flex items-center space-x-6 text-sm text-gray-600">
-              {hotel.totalBookings && (
-                <div className="flex items-center space-x-1">
-                  <Users className="w-4 h-4" />
-                  <span>{hotel.totalBookings} bookings</span>
-                </div>
-              )}
-              <div className="flex items-center space-x-1">
-                <AiFillStar className="w-4 h-4 text-yellow-400" />
-                <span>
-                  {hotel.averageRating && hotel.averageRating > 0
-                    ? `${hotel.averageRating.toFixed(1)} avg rating`
-                    : "No ratings yet"}
-                </span>
+          <div className="flex flex-wrap gap-6 text-sm text-white/70">
+            {hotel.totalBookings && (
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span>{hotel.totalBookings} hosted stays</span>
               </div>
+            )}
+            <div className="flex items-center gap-2">
+              <AiFillStar className="text-yellow-300" />
+              <span>
+                {hotel.averageRating && hotel.averageRating > 0
+                  ? `${hotel.averageRating.toFixed(1)} guest score`
+                  : "Awaiting first review"}
+              </span>
             </div>
           </div>
 
-          {/* Facilities */}
-          <div className="mt-6">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">
-              Key Amenities
+          <div>
+            <h4 className="text-xs uppercase tracking-[0.35em] text-white/50 mb-3">
+              Key amenities
             </h4>
             <div className="flex flex-wrap gap-2">
               {hotel.facilities.slice(0, 6).map((facility) => {
@@ -153,9 +144,9 @@ const SearchResultsCard = ({ hotel }: Props) => {
                   <Badge
                     key={facility}
                     variant="outline"
-                    className="flex items-center space-x-1.5 px-3 py-1.5 text-xs"
+                    className="flex items-center gap-2 border-white/15 bg-white/5 text-white/80 px-3 py-1.5"
                   >
-                    <IconComponent className="w-3 h-3 text-primary-600" />
+                    <IconComponent className="w-3.5 h-3.5 text-accentGlow" />
                     <span>{facility}</span>
                   </Badge>
                 );
@@ -163,13 +154,15 @@ const SearchResultsCard = ({ hotel }: Props) => {
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-white/10 pt-6">
+            <div className="text-sm text-white/70">
+              Instant confirmation • Secure checkout
+            </div>
             <Link
               to={`/detail/${hotel._id}`}
-              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 text-white py-3 px-6 rounded-xl font-semibold hover:from-primary-700 hover:to-primary-800 transform hover:scale-105 transition-all duration-200 text-center block"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 font-semibold shadow-glow hover:-translate-y-0.5 transition"
             >
-              View Details & Book
+              View details & book
             </Link>
           </div>
         </div>

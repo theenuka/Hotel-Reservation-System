@@ -1,13 +1,41 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAppContext from "../hooks/useAppContext";
 import useSearchContext from "../hooks/useSearchContext";
 import SignOutButton from "./SignOutButton";
-import { Building2, Calendar, LogIn } from "lucide-react";
+import { Calendar, LogIn } from "lucide-react";
+import BrandLogo from "./BrandLogo";
 
 const Header = () => {
   const { isLoggedIn } = useAppContext();
   const search = useSearchContext();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = (sectionId: string) => {
+    const attemptScroll = () => {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+
+    if (location.pathname !== "/") {
+      navigate("/", { state: { section: sectionId } });
+      return;
+    }
+
+    attemptScroll();
+  };
+
+  const navItems = [
+    { label: "Stays", type: "route" as const, href: "/search" },
+    { label: "Collections", type: "section" as const, target: "collections" },
+    { label: "Experiences", type: "section" as const, target: "experiences" },
+    { label: "Stories", type: "section" as const, target: "testimonials" },
+  ];
+
+  const hostCtaHref = isLoggedIn ? "/add-hotel" : "/register";
+  const hostCtaLabel = isLoggedIn ? "List your stay" : "Become a host";
 
   const handleLogoClick = () => {
     // Clear search context when going to home page
@@ -27,43 +55,30 @@ const Header = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
-            <button
-              onClick={handleLogoClick}
-              className="flex items-center space-x-3 group"
-            >
-              <div className="p-2 rounded-2xl bg-white/10 border border-white/10 group-hover:border-white/40 transition-colors">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-left">
-                <span className="text-lg uppercase tracking-[0.4em] text-white/60 block">
-                  Phoenix
-                </span>
-                <span className="text-2xl font-display leading-none text-white">
-                  Booking
-                </span>
-              </div>
-            </button>
+            <BrandLogo onClick={handleLogoClick} className="shrink-0" />
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-1 text-white/80">
-              <Link
-                className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
-                to="/search"
-              >
-                Discover
-              </Link>
-              <Link
-                className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
-                to="/api-docs"
-              >
-                API Docs
-              </Link>
-              <Link
-                className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
-                to="/api-status"
-              >
-                Status
-              </Link>
+              {navItems.map((item) =>
+                item.type === "route" ? (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => scrollToSection(item.target)}
+                    className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    {item.label}
+                  </button>
+                )
+              )}
               {isLoggedIn && (
                 <>
                   <Link
@@ -96,13 +111,21 @@ const Header = () => {
                   <SignOutButton />
                 </>
               ) : (
-                <Link
-                  to="/sign-in"
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-night-900 font-semibold shadow-glow hover:-translate-y-0.5 transition-transform"
-                >
-                  <LogIn className="w-4 h-4" />
-                  Sign In
-                </Link>
+                <>
+                  <Link
+                    to={hostCtaHref}
+                    className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 text-sm text-white/80 hover:border-white/60"
+                  >
+                    {hostCtaLabel}
+                  </Link>
+                  <Link
+                    to="/sign-in"
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-night-900 font-semibold shadow-glow hover:-translate-y-0.5 transition-transform"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Sign In
+                  </Link>
+                </>
               )}
             </div>
 

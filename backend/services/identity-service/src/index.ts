@@ -22,7 +22,8 @@ const REFRESH_TOKEN_TTL_DAYS = Number(process.env.REFRESH_TOKEN_TTL_DAYS || 30);
 const PASSWORD_RESET_TOKEN_TTL_MINUTES = Number(process.env.PASSWORD_RESET_TOKEN_TTL_MINUTES || 60);
 const VERIFICATION_CODE_TTL_MINUTES = Number(process.env.VERIFICATION_CODE_TTL_MINUTES || 15);
 const REQUIRE_VERIFIED_LOGIN = (process.env.REQUIRE_VERIFIED_EMAIL_FOR_LOGIN || "false") === "true";
-const allowRoleOverride = (process.env.ALLOW_ROLE_FROM_REGISTER || "false") === "true";
+const allowRoleOverride =
+  (process.env.ALLOW_ROLE_FROM_REGISTER ?? "true").toLowerCase() === "true";
 const INTERNAL_SERVICE_API_KEY = process.env.INTERNAL_SERVICE_API_KEY;
 
 if (!MONGO_URI) {
