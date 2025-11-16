@@ -133,29 +133,37 @@ const ImagesSection = () => {
   }, [totalImages, setError, clearErrors, validateImages]);
 
   return (
-    <div>
-      <h2 className="mb-3 text-2xl font-bold">Images</h2>
-      <div className="flex flex-col gap-6 p-6 border rounded-lg">
+    <section className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/5">
+      <div className="flex flex-col gap-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-indigo-400">
+          07 · Gallery
+        </p>
+        <h2 className="text-3xl font-semibold text-slate-900">Immersive visuals</h2>
+        <p className="text-base text-slate-500">
+          Upload up to 6 images. Drag-and-drop feel keeps your gallery curated and premium.
+        </p>
+      </div>
+      <div className="mt-8 flex flex-col gap-6 rounded-2xl border border-dashed border-slate-200/80 p-6">
         {/* Upload Area */}
-        <div className="p-8 text-center transition-colors border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-8 text-center transition-transform hover:scale-[1.01]">
           <div className="flex flex-col items-center gap-4">
-            <div className="p-3 rounded-full bg-blue-50">
-              <Upload className="w-8 h-8 text-blue-600" />
+            <div className="rounded-full bg-indigo-50/80 p-3">
+              <Upload className="h-8 w-8 text-indigo-600" />
             </div>
             <div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-700">
+              <h3 className="mb-2 text-lg font-semibold text-slate-900">
                 Upload Hotel Images
               </h3>
-              <p className="mb-4 text-gray-500">
+              <p className="mb-4 text-slate-500">
                 Select multiple images to upload. You can upload up to 6 images
                 total.
               </p>
               <Button
                 onClick={handleUploadClick}
                 variant="outline"
-                className="bg-white hover:bg-gray-50"
+                className="bg-white text-slate-900 hover:bg-slate-50"
               >
-                <ImageIcon className="w-4 h-4 mr-2" />
+                <ImageIcon className="mr-2 h-4 w-4" />
                 Choose Images
               </Button>
             </div>
@@ -174,11 +182,11 @@ const ImagesSection = () => {
         {imagePreviews.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-700">
+              <h3 className="text-lg font-semibold text-slate-900">
                 Selected Images ({totalImages}/6)
               </h3>
               {totalImages > 6 && (
-                <span className="text-sm font-medium text-red-500">
+                <span className="text-sm font-medium text-rose-500">
                   Maximum 6 images allowed
                 </span>
               )}
@@ -188,7 +196,7 @@ const ImagesSection = () => {
               {imagePreviews.map((image) => (
                 <div
                   key={image.id}
-                  className="relative overflow-hidden border rounded-lg group bg-gray-50"
+                  className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-slate-50"
                 >
                   <img
                     src={image.url}
@@ -205,7 +213,7 @@ const ImagesSection = () => {
                       size="sm"
                       className="transition-opacity duration-200 opacity-0 group-hover:opacity-100"
                     >
-                      <X className="w-4 h-4 text-white" />
+                      <X className="h-4 w-4 text-white" />
                     </Button>
                   </div>
                   <div className="p-2">
@@ -224,12 +232,12 @@ const ImagesSection = () => {
 
         {/* Error Message */}
         {errors.imageFiles && (
-          <div className="p-3 text-sm font-medium text-red-500 rounded-lg bg-red-50">
+          <div className="rounded-2xl bg-rose-50 p-3 text-sm font-medium text-rose-600">
             {errors.imageFiles.message}
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 

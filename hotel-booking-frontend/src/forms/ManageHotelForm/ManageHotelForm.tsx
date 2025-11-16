@@ -1,4 +1,5 @@
 import { FormProvider, useForm } from "react-hook-form";
+import { Building2, Camera, ClipboardList, Sparkles } from "lucide-react";
 import DetailsSection from "./DetailsSection";
 import TypeSection from "./TypeSection";
 import FacilitiesSection from "./FacilitiesSection";
@@ -56,7 +57,24 @@ type Props = {
 };
 
 const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
-  const formMethods = useForm<HotelFormData>();
+  const formMethods = useForm<HotelFormData>({
+    defaultValues: {
+      type: [],
+      facilities: [],
+      imageUrls: [],
+      adultCount: 1,
+      childCount: 0,
+      contact: { phone: "", email: "", website: "" },
+      policies: {
+        checkInTime: "",
+        checkOutTime: "",
+        cancellationPolicy: "",
+        petPolicy: "",
+        smokingPolicy: "",
+      },
+      isFeatured: false,
+    },
+  });
   const { handleSubmit, reset } = formMethods;
 
   useEffect(() => {
@@ -64,6 +82,9 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
       // Ensure contact and policies are properly initialized
       const formData = {
         ...hotel,
+        type: hotel.type || [],
+        facilities: hotel.facilities || [],
+        imageUrls: hotel.imageUrls || [],
         contact: hotel.contact || {
           phone: "",
           email: "",
@@ -133,11 +154,9 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
       );
     }
 
-    if (formDataJson.imageUrls) {
-      formDataJson.imageUrls.forEach((url, index) => {
-        formData.append(`imageUrls[${index}]`, url);
-      });
-    }
+    (formDataJson.imageUrls || []).forEach((url, index) => {
+      formData.append(`imageUrls[${index}]`, url);
+    });
 
     if (formDataJson.imageFiles && formDataJson.imageFiles.length > 0) {
       Array.from(formDataJson.imageFiles).forEach((imageFile) => {
@@ -150,7 +169,46 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
 
   return (
     <FormProvider {...formMethods}>
-      <form className="flex flex-col gap-10" onSubmit={onSubmit}>
+      <form className="space-y-12" onSubmit={onSubmit}>
+        <div className="grid gap-4 md:grid-cols-4">
+          {[
+            {
+              label: "Essentials",
+              description: "Identity, story & pricing",
+              icon: Building2,
+            },
+            {
+              label: "Experience",
+              description: "Types, facilities & capacity",
+              icon: Sparkles,
+            },
+            {
+              label: "Policies",
+              description: "Contact & stay rules",
+              icon: ClipboardList,
+            },
+            {
+              label: "Gallery",
+              description: "Upload hero visuals",
+              icon: Camera,
+            },
+          ].map(({ label, description, icon: Icon }) => (
+            <div
+              key={label}
+              className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                <Icon className="h-3.5 w-3.5 text-indigo-500" />
+                Step
+              </div>
+              <p className="mt-3 text-lg font-semibold text-slate-900">
+                {label}
+              </p>
+              <p className="text-sm text-slate-500">{description}</p>
+            </div>
+          ))}
+        </div>
+
         <DetailsSection />
         <TypeSection />
         <FacilitiesSection />
@@ -158,15 +216,19 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         <ContactSection />
         <PoliciesSection />
         <ImagesSection />
-        <span className="flex justify-end">
+
+        <div className="flex flex-col gap-3 border-t border-slate-100 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            You can edit this listing any time after publishing. Changes go live instantly.
+          </span>
           <button
             disabled={isLoading}
             type="submit"
-            className="bg-blue-600 text-white  px-6 py-2 rounded-lg font-semibold hover:bg-blue-500 text-xl disabled:bg-gray-500"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 px-8 py-3 text-lg font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-progress disabled:opacity-70"
           >
-            {isLoading ? "Saving..." : "Save"}
+            {isLoading ? "Saving your stay..." : "Publish stay"}
           </button>
-        </span>
+        </div>
       </form>
     </FormProvider>
   );
