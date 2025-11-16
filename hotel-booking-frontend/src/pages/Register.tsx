@@ -164,7 +164,8 @@ const Register = () => {
                     <p className="text-white mt-1 font-semibold">Activate perks</p>
                   </div>
                 </div>
-              <form className="space-y-6" onSubmit={onSubmit}>
+
+                <form className="space-y-6" onSubmit={onSubmit}>
                 <div className="flex items-start gap-3 p-4 rounded-2xl border border-white/15 bg-white/5 text-sm text-white/80">
                   <input
                     id="registerAsOwner"
@@ -368,9 +369,10 @@ const Register = () => {
                     </Link>
                   </p>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
 
           <p className="mt-6 text-center text-xs text-white/60">
             By creating an account, you agree to our{" "}

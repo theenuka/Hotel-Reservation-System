@@ -8,7 +8,8 @@ type BrandLogoProps = {
 };
 
 const BrandLogo = ({ onClick, className = "", showWordmark = true }: BrandLogoProps) => {
-  const gradientId = useId();
+  const dropletGradientId = useId();
+  const haloGradientId = useId();
 
   return (
     <button
@@ -21,7 +22,7 @@ const BrandLogo = ({ onClick, className = "", showWordmark = true }: BrandLogoPr
       )}
     >
       <div className="relative">
-        <div className="size-12 sm:size-14 rounded-3xl border border-white/20 bg-night-900/60 shadow-glow flex items-center justify-center">
+        <div className="size-12 sm:size-14 rounded-3xl border border-white/20 bg-night-900/70 shadow-[0_15px_40px_rgba(5,7,17,0.55)] flex items-center justify-center">
           <svg
             viewBox="0 0 64 64"
             className="w-9 h-9"
@@ -29,35 +30,42 @@ const BrandLogo = ({ onClick, className = "", showWordmark = true }: BrandLogoPr
             aria-hidden="true"
           >
             <defs>
-              <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FFB499" />
-                <stop offset="50%" stopColor="#FF8C5F" />
-                <stop offset="100%" stopColor="#4F82FF" />
+              <linearGradient id={dropletGradientId} x1="0%" y1="10%" x2="100%" y2="90%">
+                <stop offset="0%" stopColor="#FF9E6E" />
+                <stop offset="35%" stopColor="#FF6D86" />
+                <stop offset="70%" stopColor="#C266FF" />
+                <stop offset="100%" stopColor="#6C63FF" />
               </linearGradient>
+              <radialGradient id={haloGradientId} cx="50%" cy="35%" r="65%">
+                <stop offset="0%" stopColor="#FFF4EB" stopOpacity="0.9" />
+                <stop offset="55%" stopColor="#FDC6AF" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+              </radialGradient>
             </defs>
+            <circle cx="32" cy="32" r="28" fill={`url(#${haloGradientId})`} opacity="0.35" />
             <path
-              d="M32 8c-1.5 5.8-5.4 8.8-8.8 11.8-7 6-11.2 13.5-11.2 20.8C12 50 20.5 56 32 56s20-6 20-15.4c0-7.3-4.2-14.8-11.2-20.8C37.4 16.8 33.5 13.8 32 8z"
-              fill={`url(#${gradientId})`}
-              opacity="0.85"
+              d="M32 8c-6.5 8.8-13 17.8-13 27.2C19 46.2 24.7 56 32 56s13-9.8 13-20.8C45 25.8 38.5 16.8 32 8z"
+              fill={`url(#${dropletGradientId})`}
+              stroke="white"
+              strokeWidth="0.5"
+              strokeOpacity="0.4"
             />
             <path
-              d="M32 16c-0.9 3.4-3.5 5.1-5.7 6.9-4.5 3.8-7.3 8.5-7.3 13.1C19 42.7 24.4 46 32 46s13-3.3 13-10  -2.8-9.3-7.3-13.1C35.5 21.1 32.9 19.4 32 16z"
-              fill="none"
-              stroke="#fff"
-              strokeOpacity="0.5"
-              strokeWidth="1.5"
-              strokeLinecap="round"
+              d="M32 20c-3.5 4.6-7 9.1-7 13.7 0 5.5 3.2 9.7 7 9.7s7-4.3 7-9.7C39 29.1 35.5 24.6 32 20z"
+              fill="#fff"
+              opacity="0.25"
             />
             <path
-              d="M26 34c1.2 2.4 3.3 3.8 6 3.8s4.8-1.4 6-3.8"
+              d="M27 34c0.8 2.4 2.9 4 5 4s4.2-1.6 5-4"
               stroke="#fff"
-              strokeWidth="2"
+              strokeWidth="1.8"
               strokeLinecap="round"
               strokeOpacity="0.8"
             />
+            <circle cx="27.5" cy="25" r="3" fill="#fff" opacity="0.45" />
           </svg>
         </div>
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-accentGlow/40 to-brand-500/40 blur-2xl opacity-0 group-hover:opacity-100 transition" />
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#FF8F70]/60 via-[#F86EB6]/40 to-[#6C63FF]/45 blur-2xl opacity-0 group-hover:opacity-100 transition" />
       </div>
       {showWordmark && (
         <div className="text-left">

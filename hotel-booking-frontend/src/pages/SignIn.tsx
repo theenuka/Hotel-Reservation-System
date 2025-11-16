@@ -2,7 +2,17 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { LogIn, Mail, Lock, Eye, EyeOff, Sparkles, ShieldCheck, Compass } from "lucide-react";
+import {
+  LogIn,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Sparkles,
+  ShieldCheck,
+  Compass,
+  Plane,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -131,108 +141,110 @@ const SignIn = () => {
                     Sync lounge access & perks
                   </div>
                 </div>
-              <form className="space-y-6" onSubmit={onSubmit}>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className={authTheme.label}>
-                    Email Address
-                  </Label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-white/50" />
+
+                <form className="space-y-6" onSubmit={onSubmit}>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className={authTheme.label}>
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <Mail className="h-5 w-5 text-white/50" />
+                      </div>
+                      <Input
+                        id="email"
+                        type="email"
+                        className={`${authTheme.input} pl-10 pr-3`}
+                        placeholder="Enter your email"
+                        {...register("email", { required: "Email is required" })}
+                      />
                     </div>
-                    <Input
-                      id="email"
-                      type="email"
-                      className={`${authTheme.input} pl-10 pr-3`}
-                      placeholder="Enter your email"
-                      {...register("email", { required: "Email is required" })}
-                    />
+                    {errors.email && (
+                      <Badge variant="outline" className={authTheme.errorBadge}>
+                        <Sparkles className="w-4 h-4 mr-1" />
+                        {errors.email.message}
+                      </Badge>
+                    )}
                   </div>
-                  {errors.email && (
-                    <Badge variant="outline" className={authTheme.errorBadge}>
-                      <Sparkles className="w-4 h-4 mr-1" />
-                      {errors.email.message}
-                    </Badge>
-                  )}
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className={authTheme.label}>
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-white/50" />
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className={authTheme.label}>
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-white/50" />
+                      </div>
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        className={`${authTheme.input} pl-10 pr-12`}
+                        placeholder="Enter your password"
+                        {...register("password", {
+                          required: "Password is required",
+                          minLength: {
+                            value: 6,
+                            message: "Password must be at least 6 characters",
+                          },
+                        })}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute inset-y-0 right-0 pr-3 text-white/60"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </Button>
                     </div>
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      className={`${authTheme.input} pl-10 pr-12`}
-                      placeholder="Enter your password"
-                      {...register("password", {
-                        required: "Password is required",
-                        minLength: {
-                          value: 6,
-                          message: "Password must be at least 6 characters",
-                        },
-                      })}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute inset-y-0 right-0 pr-3 text-white/60"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
-                    </Button>
+                    {errors.password && (
+                      <Badge variant="outline" className={authTheme.errorBadge}>
+                        <Sparkles className="w-4 h-4 mr-1" />
+                        {errors.password.message}
+                      </Badge>
+                    )}
                   </div>
-                  {errors.password && (
-                    <Badge variant="outline" className={authTheme.errorBadge}>
-                      <Sparkles className="w-4 h-4 mr-1" />
-                      {errors.password.message}
-                    </Badge>
-                  )}
-                </div>
 
-                <Button
-                  type="submit"
-                  disabled={mutation.isLoading}
-                  className={authTheme.primaryButton}
-                >
-                  {mutation.isLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                      Signing in...
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <LogIn className="w-5 h-5 mr-2" />
-                      Sign In
-                    </div>
-                  )}
-                </Button>
+                  <Button
+                    type="submit"
+                    disabled={mutation.isLoading}
+                    className={authTheme.primaryButton}
+                  >
+                    {mutation.isLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+                        Signing in...
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <LogIn className="w-5 h-5 mr-2" />
+                        Sign In
+                      </div>
+                    )}
+                  </Button>
 
-                <div className="relative text-center">
-                  <Separator className={authTheme.separator} />
-                  <span className={authTheme.separatorLabel}>or</span>
-                </div>
+                  <div className="relative text-center">
+                    <Separator className={authTheme.separator} />
+                    <span className={authTheme.separatorLabel}>or</span>
+                  </div>
 
-                <div className="text-center">
-                  <p className="text-sm text-white/70">
-                    Don't have an account?{" "}
-                    <Link to="/register" className={authTheme.link}>
-                      Create one here
-                    </Link>
-                  </p>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                  <div className="text-center">
+                    <p className="text-sm text-white/70">
+                      Don't have an account?{" "}
+                      <Link to="/register" className={authTheme.link}>
+                        Create one here
+                      </Link>
+                    </p>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
 
           <p className="mt-6 text-center text-xs text-white/60">
             By signing in, you agree to our{" "}
