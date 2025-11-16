@@ -1,22 +1,24 @@
 import { Queue, Worker, JobsOptions } from "bullmq";
 import IORedis from "ioredis";
 import { deliverNotification } from "./deliver";
+import { notificationConfig } from "./config";
 import { NotificationJobPayload } from "./types";
-
-const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
-const queueName = process.env.NOTIFICATION_QUEUE_NAME || "notification-jobs";
-const queueMode = (process.env.NOTIFICATION_QUEUE_MODE || "queue").toLowerCase();
 
 let queue: Queue<NotificationJobPayload> | null = null;
 let workerStarted = false;
 
-if (queueMode !== "inline" && queueMode !== "off" && redisUrl !== "inline" && redisUrl !== "off") {
+if (
+  notificationConfig.queueMode !== "inline" &&
+  notificationConfig.queueMode !== "off" &&
+  notificationConfig.redisUrl !== "inline" &&
+  notificationConfig.redisUrl !== "off"
+) {
   try {
-    const connection = new IORedis(redisUrl);
-    queue = new Queue<NotificationJobPayload>(queueName, { connection });
+    const connection = new IORedis(notificationConfig.redisUrl);
+    queue = new Queue<NotificationJobPayload>(notificationConfig.queueName, { connection });
     const startWorkerInternal = () => {
       if (workerStarted) return;
-      const worker = new Worker<NotificationJobPayload>(queueName, async (job) => {
+      const worker = new Worker<NotificationJobPayload>(notificationConfig.queueName, async (job) => {
         await deliverNotification(job.data);
       }, { connection });
       worker.on("failed", (job, err) => {

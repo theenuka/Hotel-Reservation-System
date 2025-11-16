@@ -16,6 +16,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || "http://localhost:7101";
+const NOTIFICATION_SERVICE_KEY = process.env.NOTIFICATION_SERVICE_KEY || process.env.INTERNAL_SERVICE_API_KEY;
 const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL || "http://localhost:7102";
 const INTERNAL_SERVICE_API_KEY = process.env.INTERNAL_SERVICE_API_KEY;
 const LOYALTY_POINTS_PER_CURRENCY = Number(process.env.LOYALTY_POINTS_PER_CURRENCY || "0.1");
@@ -67,13 +68,17 @@ const sendNotification = async (payload: {
   subject?: string;
   message?: string;
   metadata?: Record<string, unknown>;
+  channel?: string;
 }) => {
   if (!payload?.to) return;
   try {
     await fetch(`${NOTIFICATION_SERVICE_URL}/notify`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json",
+        ...(NOTIFICATION_SERVICE_KEY ? { "x-service-key": NOTIFICATION_SERVICE_KEY } : {}),
+      },
+      body: JSON.stringify({ channel: payload.channel || "email", ...payload }),
     });
   } catch (err) {
     console.warn("Notification failed", err);
@@ -138,7 +143,12 @@ const notifyWaitlistAvailability = async (hotelId: string, checkIn: Date, checkO
         to: entry.email,
         subject: "Availability opened up",
         message: `Good news! ${entry.checkIn.toDateString()} - ${entry.checkOut.toDateString()} is available again.`,
-        metadata: { hotelId, waitlistId: entry._id },
+        metadata: {
+          hotelId,
+          waitlistId: entry._id,
+          checkIn: entry.checkIn?.toISOString?.() || entry.checkIn,
+          checkOut: entry.checkOut?.toISOString?.() || entry.checkOut,
+        },
       });
       entry.status = "notified";
       entry.notifiedAt = new Date();
@@ -481,7 +491,13 @@ app.post("/hotels/:hotelId/bookings", attachUser, async (req: Request & { userId
     to: newBooking.email,
     subject: "Booking Confirmation",
     message: `Hi ${newBooking.firstName}, your booking is confirmed.`,
-    metadata: { bookingId: booking._id, hotelId: newBooking.hotelId },
+    metadata: {
+      bookingId: booking._id,
+      hotelId: newBooking.hotelId,
+      checkIn: booking.checkIn?.toISOString?.() || booking.checkIn,
+      checkOut: booking.checkOut?.toISOString?.() || booking.checkOut,
+      totalCost: booking.totalCost,
+    },
   });
 
   res.status(201).json({ bookingId: booking._id, booking });
@@ -516,7 +532,13 @@ app.patch("/bookings/:bookingId", attachUser, async (req: Request & { userId?: s
     to: booking.email,
     subject: "Booking Updated",
     message: `Your booking has been updated. New dates: ${booking.checkIn.toDateString()} - ${booking.checkOut.toDateString()}`,
-    metadata: { bookingId: booking._id },
+    metadata: {
+      bookingId: booking._id,
+      hotelId: booking.hotelId,
+      checkIn: booking.checkIn?.toISOString?.() || booking.checkIn,
+      checkOut: booking.checkOut?.toISOString?.() || booking.checkOut,
+      status: booking.status,
+    },
   });
   if (previousStatus !== "cancelled" && booking.status === "cancelled") {
     await notifyWaitlistAvailability(booking.hotelId, booking.checkIn, booking.checkOut);
@@ -567,7 +589,13 @@ app.post("/bookings/:bookingId/cancel", attachUser, async (req: Request & { user
     to: booking.email,
     subject: "Booking Cancelled",
     message: "Your booking has been cancelled.",
-    metadata: { bookingId: booking._id },
+    metadata: {
+      bookingId: booking._id,
+      hotelId: booking.hotelId,
+      checkIn: booking.checkIn?.toISOString?.() || booking.checkIn,
+      checkOut: booking.checkOut?.toISOString?.() || booking.checkOut,
+      status: booking.status,
+    },
   });
   await notifyWaitlistAvailability(booking.hotelId, booking.checkIn, booking.checkOut);
   res.json({ success: true });
@@ -585,7 +613,12 @@ app.post("/hotels/:hotelId/waitlist", attachUser, async (req: Request & { userId
     to: email,
     subject: "Added to Waitlist",
     message: "You're on the waitlist. We'll notify you if dates open up.",
-    metadata: { hotelId: req.params.hotelId, checkIn: ci, checkOut: co },
+    metadata: {
+      hotelId: req.params.hotelId,
+      waitlistId: entry._id,
+      checkIn: ci.toISOString(),
+      checkOut: co.toISOString(),
+    },
   });
   res.status(201).json(entry);
 });

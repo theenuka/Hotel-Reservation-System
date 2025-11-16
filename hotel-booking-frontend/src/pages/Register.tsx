@@ -34,6 +34,7 @@ export type RegisterFormData = {
   email: string;
   password: string;
   confirmPassword: string;
+  role?: "user" | "hotel_owner";
 };
 
 const Register = () => {
@@ -42,7 +43,6 @@ const Register = () => {
   const { showToast } = useAppContext();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [registerAsOwner, setRegisterAsOwner] = useState(false);
 
   const {
@@ -73,18 +73,11 @@ const Register = () => {
   });
 
   const onSubmit = handleSubmit((data) => {
-    setIsLoading(true);
-    const action = !import.meta.env.PROD && registerAsOwner ? apiClient.registerOwner : apiClient.register;
-    // use the same mutation machinery but call the selected action
-    // We don't change the mutation instance for simplicity
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    mutation.mutateAsync
-      ? // if our hook exposes mutateAsync, prefer it to await
-        (action as any)(data).then(() => mutation.options.onSuccess?.(undefined as any)).catch((e: any) => mutation.options.onError?.(e)).finally(() => setIsLoading(false))
-      : mutation.mutate(action === apiClient.register ? data : (data as any), {
-      onSettled: () => setIsLoading(false),
-      });
+    const payload: RegisterFormData =
+      !import.meta.env.PROD && registerAsOwner
+        ? { ...data, role: "hotel_owner" }
+        : data;
+    mutation.mutate(payload);
   });
 
   const password = watch("password");
@@ -368,10 +361,10 @@ const Register = () => {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={mutation.isLoading}
                 className="w-full py-3 px-4 rounded-md text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
-                {isLoading ? (
+                {mutation.isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                     Creating account...

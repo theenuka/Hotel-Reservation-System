@@ -47,21 +47,26 @@ type SanitizableUser = Pick<IUser, "_id" | "email" | "firstName" | "lastName" | 
 const millis = (days: number) => days * 24 * 60 * 60 * 1000;
 const minutesToMillis = (minutes: number) => minutes * 60 * 1000;
 
-const sendEmail = async (to: string, subject: string, body: string) => {
-  const notificationServiceUrl = process.env.NOTIFICATION_SERVICE_URL;
-  if (notificationServiceUrl) {
+const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL;
+const NOTIFICATION_SERVICE_KEY = process.env.NOTIFICATION_SERVICE_KEY || process.env.INTERNAL_SERVICE_API_KEY;
+
+const sendEmail = async (payload: { to: string; subject: string; message: string; type?: string; metadata?: Record<string, unknown> }) => {
+  if (NOTIFICATION_SERVICE_URL) {
     try {
-      await fetch(`${notificationServiceUrl}/notify`, {
+      await fetch(`${NOTIFICATION_SERVICE_URL}/notify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "email", to, subject, message: body }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(NOTIFICATION_SERVICE_KEY ? { "x-service-key": NOTIFICATION_SERVICE_KEY } : {}),
+        },
+        body: JSON.stringify({ channel: "email", ...payload }),
       });
       return;
     } catch (err) {
       console.warn("notification-service-email-fallback", err);
     }
   }
-  console.log(`[email] to=${to} subject="${subject}" body=${body}`);
+  console.log(`[email] to=${payload.to} subject="${payload.subject}" body=${payload.message}`);
 };
 
 const sanitizeUser = (user: SanitizableUser) => ({
@@ -152,7 +157,13 @@ app.post(["/auth/register", "/users/register"], async (req: Request, res: Respon
     verificationCode,
     verificationCodeExpiresAt: new Date(Date.now() + minutesToMillis(VERIFICATION_CODE_TTL_MINUTES)),
   });
-  await sendEmail(email, "Verify your account", `Your verification code is ${verificationCode}`);
+  await sendEmail({
+    to: email,
+    subject: "Verify your account",
+    message: `Your verification code is ${verificationCode}`,
+    type: "verification_code",
+    metadata: { email, verificationCode },
+  });
   const tokens = await issueTokens(user);
   res.json({
     ...attachTokens(user, tokens),
@@ -210,7 +221,13 @@ app.post("/auth/request-verification", async (req: Request, res: Response) => {
   user.verificationCode = generateVerificationCode();
   user.verificationCodeExpiresAt = new Date(Date.now() + minutesToMillis(VERIFICATION_CODE_TTL_MINUTES));
   await user.save();
-  await sendEmail(email, "Verify your account", `Your verification code is ${user.verificationCode}`);
+  await sendEmail({
+    to: email,
+    subject: "Verify your account",
+    message: `Your verification code is ${user.verificationCode}`,
+    type: "verification_code",
+    metadata: { email, verificationCode: user.verificationCode },
+  });
   res.json({ message: "verification code sent" });
 });
 
@@ -243,7 +260,13 @@ app.post("/auth/request-password-reset", async (req: Request, res: Response) => 
     tokenHash: hashToken(token),
     expiresAt: new Date(Date.now() + minutesToMillis(PASSWORD_RESET_TOKEN_TTL_MINUTES)),
   });
-  await sendEmail(email, "Password reset", `Use this token to reset your password: ${token}`);
+  await sendEmail({
+    to: email,
+    subject: "Password reset",
+    message: `Use this token to reset your password: ${token}`,
+    type: "password_reset",
+    metadata: { email, token },
+  });
   res.json({ message: "If the account exists, a reset email was sent." });
 });
 
