@@ -88,6 +88,21 @@ const Register = () => {
     mutation.mutate(payload);
   });
 
+  const hostBoosters = [
+    {
+      title: "Profile ready",
+      description: "Add story-driven copy, amenities, and concierge rules in one flow.",
+    },
+    {
+      title: "Editorial imagery",
+      description: "Upload 6+ hero shots, we auto-balance contrast + compress for mobile.",
+    },
+    {
+      title: "Payout sync",
+      description: "Connect Stripe once, manage deposits + holds from the Host Hub.",
+    },
+  ];
+
   return (
     <div className={authTheme.pageBackground}>
       <div className="pointer-events-none absolute inset-0">
@@ -97,30 +112,24 @@ const Register = () => {
       </div>
 
       <div className="relative max-w-6xl mx-auto grid gap-10 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] items-center">
-        <div className="hidden lg:flex glass-panel rounded-[32px] p-10 border border-white/10 flex-col gap-6 text-white/85 bg-white/5 backdrop-blur-2xl">
-          <p className="text-sm uppercase tracking-[0.4em] text-white/60">Host Collective</p>
+        <div className="hidden lg:flex glass-panel rounded-[32px] p-10 border border-white/15 flex-col gap-6 text-white/85 bg-white/5 backdrop-blur-3xl">
+          <p className="text-xs uppercase tracking-[0.6em] text-white/50">Host Collective</p>
           <h2 className="text-4xl font-display leading-tight">
-            Claim your host profile and share spaces guests obsess over
+            Share architectural stays, wellness retreats, or favorite lofts with a global waitlist
           </h2>
-          <p className="text-white/80">
-            Whether you manage a mountainside ryokan or an architectural loft, Phoenix Booking gives you concierge tools, loyalty perks, and international reach.
+          <p className="text-white/75">
+            Phoenix Booking pairs boutique hosts with the right guests, handles concierge chat, and keeps payouts aligned across time zones.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-white/60">What you get</p>
-              <ul className="mt-2 space-y-2 text-sm text-white/80">
-                <li className="flex items-center gap-2"><span className="size-2 rounded-full bg-accentGlow" />Curated guest matching</li>
-                <li className="flex items-center gap-2"><span className="size-2 rounded-full bg-brand-300" />Integrated waitlists & perks</li>
-                <li className="flex items-center gap-2"><span className="size-2 rounded-full bg-white/80" />Real-time concierge chat</li>
-              </ul>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/50">Avg. occupancy</p>
+              <p className="text-3xl font-semibold mt-1">89%</p>
+              <p className="text-xs text-white/60">For hosts who complete onboarding</p>
             </div>
-            <div>
-              <p className="text-sm text-white/60">Launch checklist</p>
-              <ul className="mt-2 space-y-2 text-sm text-white/75">
-                <li>Upload at least 6 editorial photos</li>
-                <li>Set availability windows up to 18 months</li>
-                <li>Optional: connect Stripe payouts</li>
-              </ul>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/50">Launch time</p>
+              <p className="text-3xl font-semibold mt-1">48 hrs</p>
+              <p className="text-xs text-white/60">Average listing approval window</p>
             </div>
           </div>
         </div>
@@ -135,6 +144,9 @@ const Register = () => {
                 </div>
                 <CardTitle className="text-3xl font-semibold text-white mt-4">
                   Join Phoenix Booking
+                  <span className="block text-base font-normal text-white/60 mt-2">
+                    Build your traveler profile or open the Host Hub in minutes.
+                  </span>
                 </CardTitle>
                 <CardDescription className="text-white/70 text-base">
                   Create your profile, unlock curated bookings, or launch a boutique stay.
@@ -151,18 +163,13 @@ const Register = () => {
 
               <CardContent className="space-y-7 pt-0">
                 <div className="grid gap-3 text-sm text-white/75 sm:grid-cols-3">
-                  <div className="p-3 rounded-2xl border border-white/10 bg-white/5">
-                    <p className="text-xs tracking-[0.3em] uppercase text-white/40">Step 01</p>
-                    <p className="text-white mt-1 font-semibold">Create profile</p>
-                  </div>
-                  <div className="p-3 rounded-2xl border border-white/10 bg-white/5">
-                    <p className="text-xs tracking-[0.3em] uppercase text-white/40">Step 02</p>
-                    <p className="text-white mt-1 font-semibold">Upload listings</p>
-                  </div>
-                  <div className="p-3 rounded-2xl border border-white/10 bg-white/5">
-                    <p className="text-xs tracking-[0.3em] uppercase text-white/40">Step 03</p>
-                    <p className="text-white mt-1 font-semibold">Activate perks</p>
-                  </div>
+                  {hostBoosters.map((card, idx) => (
+                    <div key={card.title} className="p-3 rounded-2xl border border-white/10 bg-white/5">
+                      <p className="text-xs tracking-[0.3em] uppercase text-white/45">Step 0{idx + 1}</p>
+                      <p className="text-white mt-1 font-semibold">{card.title}</p>
+                      <p className="text-white/70 text-xs mt-1 leading-snug">{card.description}</p>
+                    </div>
+                  ))}
                 </div>
 
                 <form className="space-y-6" onSubmit={onSubmit}>

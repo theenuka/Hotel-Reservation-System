@@ -369,15 +369,45 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   ];
 
   const baseLabel =
-    "flex items-center gap-2 text-[0.7rem] font-semibold tracking-[0.35em] uppercase text-slate-500";
+    "flex items-center gap-2 text-[0.65rem] font-semibold tracking-[0.3em] uppercase text-white/60";
   const baseField =
-    "w-full h-[54px] rounded-2xl border border-slate-200/70 bg-white/95 text-night-900 placeholder:text-slate-400 shadow-[0_15px_30px_rgba(15,23,42,0.08)] focus:ring-2 focus:ring-brand-400 focus:border-transparent transition";
+    "w-full h-[58px] rounded-2xl border border-white/15 bg-white/5 text-white placeholder:text-white/45 shadow-[0_18px_45px_rgba(2,4,12,0.55)] focus:ring-2 focus:ring-[#F86EB6]/45 focus:border-transparent transition";
+  const heroStats = [
+    { label: "Boutique stays", value: "240+" },
+    { label: "Instant holds", value: "92" },
+    { label: "Cities", value: "31" },
+  ];
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-white via-white to-brand-50/70 text-night-900 rounded-[32px] shadow-[0_35px_90px_rgba(8,26,54,0.18)] p-6 sm:p-8 max-w-6xl mx-auto border border-white/70">
-      <div className="pointer-events-none absolute -top-10 -right-10 w-48 h-48 bg-gradient-to-br from-brand-200 to-accentGlow/40 blur-3xl opacity-50" />
-      <div className="pointer-events-none absolute -bottom-12 -left-6 w-40 h-40 bg-gradient-to-t from-brand-100 to-accentGlow/30 blur-3xl opacity-60" />
-      <div className="relative">
+    <div className="relative overflow-hidden rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(255,158,112,0.2),transparent_55%),_radial-gradient(circle_at_bottom,_rgba(108,99,255,0.25),transparent_60%),_linear-gradient(135deg,#050712,#0B1226)] text-white p-6 sm:p-8 max-w-6xl mx-auto border border-white/10 shadow-[0_45px_120px_rgba(3,7,18,0.65)]">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-14 -right-6 w-56 h-56 bg-gradient-to-br from-[#FF8F70]/35 via-[#F86EB6]/20 to-transparent blur-3xl" />
+        <div className="absolute -bottom-20 -left-10 w-64 h-64 bg-gradient-to-tr from-[#6C63FF]/35 via-transparent to-transparent blur-[140px]" />
+      </div>
+      <div className="relative space-y-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-[0.6rem] uppercase tracking-[0.55em] text-white/45">
+              Phoenix Atlas
+            </p>
+            <h3 className="text-3xl sm:text-4xl font-display leading-tight">
+              Search curated stays across the globe
+            </h3>
+            <p className="text-white/70 mt-2 text-base max-w-xl">
+              Dial in destinations, flexible dates, and all the finishing touches—then launch into search with one expressive action.
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-sm text-white/70">
+            {heroStats.map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-center">
+                <p className="text-2xl font-semibold text-white">{stat.value}</p>
+                <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/50 mt-1">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       {/* Basic Search */}
       <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {/* Destination */}
@@ -386,7 +416,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             htmlFor={inputIds.destination}
             className={baseLabel}
           >
-            <MapPin className="w-4 h-4 text-brand-500" />
+            <MapPin className="w-4 h-4 text-[#FFB094]" />
             Destination
           </label>
           <div className="relative">
@@ -400,7 +430,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               onFocus={() => setShowDropdown(filteredPlaces.length > 0)}
               onBlur={() => setShowDropdown(false)}
             />
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
             {showDropdown && (
               <ul className="absolute left-0 z-10 w-full overflow-y-auto bg-white/95 border border-slate-200 rounded-2xl shadow-[0_25px_60px_rgba(15,23,42,0.15)] top-full max-h-48">
                 {filteredPlaces.map((place) => (
@@ -426,7 +456,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             htmlFor={inputIds.checkIn}
             className={baseLabel}
           >
-            <Calendar className="w-4 h-4 text-brand-500" />
+            <Calendar className="w-4 h-4 text-[#FFB094]" />
             Check-in
           </label>
           <div className="relative">
@@ -439,7 +469,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 handleInputChange("checkIn", new Date(e.target.value))
               }
             />
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
           </div>
         </div>
 
@@ -449,7 +479,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             htmlFor={inputIds.checkOut}
             className={baseLabel}
           >
-            <Calendar className="w-4 h-4 text-brand-500" />
+            <Calendar className="w-4 h-4 text-[#FFB094]" />
             Check-out
           </label>
           <div className="relative">
@@ -462,7 +492,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 handleInputChange("checkOut", new Date(e.target.value))
               }
             />
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
           </div>
         </div>
 
@@ -472,7 +502,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             htmlFor={inputIds.guests}
             className={baseLabel}
           >
-            <Users className="w-4 h-4 text-brand-500" />
+            <Users className="w-4 h-4 text-[#FFB094]" />
             Guests
           </label>
           <div className="relative">
@@ -494,7 +524,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               <option value="3 adults, 0 children">3 adults</option>
               <option value="4 adults, 0 children">4 adults</option>
             </select>
-            <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
           </div>
         </div>
       </div>

@@ -120,7 +120,7 @@ const Header = () => {
                   </Link>
                   <Link
                     to="/sign-in"
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-night-900 font-semibold shadow-glow hover:-translate-y-0.5 transition-transform"
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#FF8F70] via-[#F86EB6] to-[#6C63FF] text-white font-semibold shadow-[0_15px_35px_rgba(6,10,30,0.55)] hover:-translate-y-0.5 transition-transform"
                   >
                     <LogIn className="w-4 h-4" />
                     Sign In

@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Compass,
   Plane,
+  Headphones,
 } from "lucide-react";
 import {
   Card,
@@ -69,6 +70,24 @@ const SignIn = () => {
 
   const onSubmit = handleSubmit((data) => mutation.mutate(data));
 
+  const assuranceCards = [
+    {
+      title: "Journey sync",
+      description: "Saved itineraries + loyalty IDs stay in lockstep across every device.",
+      icon: Compass,
+    },
+    {
+      title: "Member lounges",
+      description: "Priority check-in and late checkout windows auto-apply on arrival.",
+      icon: Plane,
+    },
+    {
+      title: "Concierge thread",
+      description: "Chat with curators 24/7 for upgrades, drivers, or wellness holds.",
+      icon: Headphones,
+    },
+  ];
+
   return (
     <div className={authTheme.pageBackground}>
       <div className="pointer-events-none absolute inset-0">
@@ -79,30 +98,28 @@ const SignIn = () => {
 
       <div className="relative max-w-6xl mx-auto grid gap-10 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] items-center">
         <div className="hidden lg:flex flex-col gap-6 text-white/90">
-          <div className="glass-panel rounded-[32px] p-8 border border-white/10 bg-white/5 backdrop-blur-2xl">
-            <p className="text-sm uppercase tracking-[0.4em] text-white/60 mb-4">
-              Phoenix Circle
+          <div className="glass-panel rounded-[32px] p-8 border border-white/15 bg-white/5 backdrop-blur-3xl">
+            <p className="text-xs uppercase tracking-[0.6em] text-white/50 mb-3">
+              Members Lounge
             </p>
             <h2 className="text-4xl font-display leading-tight">
-              Unlock itineraries curated for the way you travel
+              Sign in once, keep every stay, tasting, and spa hold in sync
             </h2>
-            <p className="text-white/80 mt-4 text-lg">
-              Keep every stay, tasting, and wellness ritual synced across your profile. Priority upgrades and loyalty perks activate the moment you sign in.
+            <p className="text-white/75 mt-4 text-base">
+              Your Phoenix ID keeps private chauffeurs, curated residences, and concierge chats threaded together. Return guests see upgrades unlocked automatically.
             </p>
-            <ul className="mt-6 space-y-3 text-white/80 text-sm">
-              <li className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-accentGlow" />
-                Sync reservations across devices and guests
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-brand-400" />
-                Access member-only residences & lounges
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-white/80" />
-                Chat with concierges directly from your itinerary
-              </li>
-            </ul>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/50">Guest score</p>
+                <p className="text-3xl font-semibold mt-1">4.8/5</p>
+                <p className="text-xs text-white/60">Avg. service rating once signed in</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/50">Instant perks</p>
+                <p className="text-3xl font-semibold mt-1">+16</p>
+                <p className="text-xs text-white/60">Exclusive lounges + curated stays</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -111,11 +128,14 @@ const SignIn = () => {
             <Card className={`${authTheme.card} border-white/5`}>
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-400 via-brand-500 to-accentGlow" />
               <CardHeader className="text-center pb-8">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/30">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FF8F70] via-[#F86EB6] to-[#6C63FF] flex items-center justify-center shadow-lg shadow-[#1b1039]/60">
                   <LogIn className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="text-3xl font-semibold text-white mt-4">
                   Welcome Back
+                  <span className="block text-base font-normal text-white/60 mt-2">
+                    Continue curating your journeys in two taps.
+                  </span>
                 </CardTitle>
                 <CardDescription className="text-white/70 text-base">
                   Unlock your saved itineraries, member lounges, and curated alerts.
@@ -131,15 +151,19 @@ const SignIn = () => {
               </CardHeader>
 
               <CardContent className="space-y-7 pt-0">
-                <div className="grid gap-3 text-sm text-white/70 sm:grid-cols-2">
-                  <div className="flex items-center gap-3 p-3 rounded-2xl border border-white/10 bg-white/5">
-                    <Compass className="w-4 h-4 text-brand-200" />
-                    Track bespoke journeys
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-2xl border border-white/10 bg-white/5">
-                    <Plane className="w-4 h-4 text-brand-200" />
-                    Sync lounge access & perks
-                  </div>
+                <div className="grid gap-3 text-sm text-white/75 sm:grid-cols-3">
+                  {assuranceCards.map(({ title, description, icon: Icon }) => (
+                    <div
+                      key={title}
+                      className="p-3 rounded-2xl border border-white/10 bg-white/5 h-full"
+                    >
+                      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white/50">
+                        <Icon className="w-4 h-4 text-white/80" />
+                        {title}
+                      </div>
+                      <p className="text-white mt-2 text-sm leading-snug">{description}</p>
+                    </div>
+                  ))}
                 </div>
 
                 <form className="space-y-6" onSubmit={onSubmit}>
@@ -233,13 +257,16 @@ const SignIn = () => {
                     <span className={authTheme.separatorLabel}>or</span>
                   </div>
 
-                  <div className="text-center">
+                  <div className="text-center space-y-2">
                     <p className="text-sm text-white/70">
                       Don't have an account?{" "}
                       <Link to="/register" className={authTheme.link}>
                         Create one here
                       </Link>
                     </p>
+                    <Link to="/" className="text-xs text-white/50 hover:text-white">
+                      Return to search
+                    </Link>
                   </div>
                 </form>
               </CardContent>
