@@ -4,6 +4,7 @@ import { Compass, Crown, Globe2, LampWallDown, Sparkles, Wifi } from "lucide-rea
 import * as apiClient from "../api-client";
 import LatestDestinationCard from "../components/LastestDestinationCard";
 import Hero from "../components/Hero";
+import MemberSpotlightCard from "../components/MemberSpotlightCard";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const curatedCollections = [
@@ -105,6 +106,39 @@ const Home = () => {
   return (
     <div className="text-white bg-night-900">
       <Hero onSearch={handleSearch} />
+
+      {/* Member Spotlight */}
+      <section className="px-4 py-12 mx-auto max-w-6xl sm:px-6 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,_1.2fr)_minmax(0,_0.8fr)] items-center">
+          <MemberSpotlightCard />
+          <div className="space-y-4">
+            <p className="text-xs uppercase tracking-[0.35em] text-accentGlow">Member spotlight</p>
+            <h2 className="text-3xl font-display">A rotating peek inside the club</h2>
+            <p className="text-white/75">
+              Each week we surface a stay from our host collective that nails the Phoenix vibe—design-forward, story rich,
+              and blissfully attentive. Tap through to learn why Maison Cyan earned this week’s feature.
+            </p>
+            <ul className="space-y-3 text-sm text-white/70">
+              <li className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-accentGlow" />
+                Hand-graded ambiance, culinary, and wellness markers.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-brand-300" />
+                Guaranteed perks such as guided rituals or chef tables.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-white/60" />
+                Instant booking access for loyalty tiers Aurora+ and above.
+              </li>
+            </ul>
+            <button className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2 text-sm text-white/80 hover:border-white/40">
+              <Sparkles className="w-4 h-4" />
+              View membership perks
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Marquee */}
       <div className="overflow-hidden border-y border-white/5 bg-night-800/60">

@@ -28,6 +28,7 @@ const Header = () => {
   };
 
   const navItems = [
+    { label: "Home", type: "route" as const, href: "/" },
     { label: "Stays", type: "route" as const, href: "/search" },
     { label: "Collections", type: "section" as const, target: "collections" },
     { label: "Experiences", type: "section" as const, target: "experiences" },

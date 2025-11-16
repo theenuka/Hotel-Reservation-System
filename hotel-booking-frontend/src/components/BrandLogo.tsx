@@ -88,7 +88,7 @@ const BrandLogo = ({
       </div>
       {showWordmark && (
         <div className="text-left">
-          <span className="text-[10px] uppercase tracking-[0.55em] text-white/45 block">
+          <span className="text-[10px] uppercase tracking-[0.55em] text-white block">
             Phoenix
           </span>
           <span className="text-2xl font-display leading-none text-white block">
