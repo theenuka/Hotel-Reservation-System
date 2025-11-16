@@ -83,10 +83,10 @@ const SignOutButton = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center bg-white text-primary-600 px-6 py-2 rounded-lg font-semibold hover:bg-primary-50 hover:shadow-medium transition-all duration-200 group">
-          <LogOut className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+        <button className="flex items-center gap-2 px-5 py-2 rounded-full border border-white/20 text-white hover:border-white/60 transition-colors">
+          <LogOut className="w-4 h-4" />
           Sign Out
-          <ChevronDown className="w-4 h-4 ml-1 group-hover:scale-110 transition-transform" />
+          <ChevronDown className="w-4 h-4" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-white" align="end">

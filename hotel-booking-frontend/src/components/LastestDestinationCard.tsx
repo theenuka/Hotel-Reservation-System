@@ -11,19 +11,17 @@ const LatestDestinationCard = ({ hotel }: Props) => {
   return (
     <Link
       to={`/detail/${hotel._id}`}
-      className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-soft transition-all duration-300 hover:shadow-large hover:scale-105 bg-white flex flex-col w-full h-[350px] border border-gray-10"
-      style={{ minWidth: 320, maxWidth: 500 }}
+      className="group relative cursor-pointer overflow-hidden rounded-[28px] border border-white/10 bg-night-800/60 flex flex-col min-h-[340px]"
     >
-      <div className="w-full h-full relative">
+      <div className="w-full h-full relative min-h-[340px]">
         <img
           src={hotel.imageUrls?.[0] || "/vite.svg"}
           alt={hotel.name}
-          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
-          style={{ minHeight: 350, maxHeight: 350 }}
+          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
         />
 
         {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-night-900 via-night-900/20 to-transparent" />
 
         {/* Hotel Stats Badge */}
         <div className="absolute top-4 right-4">
@@ -45,7 +43,7 @@ const LatestDestinationCard = ({ hotel }: Props) => {
 
       <div className="absolute bottom-0 p-6 w-full">
         <div className="space-y-2">
-          <h3 className="text-white font-bold text-2xl tracking-tight group-hover:text-primary-200 transition-colors">
+          <h3 className="text-white font-semibold text-2xl tracking-tight group-hover:text-brand-200 transition-colors">
             {hotel.name}
           </h3>
 

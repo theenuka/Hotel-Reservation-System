@@ -2,14 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import useAppContext from "../hooks/useAppContext";
 import useSearchContext from "../hooks/useSearchContext";
 import SignOutButton from "./SignOutButton";
-import {
-  FileText,
-  Activity,
-  BarChart3,
-  Building2,
-  Calendar,
-  LogIn,
-} from "lucide-react";
+import { Building2, Calendar, LogIn } from "lucide-react";
 
 const Header = () => {
   const { isLoggedIn } = useAppContext();
@@ -30,85 +23,92 @@ const Header = () => {
           🚧 Development Mode - Auth state persists between sessions
         </div>
       )} */}
-      <header className="bg-gradient-to-r from-primary-600 to-primary-700 shadow-large sticky top-0 z-50">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 bg-night-900/85 backdrop-blur-xl border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
             <button
               onClick={handleLogoClick}
-              className="flex items-center space-x-2 group"
+              className="flex items-center space-x-3 group"
             >
-              <div className="bg-white p-2 rounded-lg shadow-soft group-hover:shadow-medium transition-all duration-300">
-                <Building2 className="w-6 h-6 text-primary-600" />
+              <div className="p-2 rounded-2xl bg-white/10 border border-white/10 group-hover:border-white/40 transition-colors">
+                <Building2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-white tracking-tight group-hover:text-primary-100 transition-colors">
-                Phoenix Booking
-              </span>
+              <div className="text-left">
+                <span className="text-lg uppercase tracking-[0.4em] text-white/60 block">
+                  Phoenix
+                </span>
+                <span className="text-2xl font-display leading-none text-white">
+                  Booking
+                </span>
+              </div>
             </button>
 
             {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
-              {isLoggedIn ? (
+            <nav className="hidden md:flex items-center space-x-1 text-white/80">
+              <Link
+                className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                to="/search"
+              >
+                Discover
+              </Link>
+              <Link
+                className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                to="/api-docs"
+              >
+                API Docs
+              </Link>
+              <Link
+                className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                to="/api-status"
+              >
+                Status
+              </Link>
+              {isLoggedIn && (
                 <>
-                  {/* Analytics Dashboard Link */}
                   <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                    className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
                     to="/analytics"
                   >
-                    <BarChart3 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    Analytics
-                  </Link>
-
-                  {/* <div className="w-px h-6 bg-white/20 mx-2"></div> */}
-                  <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                    to="/my-bookings"
-                  >
-                    <Calendar className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    My Bookings
+                    Insights
                   </Link>
                   <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                    className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
                     to="/my-hotels"
                   >
-                    <Building2 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    My Hotels
+                    Host Hub
                   </Link>
+                </>
+              )}
+            </nav>
 
-                  {/* API Documentation Link */}
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {isLoggedIn ? (
+                <>
                   <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                    to="/api-docs"
+                    to="/my-bookings"
+                    className="hidden sm:inline-flex items-center px-4 py-2 rounded-full border border-white/20 text-sm text-white/80 hover:border-white/60"
                   >
-                    <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    API Docs
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Trips
                   </Link>
-
-                  {/* API Status Link */}
-                  <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                    to="/api-status"
-                  >
-                    <Activity className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    API Status
-                  </Link>
-
                   <SignOutButton />
                 </>
               ) : (
                 <Link
                   to="/sign-in"
-                  className="flex items-center bg-white text-primary-600 px-6 py-2 rounded-lg font-semibold hover:bg-primary-50 hover:shadow-medium transition-all duration-200 group"
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-night-900 font-semibold shadow-glow hover:-translate-y-0.5 transition-transform"
                 >
-                  <LogIn className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                  <LogIn className="w-4 h-4" />
                   Sign In
                 </Link>
               )}
-            </nav>
+            </div>
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
-              <button aria-label="Open menu" className="text-white p-2 rounded-lg hover:bg-white/10 transition-colors">
+              <button aria-label="Open menu" className="text-white p-2 rounded-2xl border border-white/15">
                 <svg
                   className="w-6 h-6"
                   fill="none"
