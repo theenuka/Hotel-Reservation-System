@@ -100,6 +100,7 @@ export default {
         aurora: "aurora 12s ease-in-out infinite",
         float: "float 4s ease-in-out infinite",
         marquee: "marquee 18s linear infinite",
+        "loading-bounce": "loadingBounce 1.3s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -127,6 +128,10 @@ export default {
         marquee: {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
+        },
+        loadingBounce: {
+          "0%, 80%, 100%": { transform: "translateY(0)", opacity: "0.4" },
+          "40%": { transform: "translateY(-6px)", opacity: "1" },
         },
       },
     },
