@@ -27,6 +27,7 @@ import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Separator } from "../components/ui/separator";
 import { Badge } from "../components/ui/badge";
+import { authTheme } from "../styles/authTheme";
 
 export type RegisterFormData = {
   firstName: string;
@@ -77,33 +78,37 @@ const Register = () => {
   });
 
   const onSubmit = handleSubmit((data) => {
-    const payload = {
+    const role: RegisterFormData["role"] = registerAsOwner
+      ? "hotel_owner"
+      : "user";
+    const payload: RegisterFormData = {
       ...data,
-      role: registerAsOwner ? "hotel_owner" : "user",
+      role,
     };
     mutation.mutate(payload);
   });
 
   return (
-    <div className="relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-night-900 via-night-900 to-[#050f28]">
-      <div className="absolute inset-0 opacity-50">
-        <div className="absolute -top-24 left-4 w-72 h-72 bg-gradient-to-br from-brand-400/40 to-accentGlow/20 blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-br from-brand-700/30 to-night-700/60 blur-3xl" />
+    <div className={authTheme.pageBackground}>
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-24 left-0 w-[22rem] h-[22rem] bg-gradient-to-br from-brand-400/30 via-brand-500/20 to-transparent blur-[120px]" />
+        <div className="absolute bottom-[-4rem] right-0 w-[26rem] h-[26rem] bg-gradient-to-br from-accentGlow/25 via-brand-400/10 to-transparent blur-[150px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.06),transparent_45%)]" />
       </div>
 
       <div className="relative max-w-6xl mx-auto grid gap-10 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] items-center">
-        <div className="hidden lg:flex glass-panel rounded-[32px] p-10 border border-white/10 flex-col gap-6 text-white/85">
+        <div className="hidden lg:flex glass-panel rounded-[32px] p-10 border border-white/10 flex-col gap-6 text-white/85 bg-white/5 backdrop-blur-2xl">
           <p className="text-sm uppercase tracking-[0.4em] text-white/60">Host Collective</p>
           <h2 className="text-4xl font-display leading-tight">
             Claim your host profile and share spaces guests obsess over
           </h2>
-          <p className="text-white/75">
+          <p className="text-white/80">
             Whether you manage a mountainside ryokan or an architectural loft, Phoenix Booking gives you concierge tools, loyalty perks, and international reach.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <p className="text-sm text-white/60">What you get</p>
-              <ul className="mt-2 space-y-2 text-sm">
+              <ul className="mt-2 space-y-2 text-sm text-white/80">
                 <li className="flex items-center gap-2"><span className="size-2 rounded-full bg-accentGlow" />Curated guest matching</li>
                 <li className="flex items-center gap-2"><span className="size-2 rounded-full bg-brand-300" />Integrated waitlists & perks</li>
                 <li className="flex items-center gap-2"><span className="size-2 rounded-full bg-white/80" />Real-time concierge chat</li>
@@ -111,7 +116,7 @@ const Register = () => {
             </div>
             <div>
               <p className="text-sm text-white/60">Launch checklist</p>
-              <ul className="mt-2 space-y-2 text-sm">
+              <ul className="mt-2 space-y-2 text-sm text-white/75">
                 <li>Upload at least 6 editorial photos</li>
                 <li>Set availability windows up to 18 months</li>
                 <li>Optional: connect Stripe payouts</li>
@@ -121,34 +126,50 @@ const Register = () => {
         </div>
 
         <div className="w-full">
-          <Card className="relative overflow-hidden border border-white/5 bg-white text-night-900 rounded-[32px] shadow-[0_30px_80px_rgba(3,7,18,0.28)]">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-accentGlow via-brand-500 to-brand-700" />
-            <CardHeader className="text-center pb-6">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 flex items-center justify-center shadow-lg">
-                <UserPlus className="w-8 h-8 text-white" />
-              </div>
-              <CardTitle className="text-3xl font-semibold text-night-900 mt-4">
-                Join Phoenix Booking
-              </CardTitle>
-              <CardDescription className="text-slate-500">
-                Create your account to start booking or hosting
-              </CardDescription>
-              {!import.meta.env.PROD && (
-                <div className="mt-4 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-left">
-                  <p className="text-sm text-yellow-800">
-                    <strong>Development Note:</strong> Authentication state persists between sessions. If you're seeing a logged-in state unexpectedly, use the "Clear Auth" button in the header.
-                  </p>
+          <div className={authTheme.cardWrapper}>
+            <Card className={`${authTheme.card} border-white/5`}>
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-accentGlow via-brand-500 to-brand-600" />
+              <CardHeader className="text-center pb-8">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/30">
+                  <UserPlus className="w-8 h-8 text-white" />
                 </div>
-              )}
-            </CardHeader>
+                <CardTitle className="text-3xl font-semibold text-white mt-4">
+                  Join Phoenix Booking
+                </CardTitle>
+                <CardDescription className="text-white/70 text-base">
+                  Create your profile, unlock curated bookings, or launch a boutique stay.
+                </CardDescription>
+                <div className="flex flex-wrap justify-center gap-3 mt-5">
+                  <span className={authTheme.pill}>
+                    <Sparkles className="w-4 h-4 text-accentGlow" /> Curated guests
+                  </span>
+                  <span className={authTheme.pill}>
+                    <CheckCircle className="w-4 h-4 text-brand-200" /> Instant payouts
+                  </span>
+                </div>
+              </CardHeader>
 
-            <CardContent className="space-y-6 pt-2">
+              <CardContent className="space-y-7 pt-0">
+                <div className="grid gap-3 text-sm text-white/75 sm:grid-cols-3">
+                  <div className="p-3 rounded-2xl border border-white/10 bg-white/5">
+                    <p className="text-xs tracking-[0.3em] uppercase text-white/40">Step 01</p>
+                    <p className="text-white mt-1 font-semibold">Create profile</p>
+                  </div>
+                  <div className="p-3 rounded-2xl border border-white/10 bg-white/5">
+                    <p className="text-xs tracking-[0.3em] uppercase text-white/40">Step 02</p>
+                    <p className="text-white mt-1 font-semibold">Upload listings</p>
+                  </div>
+                  <div className="p-3 rounded-2xl border border-white/10 bg-white/5">
+                    <p className="text-xs tracking-[0.3em] uppercase text-white/40">Step 03</p>
+                    <p className="text-white mt-1 font-semibold">Activate perks</p>
+                  </div>
+                </div>
               <form className="space-y-6" onSubmit={onSubmit}>
-                <div className="flex items-start gap-3 p-4 rounded-2xl border border-brand-100 bg-brand-50/70 text-sm text-night-900">
+                <div className="flex items-start gap-3 p-4 rounded-2xl border border-white/15 bg-white/5 text-sm text-white/80">
                   <input
                     id="registerAsOwner"
                     type="checkbox"
-                    className="mt-1 rounded border-brand-300 text-brand-600 focus:ring-brand-400"
+                    className="mt-1 size-4 rounded border-white/30 bg-transparent text-brand-200 focus:ring-brand-300/60"
                     checked={registerAsOwner}
                     onChange={(e) => setRegisterAsOwner(e.target.checked)}
                     aria-describedby="host-mode-caption"
@@ -156,11 +177,11 @@ const Register = () => {
                   <div>
                     <label
                       htmlFor="registerAsOwner"
-                      className="font-semibold text-brand-700"
+                      className="font-semibold text-white"
                     >
                       Enable host workspace
                     </label>
-                    <p id="host-mode-caption" className="text-xs text-slate-600 mt-1">
+                    <p id="host-mode-caption" className={`${authTheme.helper} mt-1`}>
                       Toggle this to unlock the Host Hub, hotel onboarding, and real-time earnings dashboards. Leave unchecked if you only plan to book stays.
                     </p>
                   </div>
@@ -179,17 +200,17 @@ const Register = () => {
                     error: errors.lastName?.message,
                   }].map((field) => (
                     <div key={field.id} className="space-y-2">
-                      <Label htmlFor={field.id} className="text-sm font-semibold text-slate-700">
+                      <Label htmlFor={field.id} className={authTheme.label}>
                         {field.label}
                       </Label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                          <User className="h-5 w-5 text-slate-400" />
+                          <User className="h-5 w-5 text-white/50" />
                         </div>
                         <Input
                           id={field.id}
                           type="text"
-                          className="pl-10 pr-3 py-3 rounded-2xl border-slate-200 bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-300"
+                          className={`${authTheme.input} pl-10 pr-3`}
                           placeholder={field.placeholder}
                           {...register(field.id as "firstName" | "lastName", {
                             required: `${field.label} is required`,
@@ -197,7 +218,7 @@ const Register = () => {
                         />
                       </div>
                       {field.error && (
-                        <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+                        <Badge variant="outline" className={authTheme.errorBadge}>
                           <Sparkles className="w-4 h-4 mr-1" />
                           {field.error}
                         </Badge>
@@ -207,23 +228,23 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                  <Label htmlFor="email" className={authTheme.label}>
                     Email Address
                   </Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-slate-400" />
+                      <Mail className="h-5 w-5 text-white/50" />
                     </div>
                     <Input
                       id="email"
                       type="email"
-                      className="pl-10 pr-3 py-3 rounded-2xl border-slate-200 bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-300"
+                      className={`${authTheme.input} pl-10 pr-3`}
                       placeholder="Enter your email"
                       {...register("email", { required: "Email is required" })}
                     />
                   </div>
                   {errors.email && (
-                    <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+                    <Badge variant="outline" className={authTheme.errorBadge}>
                       <Sparkles className="w-4 h-4 mr-1" />
                       {errors.email.message}
                     </Badge>
@@ -231,17 +252,17 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                  <Label htmlFor="password" className={authTheme.label}>
                     Password
                   </Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-slate-400" />
+                      <Lock className="h-5 w-5 text-white/50" />
                     </div>
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      className="pl-10 pr-12 py-3 rounded-2xl border-slate-200 bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-300"
+                      className={`${authTheme.input} pl-10 pr-12`}
                       placeholder="Create a password"
                       {...register("password", {
                         required: "Password is required",
@@ -255,14 +276,14 @@ const Register = () => {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute inset-y-0 right-0 pr-3 text-slate-400"
+                      className="absolute inset-y-0 right-0 pr-3 text-white/60"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </Button>
                   </div>
                   {errors.password && (
-                    <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+                    <Badge variant="outline" className={authTheme.errorBadge}>
                       <Sparkles className="w-4 h-4 mr-1" />
                       {errors.password.message}
                     </Badge>
@@ -270,17 +291,17 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">
+                  <Label htmlFor="confirmPassword" className={authTheme.label}>
                     Confirm Password
                   </Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-slate-400" />
+                      <Lock className="h-5 w-5 text-white/50" />
                     </div>
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      className="pl-10 pr-12 py-3 rounded-2xl border-slate-200 bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-300"
+                      className={`${authTheme.input} pl-10 pr-12`}
                       placeholder="Confirm your password"
                       {...register("confirmPassword", {
                         validate: (val) => {
@@ -296,20 +317,20 @@ const Register = () => {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute inset-y-0 right-0 pr-3 text-slate-400"
+                      className="absolute inset-y-0 right-0 pr-3 text-white/60"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
                       {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </Button>
                   </div>
                   {errors.confirmPassword && (
-                    <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+                    <Badge variant="outline" className={authTheme.errorBadge}>
                       <Sparkles className="w-4 h-4 mr-1" />
                       {errors.confirmPassword.message}
                     </Badge>
                   )}
                   {password && !errors.confirmPassword && watch("confirmPassword") === password && (
-                    <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
+                    <Badge variant="outline" className={authTheme.successBadge}>
                       <CheckCircle className="w-4 h-4 mr-1" />
                       Passwords match
                     </Badge>
@@ -319,7 +340,7 @@ const Register = () => {
                 <Button
                   type="submit"
                   disabled={mutation.isLoading}
-                  className="w-full py-3 rounded-2xl text-white font-semibold bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 shadow-[0_15px_30px_rgba(32,56,97,0.35)] hover:translate-y-[-1px] transition-transform"
+                  className={authTheme.primaryButton}
                 >
                   {mutation.isLoading ? (
                     <div className="flex items-center">
@@ -335,16 +356,14 @@ const Register = () => {
                 </Button>
 
                 <div className="relative text-center">
-                  <Separator className="bg-slate-200" />
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 text-xs uppercase tracking-[0.3em] text-slate-400 bg-white">
-                    or
-                  </span>
+                  <Separator className={authTheme.separator} />
+                  <span className={authTheme.separatorLabel}>or</span>
                 </div>
 
                 <div className="text-center">
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-white/70">
                     Already have an account?{" "}
-                    <Link to="/sign-in" className="font-semibold text-brand-600 hover:text-brand-700">
+                    <Link to="/sign-in" className={authTheme.link}>
                       Sign in here
                     </Link>
                   </p>
@@ -355,11 +374,11 @@ const Register = () => {
 
           <p className="mt-6 text-center text-xs text-white/60">
             By creating an account, you agree to our{" "}
-            <a href="#" className="text-brand-300 hover:underline">
+            <a href="#" className="text-brand-200 hover:text-white">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="#" className="text-brand-300 hover:underline">
+            <a href="#" className="text-brand-200 hover:text-white">
               Privacy Policy
             </a>
           </p>

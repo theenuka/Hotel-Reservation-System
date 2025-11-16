@@ -368,37 +368,45 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     "Barcelona",
   ];
 
+  const baseLabel =
+    "flex items-center gap-2 text-[0.7rem] font-semibold tracking-[0.35em] uppercase text-slate-500";
+  const baseField =
+    "w-full h-[54px] rounded-2xl border border-slate-200/70 bg-white/95 text-night-900 placeholder:text-slate-400 shadow-[0_15px_30px_rgba(15,23,42,0.08)] focus:ring-2 focus:ring-brand-400 focus:border-transparent transition";
+
   return (
-    <div className="bg-white text-night-900 rounded-[28px] shadow-glow p-8 max-w-6xl mx-auto border border-night-900/5">
+    <div className="relative overflow-hidden bg-gradient-to-br from-white via-white to-brand-50/70 text-night-900 rounded-[32px] shadow-[0_35px_90px_rgba(8,26,54,0.18)] p-6 sm:p-8 max-w-6xl mx-auto border border-white/70">
+      <div className="pointer-events-none absolute -top-10 -right-10 w-48 h-48 bg-gradient-to-br from-brand-200 to-accentGlow/40 blur-3xl opacity-50" />
+      <div className="pointer-events-none absolute -bottom-12 -left-6 w-40 h-40 bg-gradient-to-t from-brand-100 to-accentGlow/30 blur-3xl opacity-60" />
+      <div className="relative">
       {/* Basic Search */}
       <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {/* Destination */}
         <div className="space-y-2">
           <label
             htmlFor={inputIds.destination}
-            className="flex items-center text-sm font-semibold text-gray-700"
+            className={baseLabel}
           >
-            <MapPin className="w-4 h-4 mr-2 text-primary-600" />
+            <MapPin className="w-4 h-4 text-brand-500" />
             Destination
           </label>
           <div className="relative">
             <input
               type="text"
               placeholder="Where are you going?"
-              className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className={`${baseField} pl-12 pr-4`}
               id={inputIds.destination}
               value={searchData.destination}
               onChange={(e) => handleInputChange("destination", e.target.value)}
               onFocus={() => setShowDropdown(filteredPlaces.length > 0)}
               onBlur={() => setShowDropdown(false)}
             />
-            <MapPin className="absolute w-5 h-5 text-gray-400 left-3 top-3" />
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             {showDropdown && (
-              <ul className="absolute left-0 z-10 w-full overflow-y-auto bg-white border border-gray-300 rounded-lg shadow-lg top-full max-h-40">
+              <ul className="absolute left-0 z-10 w-full overflow-y-auto bg-white/95 border border-slate-200 rounded-2xl shadow-[0_25px_60px_rgba(15,23,42,0.15)] top-full max-h-48">
                 {filteredPlaces.map((place) => (
                   <li
                     key={place}
-                    className="px-4 py-2 text-sm border-b border-gray-100 cursor-pointer hover:bg-gray-100 last:border-b-0"
+                    className="px-4 py-2 text-sm border-b border-slate-100 cursor-pointer hover:bg-slate-50 last:border-b-0"
                     onMouseDown={() => {
                       handleInputChange("destination", place);
                       setShowDropdown(false);
@@ -416,22 +424,22 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
         <div className="space-y-2">
           <label
             htmlFor={inputIds.checkIn}
-            className="flex items-center text-sm font-semibold text-gray-700"
+            className={baseLabel}
           >
-            <Calendar className="w-4 h-4 mr-2 text-primary-600" />
+            <Calendar className="w-4 h-4 text-brand-500" />
             Check-in
           </label>
           <div className="relative">
             <input
               type="date"
-              className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className={`${baseField} pl-12 pr-4`}
               id={inputIds.checkIn}
               value={formatDateInput(searchData.checkIn)}
               onChange={(e) =>
                 handleInputChange("checkIn", new Date(e.target.value))
               }
             />
-            <Calendar className="absolute w-5 h-5 text-gray-400 left-3 top-3" />
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           </div>
         </div>
 
@@ -439,22 +447,22 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
         <div className="space-y-2">
           <label
             htmlFor={inputIds.checkOut}
-            className="flex items-center text-sm font-semibold text-gray-700"
+            className={baseLabel}
           >
-            <Calendar className="w-4 h-4 mr-2 text-primary-600" />
+            <Calendar className="w-4 h-4 text-brand-500" />
             Check-out
           </label>
           <div className="relative">
             <input
               type="date"
-              className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className={`${baseField} pl-12 pr-4`}
               id={inputIds.checkOut}
               value={formatDateInput(searchData.checkOut)}
               onChange={(e) =>
                 handleInputChange("checkOut", new Date(e.target.value))
               }
             />
-            <Calendar className="absolute w-5 h-5 text-gray-400 left-3 top-3" />
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           </div>
         </div>
 
@@ -462,14 +470,14 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
         <div className="space-y-2">
           <label
             htmlFor={inputIds.guests}
-            className="flex items-center text-sm font-semibold text-gray-700"
+            className={baseLabel}
           >
-            <Users className="w-4 h-4 mr-2 text-primary-600" />
+            <Users className="w-4 h-4 text-brand-500" />
             Guests
           </label>
           <div className="relative">
             <select
-              className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className={`${baseField} pl-12 pr-10 appearance-none`}
               id={inputIds.guests}
               value={`${searchData.adultCount} adults, ${searchData.childCount} children`}
               onChange={(e) => {
@@ -486,55 +494,55 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               <option value="3 adults, 0 children">3 adults</option>
               <option value="4 adults, 0 children">4 adults</option>
             </select>
-            <Users className="absolute w-5 h-5 text-gray-400 left-3 top-3" />
+            <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           </div>
         </div>
       </div>
 
       {/* Advanced Search Toggle */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center font-medium transition-colors text-primary-600 hover:text-primary-700"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-400 hover:text-brand-500"
         >
-          <Filter className="w-4 h-4 mr-2" />
-          Advanced Filters
+          <Filter className="w-4 h-4" />
+          {showAdvanced ? "Hide" : "Show"} advanced filters
         </button>
 
         <button
           onClick={handleSearch}
-          className="flex items-center px-8 py-3 font-semibold text-white transition-all duration-200 transform bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl hover:from-primary-700 hover:to-primary-800 hover:scale-105 shadow-medium hover:shadow-large"
+          className="flex items-center gap-2 px-8 py-3 font-semibold text-white transition-transform duration-200 bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 rounded-2xl shadow-[0_20px_35px_rgba(37,99,235,0.35)] hover:scale-[1.01]"
         >
-          <SearchIcon className="w-4 h-4 mr-2" />
+          <SearchIcon className="w-4 h-4" />
           Search Hotels
         </button>
       </div>
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="pt-6 space-y-6 border-t border-gray-200">
+        <div className="pt-6 space-y-6 border-t border-slate-200/60">
           {/* Price Range */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500">
                 Price Range
               </label>
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <input
                   type="number"
                   placeholder="Min"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={`${baseField} px-4`}
                   aria-label="Minimum price"
                   value={searchData.minPrice}
                   onChange={(e) =>
                     handleInputChange("minPrice", e.target.value)
                   }
                 />
-                <span className="flex items-center text-gray-500">-</span>
+                <span className="flex items-center text-slate-400">-</span>
                 <input
                   type="number"
                   placeholder="Max"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={`${baseField} px-4`}
                   aria-label="Maximum price"
                   value={searchData.maxPrice}
                   onChange={(e) =>
@@ -548,12 +556,12 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div>
               <label
                 htmlFor={inputIds.starRating}
-                className="block mb-2 text-sm font-medium text-gray-700"
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500"
               >
                 Star Rating
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${baseField} px-4`}
                 id={inputIds.starRating}
                 value={searchData.starRating}
                 onChange={(e) =>
@@ -572,12 +580,12 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div>
               <label
                 htmlFor={inputIds.hotelType}
-                className="block mb-2 text-sm font-medium text-gray-700"
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500"
               >
                 Hotel Type
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${baseField} px-4`}
                 id={inputIds.hotelType}
                 value={searchData.hotelType}
                 onChange={(e) => handleInputChange("hotelType", e.target.value)}
@@ -594,22 +602,22 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
           {/* Facilities */}
           <div>
-            <label className="block mb-3 text-sm font-medium text-gray-700">
+            <label className="block mb-3 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500">
               Facilities
             </label>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {facilityOptions.map((facility) => (
                 <label
                   key={facility.id}
-                  className="flex items-center space-x-2 cursor-pointer"
+                  className="flex items-center gap-2 p-3 rounded-2xl border border-slate-200 bg-white/80 text-sm text-slate-700 cursor-pointer transition hover:border-brand-400 hover:text-brand-600"
                 >
                   <input
                     type="checkbox"
-                    className="text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="text-brand-500 border-slate-300 rounded focus:ring-brand-400"
                     checked={searchData.facilities.includes(facility.id)}
                     onChange={() => handleFacilityToggle(facility.id)}
                   />
-                  <span className="text-sm text-gray-700">
+                  <span>
                     {facility.icon} {facility.label}
                   </span>
                 </label>

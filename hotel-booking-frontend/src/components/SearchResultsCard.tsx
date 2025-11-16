@@ -37,19 +37,25 @@ const SearchResultsCard = ({ hotel }: Props) => {
     return iconMap[facility] || Building2;
   };
 
+  const fallbackImage =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23091c32;stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:%231d3f72;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='url(%23grad)'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='26' fill='white' opacity='0.85'%3EImage coming soon%3C/text%3E%3C/svg%3E";
+  const heroImage = hotel.imageUrls.find((url) => url && url.trim().length > 0) ?? fallbackImage;
+
   return (
     <div className="group rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden shadow-[0_25px_80px_rgba(2,6,23,0.45)] transition hover:border-white/30">
       <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_1.5fr]">
         {/* Image Section */}
-        <div className="relative h-64 xl:h-full overflow-hidden">
+        <div className="relative h-64 overflow-hidden xl:h-full">
           <img
-            src={hotel.imageUrls[0]}
-            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            src={heroImage}
+            alt={`${hotel.name} hero image`}
+            loading="lazy"
+            className="object-cover object-center w-full h-full transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-night-900/80 via-night-900/20 to-transparent" />
 
-          <div className="absolute top-4 left-4 flex flex-col gap-2 text-white">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/20">
+          <div className="absolute flex flex-col gap-2 text-white top-4 left-4">
+            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-white/20">
               {hotel.isFeatured ? "Spotlight" : "Collection"}
             </span>
             <div className="flex items-center gap-2 text-sm">
@@ -58,7 +64,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
             </div>
           </div>
 
-          <div className="absolute bottom-4 left-4 text-white">
+          <div className="absolute text-white bottom-4 left-4">
             <p className="text-xs uppercase tracking-[0.4em] text-white/60">
               From
             </p>
@@ -70,7 +76,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
         </div>
 
         {/* Content Section */}
-        <div className="p-6 sm:p-8 flex flex-col gap-6 text-white">
+        <div className="flex flex-col gap-6 p-6 text-white sm:p-8">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1 text-accentGlow">
@@ -84,7 +90,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
                       <Badge
                         key={type}
                         variant="outline"
-                        className="border-white/20 bg-white/5 text-white"
+                        className="text-white border-white/20 bg-white/5"
                       >
                         {type}
                       </Badge>
@@ -92,7 +98,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
                   : (
                       <Badge
                         variant="outline"
-                        className="border-white/20 bg-white/5 text-white"
+                        className="text-white border-white/20 bg-white/5"
                       >
                         {hotel.type}
                       </Badge>
@@ -102,16 +108,16 @@ const SearchResultsCard = ({ hotel }: Props) => {
 
             <Link
               to={`/detail/${hotel._id}`}
-              className="text-3xl font-semibold font-display hover:text-brand-300 transition-colors"
+              className="text-3xl font-semibold transition-colors font-display hover:text-brand-300"
             >
               {hotel.name}
             </Link>
 
-            <div className="flex items-center text-white/70 text-sm">
+            <div className="flex items-center text-sm text-white/70">
               <MapPin className="w-4 h-4 mr-2" />
               {hotel.city}, {hotel.country}
             </div>
-            <p className="text-white/70 leading-relaxed line-clamp-3">
+            <p className="leading-relaxed text-white/70 line-clamp-3">
               {hotel.description}
             </p>
           </div>
@@ -154,7 +160,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-white/10 pt-6">
+          <div className="flex flex-col gap-4 pt-6 border-t sm:flex-row sm:items-center sm:justify-between border-white/10">
             <div className="text-sm text-white/70">
               Instant confirmation • Secure checkout
             </div>

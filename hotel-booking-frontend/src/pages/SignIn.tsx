@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { LogIn, Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
+import { LogIn, Mail, Lock, Eye, EyeOff, Sparkles, ShieldCheck, Compass } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -18,6 +18,7 @@ import { Badge } from "../components/ui/badge";
 import useAppContext from "../hooks/useAppContext";
 import * as apiClient from "../api-client";
 import { useMutationWithLoading } from "../hooks/useLoadingHooks";
+import { authTheme } from "../styles/authTheme";
 
 export type SignInFormData = {
   email: string;
@@ -59,15 +60,16 @@ const SignIn = () => {
   const onSubmit = handleSubmit((data) => mutation.mutate(data));
 
   return (
-    <div className="relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-night-900 via-night-900 to-[#0a0f24]">
-      <div className="absolute inset-0 opacity-50">
-        <div className="absolute -top-32 -right-20 w-80 h-80 bg-gradient-to-br from-brand-400/40 to-accentGlow/30 blur-3xl" />
-        <div className="absolute -bottom-32 -left-10 w-72 h-72 bg-gradient-to-br from-brand-600/30 to-night-700/60 blur-3xl" />
+    <div className={authTheme.pageBackground}>
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-32 -right-24 w-[28rem] h-[28rem] bg-gradient-to-br from-brand-400/35 via-brand-500/20 to-transparent blur-[120px]" />
+        <div className="absolute -bottom-32 -left-16 w-[24rem] h-[24rem] bg-gradient-to-br from-accentGlow/30 via-brand-300/10 to-transparent blur-[150px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(255,255,255,0.05),transparent_40%)]" />
       </div>
 
       <div className="relative max-w-6xl mx-auto grid gap-10 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] items-center">
         <div className="hidden lg:flex flex-col gap-6 text-white/90">
-          <div className="glass-panel rounded-[32px] p-8 border border-white/10">
+          <div className="glass-panel rounded-[32px] p-8 border border-white/10 bg-white/5 backdrop-blur-2xl">
             <p className="text-sm uppercase tracking-[0.4em] text-white/60 mb-4">
               Phoenix Circle
             </p>
@@ -95,47 +97,59 @@ const SignIn = () => {
         </div>
 
         <div className="w-full">
-          <Card className="relative overflow-hidden border border-white/5 bg-white text-night-900 rounded-[32px] shadow-[0_30px_80px_rgba(3,7,18,0.28)]">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-400 via-brand-600 to-accentGlow" />
-            <CardHeader className="text-center pb-6">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 flex items-center justify-center shadow-lg">
-                <LogIn className="w-8 h-8 text-white" />
-              </div>
-              <CardTitle className="text-3xl font-semibold text-night-900 mt-4">
-                Welcome Back
-              </CardTitle>
-              <CardDescription className="text-slate-500">
-                Sign in to your account to continue
-              </CardDescription>
-              {!import.meta.env.PROD && (
-                <div className="mt-4 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-left">
-                  <p className="text-sm text-yellow-800">
-                    <strong>Development Note:</strong> Authentication state persists between sessions. If you're seeing a logged-in state unexpectedly, use the "Clear Auth" button in the header.
-                  </p>
+          <div className={authTheme.cardWrapper}>
+            <Card className={`${authTheme.card} border-white/5`}>
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-400 via-brand-500 to-accentGlow" />
+              <CardHeader className="text-center pb-8">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/30">
+                  <LogIn className="w-8 h-8 text-white" />
                 </div>
-              )}
-            </CardHeader>
+                <CardTitle className="text-3xl font-semibold text-white mt-4">
+                  Welcome Back
+                </CardTitle>
+                <CardDescription className="text-white/70 text-base">
+                  Unlock your saved itineraries, member lounges, and curated alerts.
+                </CardDescription>
+                <div className="flex flex-wrap justify-center gap-3 mt-5">
+                  <span className={authTheme.pill}>
+                    <Sparkles className="w-4 h-4 text-accentGlow" /> Instant perks
+                  </span>
+                  <span className={authTheme.pill}>
+                    <ShieldCheck className="w-4 h-4 text-brand-200" /> Secure checkout
+                  </span>
+                </div>
+              </CardHeader>
 
-            <CardContent className="space-y-6 pt-2">
+              <CardContent className="space-y-7 pt-0">
+                <div className="grid gap-3 text-sm text-white/70 sm:grid-cols-2">
+                  <div className="flex items-center gap-3 p-3 rounded-2xl border border-white/10 bg-white/5">
+                    <Compass className="w-4 h-4 text-brand-200" />
+                    Track bespoke journeys
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-2xl border border-white/10 bg-white/5">
+                    <Plane className="w-4 h-4 text-brand-200" />
+                    Sync lounge access & perks
+                  </div>
+                </div>
               <form className="space-y-6" onSubmit={onSubmit}>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                  <Label htmlFor="email" className={authTheme.label}>
                     Email Address
                   </Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-slate-400" />
+                      <Mail className="h-5 w-5 text-white/50" />
                     </div>
                     <Input
                       id="email"
                       type="email"
-                      className="pl-10 pr-3 py-3 rounded-2xl border-slate-200 bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-300"
+                      className={`${authTheme.input} pl-10 pr-3`}
                       placeholder="Enter your email"
                       {...register("email", { required: "Email is required" })}
                     />
                   </div>
                   {errors.email && (
-                    <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+                    <Badge variant="outline" className={authTheme.errorBadge}>
                       <Sparkles className="w-4 h-4 mr-1" />
                       {errors.email.message}
                     </Badge>
@@ -143,17 +157,17 @@ const SignIn = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                  <Label htmlFor="password" className={authTheme.label}>
                     Password
                   </Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-slate-400" />
+                      <Lock className="h-5 w-5 text-white/50" />
                     </div>
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      className="pl-10 pr-12 py-3 rounded-2xl border-slate-200 bg-white focus:border-brand-400 focus:ring-2 focus:ring-brand-300"
+                      className={`${authTheme.input} pl-10 pr-12`}
                       placeholder="Enter your password"
                       {...register("password", {
                         required: "Password is required",
@@ -167,7 +181,7 @@ const SignIn = () => {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute inset-y-0 right-0 pr-3 text-slate-400"
+                      className="absolute inset-y-0 right-0 pr-3 text-white/60"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -178,7 +192,7 @@ const SignIn = () => {
                     </Button>
                   </div>
                   {errors.password && (
-                    <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+                    <Badge variant="outline" className={authTheme.errorBadge}>
                       <Sparkles className="w-4 h-4 mr-1" />
                       {errors.password.message}
                     </Badge>
@@ -188,7 +202,7 @@ const SignIn = () => {
                 <Button
                   type="submit"
                   disabled={mutation.isLoading}
-                  className="w-full py-3 rounded-2xl text-white font-semibold bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 shadow-[0_15px_30px_rgba(32,56,97,0.35)] hover:translate-y-[-1px] transition-transform"
+                  className={authTheme.primaryButton}
                 >
                   {mutation.isLoading ? (
                     <div className="flex items-center">
@@ -204,16 +218,14 @@ const SignIn = () => {
                 </Button>
 
                 <div className="relative text-center">
-                  <Separator className="bg-slate-200" />
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 text-xs uppercase tracking-[0.3em] text-slate-400 bg-white">
-                    or
-                  </span>
+                  <Separator className={authTheme.separator} />
+                  <span className={authTheme.separatorLabel}>or</span>
                 </div>
 
                 <div className="text-center">
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-white/70">
                     Don't have an account?{" "}
-                    <Link to="/register" className="font-semibold text-brand-600 hover:text-brand-700">
+                    <Link to="/register" className={authTheme.link}>
                       Create one here
                     </Link>
                   </p>
@@ -224,11 +236,11 @@ const SignIn = () => {
 
           <p className="mt-6 text-center text-xs text-white/60">
             By signing in, you agree to our{" "}
-            <a href="#" className="text-brand-300 hover:underline">
+            <a href="#" className="text-brand-200 hover:text-white">
               Terms of Service
             </a>{" "}
             and{" "}
-            <a href="#" className="text-brand-300 hover:underline">
+            <a href="#" className="text-brand-200 hover:text-white">
               Privacy Policy
             </a>
           </p>
