@@ -630,12 +630,12 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div>
               <label
                 htmlFor={inputIds.sortBy}
-                className="block mb-2 text-sm font-medium text-gray-700"
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500"
               >
                 Sort By
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${baseField} px-4`}
                 id={inputIds.sortBy}
                 value={searchData.sortBy}
                 onChange={(e) => handleInputChange("sortBy", e.target.value)}
@@ -651,12 +651,12 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div>
               <label
                 htmlFor={inputIds.radius}
-                className="block mb-2 text-sm font-medium text-gray-700"
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500"
               >
                 Search Radius (km)
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${baseField} px-4`}
                 id={inputIds.radius}
                 value={searchData.radius}
                 onChange={(e) => handleInputChange("radius", e.target.value)}
@@ -672,8 +672,8 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       )}
 
       {/* Quick Search Destinations */}
-      <div className="pt-6 border-t border-gray-200">
-        <h3 className="mb-3 text-sm font-medium text-gray-700">
+      <div className="pt-6 border-t border-slate-200/60">
+        <h3 className="mb-3 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500">
           Popular Destinations
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -681,12 +681,13 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <button
               key={destination}
               onClick={() => handleQuickSearch(destination)}
-              className="px-3 py-1 text-sm text-gray-700 transition-colors bg-gray-100 rounded-full hover:bg-blue-100 hover:text-blue-700"
+              className="px-4 py-1.5 text-sm text-slate-700 transition-all rounded-full border border-slate-200 bg-white/90 hover:border-brand-400 hover:text-brand-600 hover:-translate-y-0.5"
             >
               {destination}
             </button>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );
