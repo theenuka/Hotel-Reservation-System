@@ -73,29 +73,26 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 }) => {
   const navigate = useNavigate();
   const search = useSearchContext();
+  const inputIds = {
+    destination: "advanced-destination",
+    checkIn: "advanced-check-in",
+    checkOut: "advanced-check-out",
+    guests: "advanced-guests",
+    minPrice: "advanced-min-price",
+    maxPrice: "advanced-max-price",
+    starRating: "advanced-star-rating",
+    hotelType: "advanced-hotel-type",
+    sortBy: "advanced-sort-by",
+    radius: "advanced-radius",
+  } as const;
   const [showAdvanced, setShowAdvanced] = useState(isExpanded);
-  const [searchData, setSearchData] = useState({
+  const [searchData, setSearchData] = useState<SearchFormState>({
+    ...buildClearedState(),
     destination: search.destination,
     checkIn: search.checkIn,
     checkOut: search.checkOut,
     adultCount: search.adultCount,
     childCount: search.childCount,
-    // Advanced filters
-    minPrice: "",
-    maxPrice: "",
-    starRating: "",
-    hotelType: "",
-    facilities: [] as string[],
-    sortBy: "relevance",
-    radius: "50", // km
-    instantBooking: false,
-    freeCancellation: false,
-    breakfast: false,
-    wifi: false,
-    parking: false,
-    pool: false,
-    gym: false,
-    spa: false,
   });
 
   // Dropdown functionality for destination
@@ -269,28 +266,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       // Don't clear search values immediately - let the search page use them
       // Only clear the local form state
       setTimeout(() => {
-        setSearchData({
-          destination: "",
-          checkIn: new Date(),
-          checkOut: new Date(),
-          adultCount: 1,
-          childCount: 0,
-          minPrice: "",
-          maxPrice: "",
-          starRating: "",
-          hotelType: "",
-          facilities: [],
-          sortBy: "relevance",
-          radius: "50",
-          instantBooking: false,
-          freeCancellation: false,
-          breakfast: false,
-          wifi: false,
-          parking: false,
-          pool: false,
-          gym: false,
-          spa: false,
-        });
+        setSearchData(buildClearedState());
         // Remove this line: search.clearSearchValues();
       }, 100);
       return;
@@ -338,28 +314,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     // Don't clear search values immediately - let the search page use them
     // Only clear the local form state
     setTimeout(() => {
-      setSearchData({
-        destination: "",
-        checkIn: new Date(),
-        checkOut: new Date(),
-        adultCount: 1,
-        childCount: 0,
-        minPrice: "",
-        maxPrice: "",
-        starRating: "",
-        hotelType: "",
-        facilities: [],
-        sortBy: "relevance",
-        radius: "50",
-        instantBooking: false,
-        freeCancellation: false,
-        breakfast: false,
-        wifi: false,
-        parking: false,
-        pool: false,
-        gym: false,
-        spa: false,
-      });
+      setSearchData(buildClearedState());
       // Remove this line: search.clearSearchValues();
     }, 100);
   };
@@ -419,7 +374,10 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {/* Destination */}
         <div className="space-y-2">
-          <label className="flex items-center text-sm font-semibold text-gray-700">
+          <label
+            htmlFor={inputIds.destination}
+            className="flex items-center text-sm font-semibold text-gray-700"
+          >
             <MapPin className="w-4 h-4 mr-2 text-primary-600" />
             Destination
           </label>
@@ -428,6 +386,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               type="text"
               placeholder="Where are you going?"
               className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              id={inputIds.destination}
               value={searchData.destination}
               onChange={(e) => handleInputChange("destination", e.target.value)}
               onFocus={() => setShowDropdown(filteredPlaces.length > 0)}
@@ -455,7 +414,10 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
         {/* Check-in Date */}
         <div className="space-y-2">
-          <label className="flex items-center text-sm font-semibold text-gray-700">
+          <label
+            htmlFor={inputIds.checkIn}
+            className="flex items-center text-sm font-semibold text-gray-700"
+          >
             <Calendar className="w-4 h-4 mr-2 text-primary-600" />
             Check-in
           </label>
@@ -463,7 +425,8 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <input
               type="date"
               className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              value={searchData.checkIn.toISOString().split("T")[0]}
+              id={inputIds.checkIn}
+              value={formatDateInput(searchData.checkIn)}
               onChange={(e) =>
                 handleInputChange("checkIn", new Date(e.target.value))
               }
@@ -474,7 +437,10 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
         {/* Check-out Date */}
         <div className="space-y-2">
-          <label className="flex items-center text-sm font-semibold text-gray-700">
+          <label
+            htmlFor={inputIds.checkOut}
+            className="flex items-center text-sm font-semibold text-gray-700"
+          >
             <Calendar className="w-4 h-4 mr-2 text-primary-600" />
             Check-out
           </label>
@@ -482,7 +448,8 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <input
               type="date"
               className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              value={searchData.checkOut.toISOString().split("T")[0]}
+              id={inputIds.checkOut}
+              value={formatDateInput(searchData.checkOut)}
               onChange={(e) =>
                 handleInputChange("checkOut", new Date(e.target.value))
               }
@@ -493,13 +460,17 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
         {/* Guests */}
         <div className="space-y-2">
-          <label className="flex items-center text-sm font-semibold text-gray-700">
+          <label
+            htmlFor={inputIds.guests}
+            className="flex items-center text-sm font-semibold text-gray-700"
+          >
             <Users className="w-4 h-4 mr-2 text-primary-600" />
             Guests
           </label>
           <div className="relative">
             <select
               className="w-full py-3 pl-10 pr-4 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              id={inputIds.guests}
               value={`${searchData.adultCount} adults, ${searchData.childCount} children`}
               onChange={(e) => {
                 const [adults, children] = e.target.value.split(", ");
@@ -553,6 +524,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                   type="number"
                   placeholder="Min"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  aria-label="Minimum price"
                   value={searchData.minPrice}
                   onChange={(e) =>
                     handleInputChange("minPrice", e.target.value)
@@ -563,6 +535,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                   type="number"
                   placeholder="Max"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  aria-label="Maximum price"
                   value={searchData.maxPrice}
                   onChange={(e) =>
                     handleInputChange("maxPrice", e.target.value)
@@ -573,11 +546,15 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
             {/* Star Rating */}
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor={inputIds.starRating}
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
                 Star Rating
               </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                id={inputIds.starRating}
                 value={searchData.starRating}
                 onChange={(e) =>
                   handleInputChange("starRating", e.target.value)
@@ -593,11 +570,15 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
             {/* Hotel Type */}
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor={inputIds.hotelType}
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
                 Hotel Type
               </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                id={inputIds.hotelType}
                 value={searchData.hotelType}
                 onChange={(e) => handleInputChange("hotelType", e.target.value)}
               >
@@ -639,11 +620,15 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
           {/* Sort Options */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor={inputIds.sortBy}
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
                 Sort By
               </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                id={inputIds.sortBy}
                 value={searchData.sortBy}
                 onChange={(e) => handleInputChange("sortBy", e.target.value)}
               >
@@ -656,11 +641,15 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor={inputIds.radius}
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
                 Search Radius (km)
               </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                id={inputIds.radius}
                 value={searchData.radius}
                 onChange={(e) => handleInputChange("radius", e.target.value)}
               >
