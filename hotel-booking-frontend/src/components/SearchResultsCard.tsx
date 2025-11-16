@@ -166,7 +166,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
             </div>
             <Link
               to={`/detail/${hotel._id}`}
-              className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 font-semibold shadow-glow hover:-translate-y-0.5 transition"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-2xl border border-white/10 bg-[#0B1424] font-semibold text-white shadow-[0_20px_35px_rgba(1,3,10,0.6)] hover:border-white/30 hover:-translate-y-0.5 transition"
             >
               View details & book
             </Link>

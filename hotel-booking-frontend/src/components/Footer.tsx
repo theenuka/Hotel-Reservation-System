@@ -1,5 +1,4 @@
 import {
-  Building2,
   Facebook,
   Instagram,
   Linkedin,
@@ -8,6 +7,7 @@ import {
   Phone,
   Twitter,
 } from "lucide-react";
+import BrandLogo from "./BrandLogo";
 
 const Footer = () => {
   return (
@@ -15,17 +15,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 space-y-10">
         <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr_0.7fr]">
           <div className="space-y-5">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-2xl bg-white/10 border border-white/10">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-white/60">
-                  Phoenix
-                </p>
-                <p className="text-2xl font-display">Booking</p>
-              </div>
-            </div>
+            <BrandLogo interactive={false} />
             <p className="text-white/70 max-w-lg">
               Boutique stays, crafted experiences, and a concierge-inspired platform. We pair intentional design with tech that anticipates what you need before wheels up.
             </p>

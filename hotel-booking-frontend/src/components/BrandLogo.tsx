@@ -5,71 +5,90 @@ type BrandLogoProps = {
   onClick?: () => void;
   className?: string;
   showWordmark?: boolean;
+  interactive?: boolean;
 };
 
-const BrandLogo = ({ onClick, className = "", showWordmark = true }: BrandLogoProps) => {
-  const dropletGradientId = useId();
-  const haloGradientId = useId();
+const BrandLogo = ({
+  onClick,
+  className = "",
+  showWordmark = true,
+  interactive = true,
+}: BrandLogoProps) => {
+  const frameGradientId = useId();
+  const accentGradientId = useId();
+  const glowGradientId = useId();
 
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Phoenix Booking home"
-      className={cn(
-        "flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-night-900",
-        className
-      )}
-    >
+  const logoMark = (
+    <>
       <div className="relative">
-        <div className="size-12 sm:size-14 rounded-3xl border border-white/20 bg-night-900/70 shadow-[0_15px_40px_rgba(5,7,17,0.55)] flex items-center justify-center">
+        <div className="size-12 sm:size-14 rounded-[18px] border border-white/12 bg-[#0c1224] shadow-[0_18px_40px_rgba(3,5,15,0.7)] flex items-center justify-center">
           <svg
             viewBox="0 0 64 64"
-            className="w-9 h-9"
+            className="w-10 h-10"
             role="presentation"
             aria-hidden="true"
           >
             <defs>
-              <linearGradient id={dropletGradientId} x1="0%" y1="10%" x2="100%" y2="90%">
-                <stop offset="0%" stopColor="#FF9E6E" />
-                <stop offset="35%" stopColor="#FF6D86" />
-                <stop offset="70%" stopColor="#C266FF" />
-                <stop offset="100%" stopColor="#6C63FF" />
+              <linearGradient id={frameGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#141a32" />
+                <stop offset="100%" stopColor="#0b1121" />
               </linearGradient>
-              <radialGradient id={haloGradientId} cx="50%" cy="35%" r="65%">
-                <stop offset="0%" stopColor="#FFF4EB" stopOpacity="0.9" />
-                <stop offset="55%" stopColor="#FDC6AF" stopOpacity="0.2" />
+              <linearGradient id={accentGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f5d8b0" />
+                <stop offset="100%" stopColor="#f0c298" />
+              </linearGradient>
+              <radialGradient id={glowGradientId} cx="50%" cy="30%" r="60%">
+                <stop offset="0%" stopColor="#f9eddc" stopOpacity="0.7" />
                 <stop offset="100%" stopColor="transparent" stopOpacity="0" />
               </radialGradient>
             </defs>
-            <circle cx="32" cy="32" r="28" fill={`url(#${haloGradientId})`} opacity="0.35" />
-            <path
-              d="M32 8c-6.5 8.8-13 17.8-13 27.2C19 46.2 24.7 56 32 56s13-9.8 13-20.8C45 25.8 38.5 16.8 32 8z"
-              fill={`url(#${dropletGradientId})`}
-              stroke="white"
-              strokeWidth="0.5"
-              strokeOpacity="0.4"
+            <rect
+              x="6"
+              y="6"
+              width="52"
+              height="52"
+              rx="15"
+              fill={`url(#${frameGradientId})`}
+              stroke="#2b3250"
+              strokeWidth="1.5"
             />
             <path
-              d="M32 20c-3.5 4.6-7 9.1-7 13.7 0 5.5 3.2 9.7 7 9.7s7-4.3 7-9.7C39 29.1 35.5 24.6 32 20z"
-              fill="#fff"
-              opacity="0.25"
-            />
-            <path
-              d="M27 34c0.8 2.4 2.9 4 5 4s4.2-1.6 5-4"
-              stroke="#fff"
-              strokeWidth="1.8"
+              d="M22 46V27.5c0-3.3 2.7-6 6-6h8c3.3 0 6 2.7 6 6V46"
+              stroke={`url(#${accentGradientId})`}
+              strokeWidth="2.2"
               strokeLinecap="round"
-              strokeOpacity="0.8"
+              strokeLinejoin="round"
             />
-            <circle cx="27.5" cy="25" r="3" fill="#fff" opacity="0.45" />
+            <path
+              d="M24 34h16M24 40h16M32 30v16"
+              stroke="#f8f5ee"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity="0.9"
+            />
+            <path
+              d="M28 46v-6a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v6"
+              stroke="#c7d2ff"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              opacity="0.8"
+            />
+            <circle cx="32" cy="18" r="5" fill={`url(#${glowGradientId})`} />
+            <circle cx="32" cy="18" r="2.6" fill="#f8f4ec" />
+            <path
+              d="M20 48h24"
+              stroke="#2f3a5a"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
         </div>
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#FF8F70]/60 via-[#F86EB6]/40 to-[#6C63FF]/45 blur-2xl opacity-0 group-hover:opacity-100 transition" />
+        <div className="absolute inset-0 rounded-[18px] bg-[#f5d8b0]/15 blur-2xl opacity-0 group-hover:opacity-100 transition" />
       </div>
       {showWordmark && (
         <div className="text-left">
-          <span className="text-[10px] uppercase tracking-[0.55em] text-white/50 block">
+          <span className="text-[10px] uppercase tracking-[0.55em] text-white/45 block">
             Phoenix
           </span>
           <span className="text-2xl font-display leading-none text-white block">
@@ -77,8 +96,31 @@ const BrandLogo = ({ onClick, className = "", showWordmark = true }: BrandLogoPr
           </span>
         </div>
       )}
-    </button>
+    </>
   );
+
+  const baseClasses = cn(
+    "flex items-center gap-3 group",
+    interactive
+      ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-night-900"
+      : "cursor-default",
+    className
+  );
+
+  if (interactive) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label="Phoenix Booking home"
+        className={baseClasses}
+      >
+        {logoMark}
+      </button>
+    );
+  }
+
+  return <div className={baseClasses}>{logoMark}</div>;
 };
 
 export default BrandLogo;

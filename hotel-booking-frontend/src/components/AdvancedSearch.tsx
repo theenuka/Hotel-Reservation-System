@@ -432,11 +432,11 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             />
             <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
             {showDropdown && (
-              <ul className="absolute left-0 z-10 w-full overflow-y-auto bg-white/95 border border-slate-200 rounded-2xl shadow-[0_25px_60px_rgba(15,23,42,0.15)] top-full max-h-48">
+              <ul className="absolute left-0 z-10 w-full overflow-y-auto bg-night-900/95 border border-white/15 rounded-2xl shadow-[0_25px_60px_rgba(3,7,18,0.65)] top-full max-h-48">
                 {filteredPlaces.map((place) => (
                   <li
                     key={place}
-                    className="px-4 py-2 text-sm border-b border-slate-100 cursor-pointer hover:bg-slate-50 last:border-b-0"
+                    className="px-4 py-2 text-sm border-b border-white/5 cursor-pointer hover:bg-white/10 last:border-b-0"
                     onMouseDown={() => {
                       handleInputChange("destination", place);
                       setShowDropdown(false);
@@ -533,7 +533,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-brand-400 hover:text-brand-500"
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/70 transition-colors hover:border-white/50 hover:text-white"
         >
           <Filter className="w-4 h-4" />
           {showAdvanced ? "Hide" : "Show"} advanced filters
@@ -541,7 +541,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
         <button
           onClick={handleSearch}
-          className="flex items-center gap-2 px-8 py-3 font-semibold text-white transition-transform duration-200 bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 rounded-2xl shadow-[0_20px_35px_rgba(37,99,235,0.35)] hover:scale-[1.01]"
+          className="flex items-center gap-2 px-8 py-3 font-semibold text-white transition-transform duration-200 rounded-2xl border border-white/10 bg-[#0B1424] shadow-[0_25px_45px_rgba(1,3,10,0.65)] hover:border-white/30 hover:scale-[1.01]"
         >
           <SearchIcon className="w-4 h-4" />
           Search Hotels
@@ -550,11 +550,11 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="pt-6 space-y-6 border-t border-slate-200/60">
+        <div className="pt-6 space-y-6 border-t border-white/10">
           {/* Price Range */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500">
+              <label className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60">
                 Price Range
               </label>
               <div className="flex gap-2">
@@ -568,7 +568,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     handleInputChange("minPrice", e.target.value)
                   }
                 />
-                <span className="flex items-center text-slate-400">-</span>
+                <span className="flex items-center text-white/40">-</span>
                 <input
                   type="number"
                   placeholder="Max"
@@ -586,7 +586,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div>
               <label
                 htmlFor={inputIds.starRating}
-                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500"
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60"
               >
                 Star Rating
               </label>
@@ -610,7 +610,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div>
               <label
                 htmlFor={inputIds.hotelType}
-                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500"
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60"
               >
                 Hotel Type
               </label>
@@ -632,18 +632,18 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
           {/* Facilities */}
           <div>
-            <label className="block mb-3 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500">
+            <label className="block mb-3 text-xs font-semibold tracking-[0.3em] uppercase text-white/60">
               Facilities
             </label>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {facilityOptions.map((facility) => (
                 <label
                   key={facility.id}
-                  className="flex items-center gap-2 p-3 rounded-2xl border border-slate-200 bg-white/80 text-sm text-slate-700 cursor-pointer transition hover:border-brand-400 hover:text-brand-600"
+                  className="flex items-center gap-2 p-3 rounded-2xl border border-white/15 bg-white/5 text-sm text-white/80 cursor-pointer transition hover:border-white/60 hover:bg-white/10"
                 >
                   <input
                     type="checkbox"
-                    className="text-brand-500 border-slate-300 rounded focus:ring-brand-400"
+                    className="text-[#F86EB6] border-white/30 rounded bg-transparent focus:ring-[#F86EB6]/60"
                     checked={searchData.facilities.includes(facility.id)}
                     onChange={() => handleFacilityToggle(facility.id)}
                   />
@@ -660,7 +660,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div>
               <label
                 htmlFor={inputIds.sortBy}
-                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500"
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60"
               >
                 Sort By
               </label>
@@ -681,7 +681,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <div>
               <label
                 htmlFor={inputIds.radius}
-                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500"
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60"
               >
                 Search Radius (km)
               </label>
@@ -702,8 +702,8 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       )}
 
       {/* Quick Search Destinations */}
-      <div className="pt-6 border-t border-slate-200/60">
-        <h3 className="mb-3 text-xs font-semibold tracking-[0.3em] uppercase text-slate-500">
+      <div className="pt-6 border-t border-white/10">
+        <h3 className="mb-3 text-xs font-semibold tracking-[0.3em] uppercase text-white/60">
           Popular Destinations
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -711,7 +711,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <button
               key={destination}
               onClick={() => handleQuickSearch(destination)}
-              className="px-4 py-1.5 text-sm text-slate-700 transition-all rounded-full border border-slate-200 bg-white/90 hover:border-brand-400 hover:text-brand-600 hover:-translate-y-0.5"
+              className="px-4 py-1.5 text-sm text-white/80 transition-all rounded-full border border-white/15 bg-white/5 hover:border-white/60 hover:text-white hover:-translate-y-0.5"
             >
               {destination}
             </button>

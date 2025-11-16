@@ -337,7 +337,7 @@ const SearchBar = () => {
         <div className="flex flex-col sm:flex-row gap-2 col-span-1 lg:col-span-full">
           <Button
             type="submit"
-            className="flex-1 rounded-2xl bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 text-white font-semibold py-3 shadow-glow hover:-translate-y-0.5 transition"
+            className="flex-1 rounded-2xl border border-white/15 bg-[#0C1424] text-white font-semibold py-3 shadow-[0_20px_35px_rgba(1,3,10,0.6)] hover:border-white/35 hover:-translate-y-0.5 transition"
           >
             Search stays
           </Button>

@@ -11,7 +11,7 @@ export const authTheme = {
   input:
     "h-12 rounded-2xl border border-white/15 bg-white/10 text-white placeholder:text-white/40 focus:border-transparent focus:ring-2 focus:ring-[#FF8F70]/50 focus:ring-offset-0",
   primaryButton:
-    "w-full py-3 rounded-2xl text-white font-semibold bg-gradient-to-r from-[#FF8F70] via-[#F86EB6] to-[#6C63FF] shadow-[0_25px_40px_rgba(20,20,36,0.85)] hover:translate-y-[-1px] transition-transform",
+    "w-full py-3 rounded-2xl text-white font-semibold border border-white/15 bg-[#0C1424] shadow-[0_25px_45px_rgba(1,3,10,0.65)] hover:border-white/35 hover:-translate-y-0.5 transition",
   link: "font-semibold text-[#F3C6FF] hover:text-white",
   pill:
     "inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/15 bg-white/5 text-white/85",
