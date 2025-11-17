@@ -1,56 +1,41 @@
-import React from "react";
-import { Loader2, Hotel } from "lucide-react";
+import { Building2 } from "lucide-react";
 
-interface LoadingSpinnerProps {
+type LoadingSpinnerProps = {
   message?: string;
-  size?: "sm" | "md" | "lg";
-  showHotelIcon?: boolean;
-}
+};
 
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  message = "Hotel room is getting ready...",
-  size = "md",
-  showHotelIcon = true,
-}) => {
-  const sizeClasses = {
-    sm: "w-6 h-6",
-    md: "w-8 h-8",
-    lg: "w-12 h-12",
-  };
-
-  const textSizes = {
-    sm: "text-sm",
-    md: "text-base",
-    lg: "text-lg",
-  };
-
+const LoadingSpinner = ({
+  message = "Creating your profile...",
+}: LoadingSpinnerProps) => {
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm mx-4 text-center">
-        <div className="flex flex-col items-center space-y-4">
-          {/* Spinner */}
-          <div className="relative">
-            <Loader2 className={`${sizeClasses[size]} animate-spin text-primary-600`} />
-            {showHotelIcon && (
-              <Hotel className="absolute inset-0 m-auto w-4 h-4 text-primary-500 animate-pulse" />
-            )}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-night-900/75 backdrop-blur-xl">
+      <div className="relative w-full max-w-md rounded-[32px] border border-white/10 bg-white/95 p-10 text-center shadow-[0_50px_120px_rgba(6,9,22,0.35)]">
+        <div className="absolute -inset-1 rounded-[36px] bg-gradient-to-br from-[#93B7FF]/40 via-transparent to-transparent blur-3xl" aria-hidden />
+        <div className="relative flex flex-col items-center space-y-6">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#3F6BFF]/30 bg-[#F7F9FF] text-[#3460FF]">
+            <Building2 className="h-7 w-7" />
           </div>
-          
-          {/* Message */}
+
           <div className="space-y-2">
-            <h3 className={`font-semibold text-gray-900 ${textSizes[size]}`}>
-              {message}
-            </h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="text-xl font-semibold text-night-900">{message}</h3>
+            <p className="text-base text-night-600">
               Please wait while we prepare everything for you...
             </p>
           </div>
-          
-          {/* Decorative dots */}
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+
+          <div className="flex items-center gap-2">
+            {[0, 1, 2].map((dot) => (
+              <span
+                key={dot}
+                className={`h-2.5 w-2.5 rounded-full bg-[#3362FF] animate-loading-bounce ${
+                  dot === 1
+                    ? "[animation-delay:0.15s]"
+                    : dot === 2
+                    ? "[animation-delay:0.3s]"
+                    : ""
+                }`}
+              />
+            ))}
           </div>
         </div>
       </div>

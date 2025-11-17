@@ -3,7 +3,14 @@ import cors from "cors";
 import morgan from "morgan";
 import mongoose from "mongoose";
 import "dotenv/config";
-import Hotel from "./models/hotel";
+import Hotel, {
+  AmenityGroups,
+  ContactInfo,
+  FacilitySpace,
+  HighlightInfo,
+  LocationInfo,
+  PolicyInfo,
+} from "./models/hotel";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import jwt from "jsonwebtoken";
@@ -66,19 +73,231 @@ const requireOwner = (req: Request & { role?: string }, res: Response, next: Nex
 // Multer for multipart forms (we ignore file bytes for now and use provided imageUrls)
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Helper to extract imageUrls array from multipart fields like imageUrls[0], imageUrls[1]
-const extractImageUrls = (body: any): string[] => {
-  const direct = body.imageUrls;
-  if (Array.isArray(direct)) return direct;
-  if (typeof direct === "string" && direct.length > 0) return [direct];
-  const urls: { index: number; url: string }[] = [];
-  Object.keys(body || {}).forEach((key) => {
-    const m = key.match(/^imageUrls\[(\d+)\]$/);
-    if (m) {
-      urls.push({ index: parseInt(m[1], 10), url: body[key] });
+const isEmpty = (value: unknown) => value === undefined || value === null || value === "";
+
+const normalizeArray = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value.map(String).map((v) => v.trim()).filter(Boolean);
+  if (typeof value === "string") {
+    return value
+      .split(/[,\n]/)
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
+const buildIndexedArrayExtractor = (key: string) => {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`^${escaped}\\[(\\d+)\\]$`);
+  return (body: any) => {
+    const direct = normalizeArray(body?.[key]);
+    if (direct.length) return direct;
+    const indexed: { index: number; value: string }[] = [];
+    Object.keys(body || {}).forEach((k) => {
+      const match = k.match(regex);
+      if (match) {
+        indexed.push({ index: Number(match[1]), value: body[k] });
+      }
+    });
+    return indexed.sort((a, b) => a.index - b.index).map((entry) => entry.value).filter(Boolean);
+  };
+};
+
+const extractImageUrls = buildIndexedArrayExtractor("imageUrls");
+const extractFacilities = buildIndexedArrayExtractor("facilities");
+const extractTags = buildIndexedArrayExtractor("tags");
+const extractTypes = buildIndexedArrayExtractor("type");
+
+const parseJSONField = <T>(value: unknown): T | undefined => {
+  if (!value) return undefined;
+  if (typeof value === "object") return value as T;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+};
+
+const coerceNumber = (value: unknown, fallback?: number) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+};
+
+const coerceBoolean = (value: unknown, fallback = false) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const lowered = value.toLowerCase();
+    if (["true", "1", "yes", "on"].includes(lowered)) return true;
+    if (["false", "0", "no", "off"].includes(lowered)) return false;
+  }
+  if (typeof value === "number") return value === 1;
+  return fallback;
+};
+
+const coerceString = (value: unknown) => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : undefined;
+  }
+  return undefined;
+};
+
+const buildContact = (body: any): ContactInfo | undefined => {
+  const parsed = parseJSONField<ContactInfo>(body.contact) || {};
+  const contact: ContactInfo = { ...parsed };
+  const assign = (key: keyof ContactInfo, ...sources: string[]) => {
+    for (const source of sources) {
+      const value = coerceString(body?.[source]);
+      if (!isEmpty(value)) {
+        contact[key] = value;
+        break;
+      }
+    }
+  };
+  assign("email", "contactEmail", "contact.email");
+  assign("phone", "contactPhone", "contact.phone");
+  assign("website", "contactWebsite", "contact.website");
+  assign("whatsapp", "contactWhatsapp", "contact.whatsapp");
+
+  const socials = parseJSONField<ContactInfo["socials"]>(body.contactSocials) || contact.socials || {};
+  [
+    ["facebook", "contact.facebook", "contactSocials.facebook"],
+    ["instagram", "contact.instagram", "contactSocials.instagram"],
+    ["twitter", "contact.twitter", "contactSocials.twitter"],
+    ["linkedin", "contact.linkedin", "contactSocials.linkedin"],
+  ].forEach(([key, ...sources]) => {
+    for (const source of sources) {
+      const value = coerceString(body?.[source]);
+      if (!isEmpty(value)) {
+        socials[key as keyof ContactInfo["socials"]] = value;
+        break;
+      }
     }
   });
-  return urls.sort((a, b) => a.index - b.index).map((x) => x.url).filter(Boolean);
+  if (Object.keys(socials).length) contact.socials = socials;
+  return Object.keys(contact).length ? contact : undefined;
+};
+
+const buildLocation = (body: any): LocationInfo | undefined => {
+  const parsed = parseJSONField<LocationInfo>(body.location) || {};
+  const location: LocationInfo = { ...parsed };
+  const assign = (key: keyof LocationInfo, ...sources: string[]) => {
+    for (const source of sources) {
+      const value = body?.[source];
+      if (!isEmpty(value)) {
+        if (key === "latitude" || key === "longitude") {
+          const num = coerceNumber(value);
+          if (num !== undefined) {
+            location[key] = num;
+            break;
+          }
+        } else {
+          location[key] = value;
+          break;
+        }
+      }
+    }
+  };
+  assign("addressLine1", "location.addressLine1", "addressLine1");
+  assign("addressLine2", "location.addressLine2", "addressLine2");
+  assign("city", "location.city", "city");
+  assign("state", "location.state", "state");
+  assign("postalCode", "location.postalCode", "postalCode");
+  assign("country", "location.country", "country");
+  assign("landmark", "location.landmark", "landmark");
+  assign("latitude", "location.latitude", "latitude");
+  assign("longitude", "location.longitude", "longitude");
+  return Object.keys(location).length ? location : undefined;
+};
+
+const buildPolicies = (body: any): PolicyInfo | undefined => {
+  const parsed = parseJSONField<PolicyInfo>(body.policies) || {};
+  const policies: PolicyInfo = { ...parsed };
+  const map: Array<[keyof PolicyInfo, string[]]> = [
+    ["checkInFrom", ["policies.checkInFrom", "checkInFrom", "checkInTime"]],
+    ["checkOutUntil", ["policies.checkOutUntil", "checkOutUntil", "checkOutTime"]],
+    ["cancellationPolicy", ["policies.cancellationPolicy", "cancellationPolicy"]],
+    ["petPolicy", ["policies.petPolicy", "petPolicy"]],
+    ["smokingPolicy", ["policies.smokingPolicy", "smokingPolicy"]],
+    ["childrenPolicy", ["policies.childrenPolicy", "childrenPolicy"]],
+    ["damagePolicy", ["policies.damagePolicy", "damagePolicy"]],
+  ];
+  map.forEach(([key, sources]) => {
+    for (const source of sources) {
+      const value = coerceString(body?.[source]);
+      if (!isEmpty(value)) {
+        policies[key] = value;
+        break;
+      }
+    }
+  });
+  return Object.keys(policies).length ? policies : undefined;
+};
+
+const buildAmenities = (body: any): AmenityGroups | undefined => {
+  const parsed = parseJSONField<AmenityGroups>(body.amenitiesDetail) || {};
+  const details: AmenityGroups = { ...parsed };
+  const sections = ["general", "room", "dining", "wellness", "business", "accessibility", "safety", "technology", "services"] as const;
+  sections.forEach((section) => {
+    const values = normalizeArray(body?.[`amenities.${section}`]);
+    if (values.length) {
+      details[section] = values;
+    }
+  });
+  return Object.keys(details).length ? details : undefined;
+};
+
+const buildHighlights = (body: any): HighlightInfo[] | undefined => {
+  const parsed = parseJSONField<HighlightInfo[]>(body.highlights);
+  if (Array.isArray(parsed) && parsed.length) return parsed;
+  const titles = buildIndexedArrayExtractor("highlights")(body);
+  if (!titles.length) return undefined;
+  return titles.map((title) => ({ title }));
+};
+
+const buildFacilitySpaces = (body: any): FacilitySpace[] | undefined => {
+  const parsed = parseJSONField<FacilitySpace[]>(body.facilitySpaces);
+  if (Array.isArray(parsed) && parsed.length) return parsed;
+  return undefined;
+};
+
+const buildHotelPayload = (body: any) => {
+  const location = buildLocation(body);
+  const contact = buildContact(body);
+  const policies = buildPolicies(body);
+  const amenitiesDetail = buildAmenities(body);
+  const facilitySpaces = buildFacilitySpaces(body);
+  const highlights = buildHighlights(body);
+  const facilities = extractFacilities(body);
+  const tags = extractTags(body);
+  const type = extractTypes(body);
+
+  const payload: any = {
+    name: coerceString(body.name),
+    description: coerceString(body.description),
+    type: type.length ? type : normalizeArray(body.type),
+    city: coerceString(body.city) || location?.city,
+    country: coerceString(body.country) || location?.country,
+    adultCount: coerceNumber(body.adultCount, 1) ?? 1,
+    childCount: coerceNumber(body.childCount, 0) ?? 0,
+    facilities,
+    pricePerNight: coerceNumber(body.pricePerNight, 0) ?? 0,
+    starRating: coerceNumber(body.starRating, 0) ?? 0,
+    tags,
+    heroImage: coerceString(body.heroImage),
+    isFeatured: coerceBoolean(body.isFeatured, false),
+    contact,
+    policies,
+    location,
+    amenitiesDetail,
+    facilitySpaces,
+    highlights,
+  };
+
+  return payload;
 };
 
 // Configure Cloudinary if env exists
@@ -124,7 +343,13 @@ app.post("/my-hotels", verifyToken, requireOwner, upload.array("imageFiles", 6),
   const uploaded = await uploadToCloudinary((req.files as Express.Multer.File[]) || []);
   let imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
   if (!Array.isArray(imageUrls)) imageUrls = imageUrls ? [imageUrls as any] : [];
-  const hotel = await new Hotel({ ...req.body, imageUrls, userId: req.userId, lastUpdated: new Date() }).save();
+  const payload = buildHotelPayload(req.body);
+  const hotel = await new Hotel({
+    ...payload,
+    imageUrls,
+    userId: req.userId,
+    lastUpdated: new Date(),
+  }).save();
   res.json(hotel);
 });
 
@@ -132,9 +357,10 @@ app.put("/my-hotels/:id", verifyToken, requireOwner, upload.array("imageFiles", 
   const uploaded = await uploadToCloudinary((req.files as Express.Multer.File[]) || []);
   let imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
   if (!Array.isArray(imageUrls)) imageUrls = imageUrls ? [imageUrls as any] : [];
+  const payload = buildHotelPayload(req.body);
   const updated = await Hotel.findOneAndUpdate(
     { _id: req.params.id, userId: req.userId },
-    { ...req.body, imageUrls, lastUpdated: new Date() },
+    { ...payload, imageUrls, lastUpdated: new Date() },
     { new: true }
   );
   if (!updated) return res.status(404).json({ message: "Hotel not found" });

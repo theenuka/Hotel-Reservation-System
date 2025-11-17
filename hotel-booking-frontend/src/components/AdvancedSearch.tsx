@@ -14,35 +14,85 @@ interface AdvancedSearchProps {
   isExpanded?: boolean;
 }
 
+type SearchFormState = {
+  destination: string;
+  checkIn: Date;
+  checkOut: Date;
+  adultCount: number;
+  childCount: number;
+  minPrice: string;
+  maxPrice: string;
+  starRating: string;
+  hotelType: string;
+  facilities: string[];
+  sortBy: "relevance" | "priceLow" | "priceHigh" | "rating" | "distance";
+  radius: "10" | "25" | "50" | "100";
+  instantBooking: boolean;
+  freeCancellation: boolean;
+  breakfast: boolean;
+  wifi: boolean;
+  parking: boolean;
+  pool: boolean;
+  gym: boolean;
+  spa: boolean;
+};
+
+const formatDateInput = (value: Date): string => {
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+    return "";
+  }
+  return value.toISOString().split("T")[0];
+};
+
+const buildClearedState = (): SearchFormState => ({
+  destination: "",
+  checkIn: new Date(),
+  checkOut: new Date(),
+  adultCount: 1,
+  childCount: 0,
+  minPrice: "",
+  maxPrice: "",
+  starRating: "",
+  hotelType: "",
+  facilities: [],
+  sortBy: "relevance",
+  radius: "50",
+  instantBooking: false,
+  freeCancellation: false,
+  breakfast: false,
+  wifi: false,
+  parking: false,
+  pool: false,
+  gym: false,
+  spa: false,
+});
+
 const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   onSearch,
   isExpanded = false,
 }) => {
   const navigate = useNavigate();
   const search = useSearchContext();
+  const inputIds = {
+    destination: "advanced-destination",
+    checkIn: "advanced-check-in",
+    checkOut: "advanced-check-out",
+    guests: "advanced-guests",
+    minPrice: "advanced-min-price",
+    maxPrice: "advanced-max-price",
+    starRating: "advanced-star-rating",
+    hotelType: "advanced-hotel-type",
+    sortBy: "advanced-sort-by",
+    radius: "advanced-radius",
+  } as const;
   const [showAdvanced, setShowAdvanced] = useState(isExpanded);
-  const [searchData, setSearchData] = useState({
+  const [searchData, setSearchData] = useState<SearchFormState>({
+    ...buildClearedState(),
     destination: search.destination,
     checkIn: search.checkIn,
     checkOut: search.checkOut,
     adultCount: search.adultCount,
     childCount: search.childCount,
-    // Advanced filters
-    minPrice: "",
-    maxPrice: "",
-    starRating: "",
-    hotelType: "",
-    facilities: [] as string[],
-    sortBy: "relevance",
-    radius: "50", // km
-    instantBooking: false,
-    freeCancellation: false,
-    breakfast: false,
-    wifi: false,
-    parking: false,
-    pool: false,
-    gym: false,
-    spa: false,
   });
 
   // Dropdown functionality for destination
@@ -216,28 +266,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       // Don't clear search values immediately - let the search page use them
       // Only clear the local form state
       setTimeout(() => {
-        setSearchData({
-          destination: "",
-          checkIn: new Date(),
-          checkOut: new Date(),
-          adultCount: 1,
-          childCount: 0,
-          minPrice: "",
-          maxPrice: "",
-          starRating: "",
-          hotelType: "",
-          facilities: [],
-          sortBy: "relevance",
-          radius: "50",
-          instantBooking: false,
-          freeCancellation: false,
-          breakfast: false,
-          wifi: false,
-          parking: false,
-          pool: false,
-          gym: false,
-          spa: false,
-        });
+        setSearchData(buildClearedState());
         // Remove this line: search.clearSearchValues();
       }, 100);
       return;
@@ -285,28 +314,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     // Don't clear search values immediately - let the search page use them
     // Only clear the local form state
     setTimeout(() => {
-      setSearchData({
-        destination: "",
-        checkIn: new Date(),
-        checkOut: new Date(),
-        adultCount: 1,
-        childCount: 0,
-        minPrice: "",
-        maxPrice: "",
-        starRating: "",
-        hotelType: "",
-        facilities: [],
-        sortBy: "relevance",
-        radius: "50",
-        instantBooking: false,
-        freeCancellation: false,
-        breakfast: false,
-        wifi: false,
-        parking: false,
-        pool: false,
-        gym: false,
-        spa: false,
-      });
+      setSearchData(buildClearedState());
       // Remove this line: search.clearSearchValues();
     }, 100);
   };
@@ -360,33 +368,75 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     "Barcelona",
   ];
 
+  const baseLabel =
+    "flex items-center gap-2 text-[0.65rem] font-semibold tracking-[0.3em] uppercase text-white/60";
+  const baseField =
+    "w-full h-[58px] rounded-2xl border border-white/15 bg-white/5 text-white placeholder:text-white/45 shadow-[0_18px_45px_rgba(2,4,12,0.55)] focus:ring-2 focus:ring-[#F86EB6]/45 focus:border-transparent transition";
+  const heroStats = [
+    { label: "Boutique stays", value: "240+" },
+    { label: "Instant holds", value: "92" },
+    { label: "Cities", value: "31" },
+  ];
+
   return (
-    <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-large p-8 max-w-6xl mx-auto border border-white/20">
+    <div className="relative overflow-hidden rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(255,158,112,0.2),transparent_55%),_radial-gradient(circle_at_bottom,_rgba(108,99,255,0.25),transparent_60%),_linear-gradient(135deg,#050712,#0B1226)] text-white p-6 sm:p-8 max-w-6xl mx-auto border border-white/10 shadow-[0_45px_120px_rgba(3,7,18,0.65)]">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-14 -right-6 w-56 h-56 bg-gradient-to-br from-[#FF8F70]/35 via-[#F86EB6]/20 to-transparent blur-3xl" />
+        <div className="absolute -bottom-20 -left-10 w-64 h-64 bg-gradient-to-tr from-[#6C63FF]/35 via-transparent to-transparent blur-[140px]" />
+      </div>
+      <div className="relative space-y-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-[0.6rem] uppercase tracking-[0.55em] text-white/45">
+              Phoenix Atlas
+            </p>
+            <h3 className="text-3xl sm:text-4xl font-display leading-tight">
+              Search curated stays across the globe
+            </h3>
+            <p className="text-white/70 mt-2 text-base max-w-xl">
+              Dial in destinations, flexible dates, and all the finishing touches—then launch into search with one expressive action.
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-sm text-white/70">
+            {heroStats.map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-center">
+                <p className="text-2xl font-semibold text-white">{stat.value}</p>
+                <p className="text-[0.65rem] uppercase tracking-[0.4em] text-white/50 mt-1">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       {/* Basic Search */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {/* Destination */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center">
-            <MapPin className="w-4 h-4 mr-2 text-primary-600" />
+          <label
+            htmlFor={inputIds.destination}
+            className={baseLabel}
+          >
+            <MapPin className="w-4 h-4 text-[#FFB094]" />
             Destination
           </label>
           <div className="relative">
             <input
               type="text"
               placeholder="Where are you going?"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              className={`${baseField} pl-12 pr-4`}
+              id={inputIds.destination}
               value={searchData.destination}
               onChange={(e) => handleInputChange("destination", e.target.value)}
               onFocus={() => setShowDropdown(filteredPlaces.length > 0)}
               onBlur={() => setShowDropdown(false)}
             />
-            <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
             {showDropdown && (
-              <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+              <ul className="absolute left-0 z-10 w-full overflow-y-auto bg-night-900/95 border border-white/15 rounded-2xl shadow-[0_25px_60px_rgba(3,7,18,0.65)] top-full max-h-48">
                 {filteredPlaces.map((place) => (
                   <li
                     key={place}
-                    className="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm border-b border-gray-100 last:border-b-0"
+                    className="px-4 py-2 text-sm border-b border-white/5 cursor-pointer hover:bg-white/10 last:border-b-0"
                     onMouseDown={() => {
                       handleInputChange("destination", place);
                       setShowDropdown(false);
@@ -402,51 +452,63 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
         {/* Check-in Date */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center">
-            <Calendar className="w-4 h-4 mr-2 text-primary-600" />
+          <label
+            htmlFor={inputIds.checkIn}
+            className={baseLabel}
+          >
+            <Calendar className="w-4 h-4 text-[#FFB094]" />
             Check-in
           </label>
           <div className="relative">
             <input
               type="date"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-              value={searchData.checkIn.toISOString().split("T")[0]}
+              className={`${baseField} pl-12 pr-4`}
+              id={inputIds.checkIn}
+              value={formatDateInput(searchData.checkIn)}
               onChange={(e) =>
                 handleInputChange("checkIn", new Date(e.target.value))
               }
             />
-            <Calendar className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
           </div>
         </div>
 
         {/* Check-out Date */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center">
-            <Calendar className="w-4 h-4 mr-2 text-primary-600" />
+          <label
+            htmlFor={inputIds.checkOut}
+            className={baseLabel}
+          >
+            <Calendar className="w-4 h-4 text-[#FFB094]" />
             Check-out
           </label>
           <div className="relative">
             <input
               type="date"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-              value={searchData.checkOut.toISOString().split("T")[0]}
+              className={`${baseField} pl-12 pr-4`}
+              id={inputIds.checkOut}
+              value={formatDateInput(searchData.checkOut)}
               onChange={(e) =>
                 handleInputChange("checkOut", new Date(e.target.value))
               }
             />
-            <Calendar className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
           </div>
         </div>
 
         {/* Guests */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center">
-            <Users className="w-4 h-4 mr-2 text-primary-600" />
+          <label
+            htmlFor={inputIds.guests}
+            className={baseLabel}
+          >
+            <Users className="w-4 h-4 text-[#FFB094]" />
             Guests
           </label>
           <div className="relative">
             <select
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+              className={`${baseField} pl-12 pr-10 appearance-none`}
+              id={inputIds.guests}
               value={`${searchData.adultCount} adults, ${searchData.childCount} children`}
               onChange={(e) => {
                 const [adults, children] = e.target.value.split(", ");
@@ -462,54 +524,56 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               <option value="3 adults, 0 children">3 adults</option>
               <option value="4 adults, 0 children">4 adults</option>
             </select>
-            <Users className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
           </div>
         </div>
       </div>
 
       {/* Advanced Search Toggle */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center text-primary-600 hover:text-primary-700 font-medium transition-colors"
+          className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white/70 transition-colors hover:border-white/50 hover:text-white"
         >
-          <Filter className="w-4 h-4 mr-2" />
-          Advanced Filters
+          <Filter className="w-4 h-4" />
+          {showAdvanced ? "Hide" : "Show"} advanced filters
         </button>
 
         <button
           onClick={handleSearch}
-          className="flex items-center bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-primary-800 transform hover:scale-105 transition-all duration-200 shadow-medium hover:shadow-large"
+          className="flex items-center gap-2 px-8 py-3 font-semibold text-white transition-transform duration-200 rounded-2xl border border-white/10 bg-[#0B1424] shadow-[0_25px_45px_rgba(1,3,10,0.65)] hover:border-white/30 hover:scale-[1.01]"
         >
-          <SearchIcon className="w-4 h-4 mr-2" />
+          <SearchIcon className="w-4 h-4" />
           Search Hotels
         </button>
       </div>
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="border-t border-gray-200 pt-6 space-y-6">
+        <div className="pt-6 space-y-6 border-t border-white/10">
           {/* Price Range */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60">
                 Price Range
               </label>
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <input
                   type="number"
                   placeholder="Min"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={`${baseField} px-4`}
+                  aria-label="Minimum price"
                   value={searchData.minPrice}
                   onChange={(e) =>
                     handleInputChange("minPrice", e.target.value)
                   }
                 />
-                <span className="flex items-center text-gray-500">-</span>
+                <span className="flex items-center text-white/40">-</span>
                 <input
                   type="number"
                   placeholder="Max"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={`${baseField} px-4`}
+                  aria-label="Maximum price"
                   value={searchData.maxPrice}
                   onChange={(e) =>
                     handleInputChange("maxPrice", e.target.value)
@@ -520,11 +584,15 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
             {/* Star Rating */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor={inputIds.starRating}
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60"
+              >
                 Star Rating
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${baseField} px-4`}
+                id={inputIds.starRating}
                 value={searchData.starRating}
                 onChange={(e) =>
                   handleInputChange("starRating", e.target.value)
@@ -540,11 +608,15 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
             {/* Hotel Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor={inputIds.hotelType}
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60"
+              >
                 Hotel Type
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${baseField} px-4`}
+                id={inputIds.hotelType}
                 value={searchData.hotelType}
                 onChange={(e) => handleInputChange("hotelType", e.target.value)}
               >
@@ -560,22 +632,22 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
 
           {/* Facilities */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block mb-3 text-xs font-semibold tracking-[0.3em] uppercase text-white/60">
               Facilities
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {facilityOptions.map((facility) => (
                 <label
                   key={facility.id}
-                  className="flex items-center space-x-2 cursor-pointer"
+                  className="flex items-center gap-2 p-3 rounded-2xl border border-white/15 bg-white/5 text-sm text-white/80 cursor-pointer transition hover:border-white/60 hover:bg-white/10"
                 >
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="text-[#F86EB6] border-white/30 rounded bg-transparent focus:ring-[#F86EB6]/60"
                     checked={searchData.facilities.includes(facility.id)}
                     onChange={() => handleFacilityToggle(facility.id)}
                   />
-                  <span className="text-sm text-gray-700">
+                  <span>
                     {facility.icon} {facility.label}
                   </span>
                 </label>
@@ -584,13 +656,17 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
           </div>
 
           {/* Sort Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor={inputIds.sortBy}
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60"
+              >
                 Sort By
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${baseField} px-4`}
+                id={inputIds.sortBy}
                 value={searchData.sortBy}
                 onChange={(e) => handleInputChange("sortBy", e.target.value)}
               >
@@ -603,11 +679,15 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor={inputIds.radius}
+                className="block mb-2 text-xs font-semibold tracking-[0.3em] uppercase text-white/60"
+              >
                 Search Radius (km)
               </label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`${baseField} px-4`}
+                id={inputIds.radius}
                 value={searchData.radius}
                 onChange={(e) => handleInputChange("radius", e.target.value)}
               >
@@ -622,8 +702,8 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       )}
 
       {/* Quick Search Destinations */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">
+      <div className="pt-6 border-t border-white/10">
+        <h3 className="mb-3 text-xs font-semibold tracking-[0.3em] uppercase text-white/60">
           Popular Destinations
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -631,12 +711,13 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
             <button
               key={destination}
               onClick={() => handleQuickSearch(destination)}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-blue-100 hover:text-blue-700 transition-colors"
+              className="px-4 py-1.5 text-sm text-white/80 transition-all rounded-full border border-white/15 bg-white/5 hover:border-white/60 hover:text-white hover:-translate-y-0.5"
             >
               {destination}
             </button>
           ))}
         </div>
+      </div>
       </div>
     </div>
   );

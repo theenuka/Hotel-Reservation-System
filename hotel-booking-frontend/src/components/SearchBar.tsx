@@ -1,12 +1,11 @@
 import { FormEvent, useState, useEffect, useRef } from "react";
 import useSearchContext from "../hooks/useSearchContext";
-import { MdTravelExplore } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Card, CardContent } from "./ui/card";
+import { Compass, CalendarDays, Users } from "lucide-react";
 
 const SearchBar = () => {
   const navigate = useNavigate();
@@ -24,6 +23,10 @@ const SearchBar = () => {
   const hasFetchedRef = useRef(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [isInitialMount, setIsInitialMount] = useState(true);
+
+  const minDate = new Date();
+  const maxDate = new Date();
+  maxDate.setFullYear(maxDate.getFullYear() + 1);
 
   // Fetch hotel places on mount
   // You can replace this fetch with context if you already have hotel data
@@ -130,6 +133,15 @@ const SearchBar = () => {
     }
   }, [destination, places]);
 
+  const resetFormValues = () => {
+    const today = new Date();
+    setDestination("");
+    setCheckIn(today);
+    setCheckOut(today);
+    setAdultCount(1);
+    setChildCount(0);
+  };
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
@@ -151,15 +163,8 @@ const SearchBar = () => {
 
       navigate("/search");
 
-      // Don't clear search values immediately - let the search page use them
-      // Only clear the local form state
       setTimeout(() => {
-        setDestination("");
-        setCheckIn(minDate);
-        setCheckOut(minDate);
-        setAdultCount(1);
-        setChildCount(0);
-        // Remove this line: search.clearSearchValues();
+        resetFormValues();
       }, 100);
       return;
     }
@@ -178,58 +183,44 @@ const SearchBar = () => {
 
     navigate("/search");
 
-    // Don't clear search values immediately - let the search page use them
-    // Only clear the local form state
     setTimeout(() => {
-      setDestination("");
-      setCheckIn(minDate);
-      setCheckOut(minDate);
-      setAdultCount(1);
-      setChildCount(0);
-      // Remove this line: search.clearSearchValues();
+      resetFormValues();
     }, 100);
   };
 
   const handleClear = () => {
-    setDestination("");
-    setCheckIn(minDate);
-    setCheckOut(minDate);
-    setAdultCount(1);
-    setChildCount(0);
+    resetFormValues();
     search.clearSearchValues();
     setShowDropdown(false);
     setHasUserInteracted(false);
     setIsInitialMount(false);
   };
-
-  const minDate = new Date();
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + 1);
-
   return (
-    <Card className="p-4">
-      <CardContent className="p-0">
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 items-center gap-4"
-          autoComplete="off"
-        >
-          <div className="flex flex-row items-center flex-1 relative sm:col-span-2 lg:col-span-1">
-            <MdTravelExplore
-              size={20}
-              className="mr-2 text-gray-500 absolute left-3 z-10"
-            />
+    <div className="rounded-[28px] border border-white/10 bg-white/5 p-4 sm:p-6">
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.9fr_0.9fr_0.8fr] 2xl:grid-cols-[1.3fr_repeat(3,1fr)] items-end gap-4"
+        autoComplete="off"
+      >
+        <div className="relative">
+          <label
+            htmlFor="destination"
+            className="text-xs uppercase tracking-[0.3em] text-white/60 mb-2 block"
+          >
+            Destination
+          </label>
+          <div className="relative">
+            <Compass className="w-4 h-4 text-white/50 absolute left-4 top-1/2 -translate-y-1/2" />
             <Input
-              placeholder="Where are you going?"
-              className="pl-10"
+              id="destination"
+              placeholder="City, region, or landmark"
+              className="pl-11 pr-4 py-3 rounded-2xl border-white/15 bg-white/10 text-white placeholder:text-white/60 focus-visible:ring-brand-400 focus-visible:ring-offset-night-900"
               value={destination}
               onChange={(event) => {
                 setDestination(event.target.value);
                 setHasUserInteracted(true);
               }}
               onFocus={() => {
-                // Only show dropdown if user manually focuses and there are filtered places
-                // AND we're not in initial mount state
                 if (
                   filteredPlaces.length > 0 &&
                   destination.length > 0 &&
@@ -242,11 +233,11 @@ const SearchBar = () => {
               onBlur={() => setShowDropdown(false)}
             />
             {showDropdown && !isInitialMount && (
-              <ul className="absolute top-full left-0 w-full bg-white p-2 border border-input rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
+              <ul className="absolute top-full mt-2 left-0 w-full glass-panel rounded-2xl border border-white/15 shadow-large z-20 max-h-56 overflow-y-auto text-white">
                 {filteredPlaces.map((place) => (
                   <li
                     key={place}
-                    className="px-3 py-2 cursor-pointer hover:bg-accent text-sm"
+                    className="px-4 py-2 cursor-pointer hover:bg-white/10 text-sm"
                     onMouseDown={() => {
                       setDestination(place);
                       setShowDropdown(false);
@@ -258,8 +249,14 @@ const SearchBar = () => {
               </ul>
             )}
           </div>
+        </div>
 
-          <div className="sm:col-span-1">
+        <div>
+          <label className="text-xs uppercase tracking-[0.3em] text-white/60 mb-2 block">
+            Check-in
+          </label>
+          <div className="relative">
+            <CalendarDays className="w-4 h-4 text-white/50 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <DatePicker
               selected={checkIn}
               onChange={(date) => setCheckIn(date as Date)}
@@ -268,12 +265,20 @@ const SearchBar = () => {
               endDate={checkOut}
               minDate={minDate}
               maxDate={maxDate}
-              placeholderText="Check-in Date"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholderText="Arrival"
+              aria-label="Check-in date"
+              className="w-full rounded-2xl border border-white/15 bg-white/10 text-white placeholder:text-white/60 py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-400"
               wrapperClassName="min-w-full"
             />
           </div>
-          <div className="sm:col-span-1">
+        </div>
+
+        <div>
+          <label className="text-xs uppercase tracking-[0.3em] text-white/60 mb-2 block">
+            Check-out
+          </label>
+          <div className="relative">
+            <CalendarDays className="w-4 h-4 text-white/50 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <DatePicker
               selected={checkOut}
               onChange={(date) => setCheckOut(date as Date)}
@@ -282,63 +287,71 @@ const SearchBar = () => {
               endDate={checkOut}
               minDate={minDate}
               maxDate={maxDate}
-              placeholderText="Check-out Date"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholderText="Departure"
+              aria-label="Check-out date"
+              className="w-full rounded-2xl border border-white/15 bg-white/10 text-white placeholder:text-white/60 py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-400"
               wrapperClassName="min-w-full"
             />
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 sm:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-muted-foreground whitespace-nowrap">
-                Adults:
-              </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs uppercase tracking-[0.3em] text-white/60 mb-2 block">
+              Adults
+            </label>
+            <div className="relative">
+              <Users className="w-4 h-4 text-white/40 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               <Input
                 type="number"
                 min={1}
                 max={20}
                 value={adultCount}
                 onChange={(event) =>
-                  setAdultCount(parseInt(event.target.value))
+                  setAdultCount(parseInt(event.target.value) || 1)
                 }
-                className="w-16"
+                className="pl-11 pr-4 py-3 rounded-2xl border-white/15 bg-white/10 text-white placeholder:text-white/60 focus-visible:ring-brand-400 focus-visible:ring-offset-night-900"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-muted-foreground whitespace-nowrap">
-                Children:
-              </label>
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-[0.3em] text-white/60 mb-2 block">
+              Children
+            </label>
+            <div className="relative">
+              <Users className="w-4 h-4 text-white/40 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               <Input
                 type="number"
                 min={0}
                 max={20}
                 value={childCount}
                 onChange={(event) =>
-                  setChildCount(parseInt(event.target.value))
+                  setChildCount(parseInt(event.target.value) || 0)
                 }
-                className="w-16"
+                className="pl-11 pr-4 py-3 rounded-2xl border-white/15 bg-white/10 text-white placeholder:text-white/60 focus-visible:ring-brand-400 focus-visible:ring-offset-night-900"
               />
             </div>
           </div>
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 sm:col-span-2 lg:col-span-1">
-            <Button
-              type="submit"
-              className="flex-1 items-center text-white bg-primary-600 px-6 py-2 rounded-md font-semibold hover:bg-primary-500 hover:shadow-medium transition-all duration-200 group"
-            >
-              Search
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              className="flex-1 items-center text-white bg-gray-500 px-6 py-2 rounded-md font-semibold hover:bg-gray-400 hover:shadow-medium transition-all duration-200 group"
-              onClick={handleClear}
-            >
-              Clear
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+        <div className="flex flex-col sm:flex-row gap-2 col-span-1 lg:col-span-full">
+          <Button
+            type="submit"
+            className="flex-1 rounded-2xl border border-white/15 bg-[#0C1424] text-white font-semibold py-3 shadow-[0_20px_35px_rgba(1,3,10,0.6)] hover:border-white/35 hover:-translate-y-0.5 transition"
+          >
+            Search stays
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="flex-1 rounded-2xl border border-white/15 bg-white/5 text-white/80 hover:text-white"
+            onClick={handleClear}
+          >
+            Clear filters
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 
