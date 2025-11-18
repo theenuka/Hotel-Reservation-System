@@ -16,12 +16,13 @@ COPY hotel-booking-frontend/netlify.toml ./
 COPY hotel-booking-frontend/index.html ./
 COPY hotel-booking-frontend/public ./public
 COPY hotel-booking-frontend/src ./src
+COPY hotel-booking-frontend/nginx.conf ./nginx.conf
 COPY shared /shared
 RUN npm run build
 
 FROM nginx:1.27-alpine AS runner
 WORKDIR /usr/share/nginx/html
 COPY --from=builder /app/dist ./
-COPY hotel-booking-frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 4173
 CMD ["nginx", "-g", "daemon off;"]
