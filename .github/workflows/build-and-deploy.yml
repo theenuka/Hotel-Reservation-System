@@ -22,32 +22,39 @@ jobs:
         service:
           # --- FRONTEND ---
           - name: frontend
-            path: hotel-booking-frontend
+            context: .
+            dockerfile: hotel-booking-frontend/Dockerfile
             repo: phoenix-frontend-service
 
           # --- BACKEND SERVICES ---
           - name: api-gateway
-            path: backend/services/api-gateway
+            context: backend/services/api-gateway
+            dockerfile: backend/services/api-gateway/Dockerfile
             repo: phoenix-api-gateway-service
             
           - name: identity-service
-            path: backend/services/identity-service
+            context: backend/services/identity-service
+            dockerfile: backend/services/identity-service/Dockerfile
             repo: phoenix-identity-service
             
           - name: hotel-service
-            path: backend/services/hotel-service
+            context: backend/services/hotel-service
+            dockerfile: backend/services/hotel-service/Dockerfile
             repo: phoenix-hotel-service
             
           - name: booking-service
-            path: backend/services/booking-service
+            context: backend/services/booking-service
+            dockerfile: backend/services/booking-service/Dockerfile
             repo: phoenix-booking-service
             
           - name: search-service
-            path: backend/services/search-service
+            context: backend/services/search-service
+            dockerfile: backend/services/search-service/Dockerfile
             repo: phoenix-search-service
             
           - name: notification-service
-            path: backend/services/notification-service
+            context: backend/services/notification-service
+            dockerfile: backend/services/notification-service/Dockerfile
             repo: phoenix-notification-service
 
     steps:
@@ -72,12 +79,14 @@ jobs:
           IMAGE_TAG: ${{ github.sha }} 
         run: |
           echo "🚧 Building ${{ matrix.service.name }}..."
-          
-          # Navigate to the specific service folder
-          cd ${{ matrix.service.path }}
+          BUILD_CONTEXT="${{ matrix.service.context }}"
+          DOCKERFILE="${{ matrix.service.dockerfile }}"
           
           # Build the image
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build \
+            -f "$DOCKERFILE" \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            "$BUILD_CONTEXT"
           
           # Push the unique commit tag (for rollbacks)
           echo "⬆️ Pushing tag: $IMAGE_TAG"
