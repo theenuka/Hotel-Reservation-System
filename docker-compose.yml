@@ -1,4 +1,5 @@
-version: '3.9'
+version: "3.9"
+
 services:
   mongo:
     image: mongo:7
@@ -10,5 +11,138 @@ services:
       MONGO_INITDB_DATABASE: hotel-booking
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 })' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: hotel-booking-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  identity-service:
+    build:
+      context: ./backend/services/identity-service
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      PORT: 7102
+    depends_on:
+      mongo:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "7102:7102"
+
+  hotel-service:
+    build:
+      context: ./backend/services/hotel-service
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      PORT: 7103
+    depends_on:
+      mongo:
+        condition: service_started
+      identity-service:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "7103:7103"
+
+  booking-service:
+    build:
+      context: ./backend/services/booking-service
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      PORT: 7104
+    depends_on:
+      mongo:
+        condition: service_started
+      identity-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "7104:7104"
+
+  search-service:
+    build:
+      context: ./backend/services/search-service
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      PORT: 7105
+    depends_on:
+      mongo:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "7105:7105"
+
+  notification-service:
+    build:
+      context: ./backend/services/notification-service
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      PORT: 7101
+    depends_on:
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "7101:7101"
+
+  api-gateway:
+    build:
+      context: ./backend/services/api-gateway
+      dockerfile: Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      PORT: 7008
+    depends_on:
+      identity-service:
+        condition: service_started
+      hotel-service:
+        condition: service_started
+      booking-service:
+        condition: service_started
+      search-service:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "7008:7008"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: hotel-booking-frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:7008
+    depends_on:
+      api-gateway:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "4173:4173"
+
 volumes:
   mongo-data:

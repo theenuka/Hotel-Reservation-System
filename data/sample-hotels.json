@@ -1,0 +1,254 @@
+[
+  {
+    "name": "Aurora Sky Suites",
+    "city": "Reykjavík",
+    "country": "Iceland",
+    "description": "Glass-capped suites that float above Faxaflói Bay with heated floors, geothermal plunge pools, and rooftop observatories for chasing the northern lights.",
+    "type": ["Boutique", "Luxury"],
+    "adultCount": 2,
+    "childCount": 1,
+    "facilities": ["Spa", "Sauna", "Private Chef", "Airport Shuttle", "Northern Lights Concierge"],
+    "pricePerNight": 520,
+    "starRating": 5,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "12 Frost Street",
+      "city": "Reykjavík",
+      "country": "Iceland"
+    },
+    "tags": ["northern lights", "glass suites"],
+    "isFeatured": true
+  },
+  {
+    "name": "Laguna Sol Residences",
+    "city": "Tulum",
+    "country": "Mexico",
+    "description": "Jungle-canopied villas with cenote-fed plunge pools, mezcal butler service, and beach cruisers that unlock the Sian Ka'an Reserve.",
+    "type": ["Resort", "Wellness"],
+    "adultCount": 3,
+    "childCount": 2,
+    "facilities": ["Private Beach", "Wellness Studio", "In-Villa Dining", "Kids Club"],
+    "pricePerNight": 410,
+    "starRating": 5,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1501117716987-c8e1ecb210cc?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505693325606-1f0027e3973d?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "Km 8 Boca Paila",
+      "city": "Tulum",
+      "country": "Mexico"
+    },
+    "tags": ["cenote", "jungle boardwalk"],
+    "isFeatured": true
+  },
+  {
+    "name": "Atlas Heritage Riad",
+    "city": "Marrakesh",
+    "country": "Morocco",
+    "description": "Restored 18th-century riad with hand-carved cedar suites, spice market cooking lab, and Atlas Mountain sunrise transfers.",
+    "type": ["Riad", "Cultural"],
+    "adultCount": 4,
+    "childCount": 1,
+    "facilities": ["Rooftop Pool", "Hammam", "Tea Salon", "Guided Souk Tours"],
+    "pricePerNight": 265,
+    "starRating": 4,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1469980098053-382eb10ba017?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "Derb Debachi 91",
+      "city": "Marrakesh",
+      "country": "Morocco"
+    },
+    "tags": ["riad", "medina"],
+    "isFeatured": false
+  },
+  {
+    "name": "Harbor & Hearth Club",
+    "city": "Seattle",
+    "country": "United States",
+    "description": "Cloud-level residences inside a reimagined pier warehouse featuring tasting counters by James Beard alumni and private hydrofoil tours of Puget Sound.",
+    "type": ["Urban", "Residence"],
+    "adultCount": 2,
+    "childCount": 1,
+    "facilities": ["Chef Counter", "Wellness Floor", "Cinema", "EV Fleet"],
+    "pricePerNight": 340,
+    "starRating": 5,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "Pier 57, Alaskan Way",
+      "city": "Seattle",
+      "state": "WA",
+      "country": "United States"
+    },
+    "tags": ["waterfront", "culinary"],
+    "isFeatured": false
+  },
+  {
+    "name": "Alpine Glow Lodge",
+    "city": "Zermatt",
+    "country": "Switzerland",
+    "description": "Ski-in chalets carved into the valley ridge with private funicular access, Matterhorn-facing soaking tubs, and fondue ateliers.",
+    "type": ["Chalet", "Adventure"],
+    "adultCount": 6,
+    "childCount": 3,
+    "facilities": ["Ski Valet", "Helipad", "Private Chef", "Snow Spa"],
+    "pricePerNight": 890,
+    "starRating": 5,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "Matterhorn View 22",
+      "city": "Zermatt",
+      "country": "Switzerland"
+    },
+    "tags": ["ski", "mountain"],
+    "isFeatured": true
+  },
+  {
+    "name": "Saffron Dune Escape",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "description": "Mirage-style desert pods with retractable roofs, camelback tasting expeditions, and astronomer-led stargazing theaters.",
+    "type": ["Desert", "Experience"],
+    "adultCount": 2,
+    "childCount": 1,
+    "facilities": ["Infinity Pool", "Starlight Cinema", "Desert Guides", "Wellness Tent"],
+    "pricePerNight": 460,
+    "starRating": 5,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "Al Marmoom Reserve",
+      "city": "Dubai",
+      "country": "United Arab Emirates"
+    },
+    "tags": ["desert", "astronomy"],
+    "isFeatured": false
+  },
+  {
+    "name": "Cobalt Coast Retreat",
+    "city": "Santorini",
+    "country": "Greece",
+    "description": "Cycladic cliff homes with suspended plunge pools, rosé libraries, and private sunset catamaran briefings.",
+    "type": ["Island", "Romantic"],
+    "adultCount": 2,
+    "childCount": 0,
+    "facilities": ["Infinity Pools", "Butler Service", "Sunset Deck", "Wine Cellar"],
+    "pricePerNight": 375,
+    "starRating": 5,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "Oia Cliffs",
+      "city": "Santorini",
+      "country": "Greece"
+    },
+    "tags": ["caldera", "sunset"],
+    "isFeatured": true
+  },
+  {
+    "name": "Verdant Valley Sanctuary",
+    "city": "Queenstown",
+    "country": "New Zealand",
+    "description": "Biophilic lodges with living green roofs, heli-picnic adventures to Milford Sound, and botanical gin labs.",
+    "type": ["Eco", "Adventure"],
+    "adultCount": 4,
+    "childCount": 2,
+    "facilities": ["Helipad", "Guided Hikes", "Gin Lab", "Outdoor Onsen"],
+    "pricePerNight": 295,
+    "starRating": 4,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "Glenorchy Road",
+      "city": "Queenstown",
+      "country": "New Zealand"
+    },
+    "tags": ["eco", "heli"],
+    "isFeatured": false
+  },
+  {
+    "name": "Ember City Residences",
+    "city": "New York",
+    "country": "United States",
+    "description": "TriBeCa loft towers with Japanese soaking suites, vinyl libraries, and chauffeured access to private gallery previews.",
+    "type": ["Residence", "Design"],
+    "adultCount": 3,
+    "childCount": 1,
+    "facilities": ["Concierge", "Art Curator", "House Car", "Recording Studio"],
+    "pricePerNight": 620,
+    "starRating": 5,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "159 Hudson Street",
+      "city": "New York",
+      "state": "NY",
+      "country": "United States"
+    },
+    "tags": ["tribeca", "art"],
+    "isFeatured": false
+  },
+  {
+    "name": "Celeste Desert Observatory",
+    "city": "San Pedro de Atacama",
+    "country": "Chile",
+    "description": "Solar-powered domes with mirrored facades, resident astronomers, and overland convoys to Valle de la Luna.",
+    "type": ["Desert", "Explorer"],
+    "adultCount": 2,
+    "childCount": 1,
+    "facilities": ["Observatory", "Guided Treks", "Desert Spa", "Chef's Table"],
+    "pricePerNight": 380,
+    "starRating": 4,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=1600&q=80"
+    ],
+    "location": {
+      "addressLine1": "Ruta B-241",
+      "city": "San Pedro de Atacama",
+      "country": "Chile"
+    },
+    "tags": ["stargazing", "atacama"],
+    "isFeatured": false
+  }
+]
