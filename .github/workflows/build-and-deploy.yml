@@ -1,0 +1,89 @@
+name: 🚀 Build & Push All Services (Matrix)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/services/**'  # Run if backend changes
+      - 'frontend/**'          # Run if frontend changes
+  workflow_dispatch:           # Allows manual triggering button
+
+permissions:
+  id-token: write              # Required for AWS OIDC connection
+  contents: read               # Required to checkout code
+
+jobs:
+  build-and-push:
+    name: Build ${{ matrix.service.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false         # If one service fails, don't kill the others
+      matrix:
+        service:
+          # --- FRONTEND ---
+          - name: frontend
+            path: frontend
+            repo: phoenix-frontend-service
+
+          # --- BACKEND SERVICES ---
+          - name: api-gateway
+            path: backend/services/api-gateway
+            repo: phoenix-api-gateway-service
+            
+          - name: identity-service
+            path: backend/services/identity-service
+            repo: phoenix-identity-service
+            
+          - name: hotel-service
+            path: backend/services/hotel-service
+            repo: phoenix-hotel-service
+            
+          - name: booking-service
+            path: backend/services/booking-service
+            repo: phoenix-booking-service
+            
+          - name: search-service
+            path: backend/services/search-service
+            repo: phoenix-search-service
+            
+          - name: notification-service
+            path: backend/services/notification-service
+            repo: phoenix-notification-service
+
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: 🚪 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🐳 Build, Tag, and Push Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ matrix.service.repo }}
+          IMAGE_TAG: ${{ github.sha }} 
+        run: |
+          echo "🚧 Building ${{ matrix.service.name }}..."
+          
+          # Navigate to the specific service folder
+          cd ${{ matrix.service.path }}
+          
+          # Build the image
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          
+          # Push the unique commit tag (for rollbacks)
+          echo "⬆️ Pushing tag: $IMAGE_TAG"
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          
+          # Also push 'latest' tag (for easy testing)
+          echo "⬆️ Pushing tag: latest"
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
