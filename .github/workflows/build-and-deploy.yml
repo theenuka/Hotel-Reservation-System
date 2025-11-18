@@ -78,15 +78,27 @@ jobs:
           ECR_REPOSITORY: ${{ matrix.service.repo }}
           IMAGE_TAG: ${{ github.sha }} 
         run: |
+          set -euo pipefail
+          WORKSPACE="${{ github.workspace }}"
+          cd "$WORKSPACE"
+
           echo "🚧 Building ${{ matrix.service.name }}..."
           BUILD_CONTEXT="${{ matrix.service.context }}"
           DOCKERFILE="${{ matrix.service.dockerfile }}"
-          
+
+          # Resolve absolute paths so every build runs from the repo root
+          if [ "$BUILD_CONTEXT" = "." ]; then
+            RESOLVED_CONTEXT="$WORKSPACE"
+          else
+            RESOLVED_CONTEXT="$WORKSPACE/$BUILD_CONTEXT"
+          fi
+          RESOLVED_DOCKERFILE="$WORKSPACE/$DOCKERFILE"
+
           # Build the image
           docker build \
-            -f "$DOCKERFILE" \
+            -f "$RESOLVED_DOCKERFILE" \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            "$BUILD_CONTEXT"
+            "$RESOLVED_CONTEXT"
           
           # Push the unique commit tag (for rollbacks)
           echo "⬆️ Pushing tag: $IMAGE_TAG"
