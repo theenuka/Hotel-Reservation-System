@@ -1,0 +1,110 @@
+name: 🚀 Build & Push All Services (Matrix)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/services/**'  # Run if backend changes
+      - 'hotel-booking-frontend/**'  # Run if frontend changes
+  workflow_dispatch:           # Allows manual triggering button
+
+permissions:
+  id-token: write              # Required for AWS OIDC connection
+  contents: read               # Required to checkout code
+
+jobs:
+  build-and-push:
+    name: Build ${{ matrix.service.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false         # If one service fails, don't kill the others
+      matrix:
+        service:
+          # --- FRONTEND ---
+          - name: frontend
+            context: .
+            dockerfile: hotel-booking-frontend/Dockerfile
+            repo: phoenix-frontend-service
+
+          # --- BACKEND SERVICES ---
+          - name: api-gateway
+            context: backend/services/api-gateway
+            dockerfile: backend/services/api-gateway/Dockerfile
+            repo: phoenix-api-gateway-service
+            
+          - name: identity-service
+            context: backend/services/identity-service
+            dockerfile: backend/services/identity-service/Dockerfile
+            repo: phoenix-identity-service
+            
+          - name: hotel-service
+            context: backend/services/hotel-service
+            dockerfile: backend/services/hotel-service/Dockerfile
+            repo: phoenix-hotel-service
+            
+          - name: booking-service
+            context: backend/services/booking-service
+            dockerfile: backend/services/booking-service/Dockerfile
+            repo: phoenix-booking-service
+            
+          - name: search-service
+            context: backend/services/search-service
+            dockerfile: backend/services/search-service/Dockerfile
+            repo: phoenix-search-service
+            
+          - name: notification-service
+            context: backend/services/notification-service
+            dockerfile: backend/services/notification-service/Dockerfile
+            repo: phoenix-notification-service
+
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: 🚪 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🐳 Build, Tag, and Push Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ matrix.service.repo }}
+          IMAGE_TAG: ${{ github.sha }} 
+        run: |
+          set -euo pipefail
+          WORKSPACE="${{ github.workspace }}"
+          cd "$WORKSPACE"
+
+          echo "🚧 Building ${{ matrix.service.name }}..."
+          BUILD_CONTEXT="${{ matrix.service.context }}"
+          DOCKERFILE="${{ matrix.service.dockerfile }}"
+
+          # Resolve absolute paths so every build runs from the repo root
+          if [ "$BUILD_CONTEXT" = "." ]; then
+            RESOLVED_CONTEXT="$WORKSPACE"
+          else
+            RESOLVED_CONTEXT="$WORKSPACE/$BUILD_CONTEXT"
+          fi
+          RESOLVED_DOCKERFILE="$WORKSPACE/$DOCKERFILE"
+
+          # Build the image
+          docker build \
+            -f "$RESOLVED_DOCKERFILE" \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            "$RESOLVED_CONTEXT"
+          
+          # Push the unique commit tag (for rollbacks)
+          echo "⬆️ Pushing tag: $IMAGE_TAG"
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          
+          # Also push 'latest' tag (for easy testing)
+          echo "⬆️ Pushing tag: latest"
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest

@@ -1,6 +1,13 @@
 import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
-import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  ChangeEvent,
+  MouseEvent,
+} from "react";
 import { X, Upload, Image as ImageIcon } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
@@ -23,7 +30,7 @@ const ImagesSection = () => {
 
   const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const existingImageUrls = watch("imageUrls");
+  const existingImageUrls = watch("imageUrls") ?? [];
 
   // Initialize with existing images
   useEffect(() => {
@@ -39,7 +46,7 @@ const ImagesSection = () => {
     }
   }, [existingImageUrls]);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
@@ -104,7 +111,7 @@ const ImagesSection = () => {
     }
   };
 
-  const handleUploadClick = (e: React.MouseEvent) => {
+  const handleUploadClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     fileInputRef.current?.click();
   };
@@ -133,7 +140,7 @@ const ImagesSection = () => {
   }, [totalImages, setError, clearErrors, validateImages]);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/5">
+    <section className="p-8 border shadow-lg rounded-3xl border-slate-200 bg-white/90 shadow-slate-900/5">
       <div className="flex flex-col gap-2">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-indigo-400">
           07 · Gallery
@@ -143,12 +150,12 @@ const ImagesSection = () => {
           Upload up to 6 images. Drag-and-drop feel keeps your gallery curated and premium.
         </p>
       </div>
-      <div className="mt-8 flex flex-col gap-6 rounded-2xl border border-dashed border-slate-200/80 p-6">
+      <div className="flex flex-col gap-6 p-6 mt-8 border border-dashed rounded-2xl border-slate-200/80">
         {/* Upload Area */}
         <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-8 text-center transition-transform hover:scale-[1.01]">
           <div className="flex flex-col items-center gap-4">
-            <div className="rounded-full bg-indigo-50/80 p-3">
-              <Upload className="h-8 w-8 text-indigo-600" />
+            <div className="p-3 rounded-full bg-indigo-50/80">
+              <Upload className="w-8 h-8 text-indigo-600" />
             </div>
             <div>
               <h3 className="mb-2 text-lg font-semibold text-slate-900">
@@ -163,7 +170,7 @@ const ImagesSection = () => {
                 variant="outline"
                 className="bg-white text-slate-900 hover:bg-slate-50"
               >
-                <ImageIcon className="mr-2 h-4 w-4" />
+                <ImageIcon className="w-4 h-4 mr-2" />
                 Choose Images
               </Button>
             </div>
@@ -174,6 +181,7 @@ const ImagesSection = () => {
             multiple
             accept="image/*"
             className="hidden"
+            aria-label="Upload hotel gallery images"
             onChange={handleFileSelect}
           />
         </div>
@@ -196,7 +204,7 @@ const ImagesSection = () => {
               {imagePreviews.map((image) => (
                 <div
                   key={image.id}
-                  className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-slate-50"
+                  className="relative overflow-hidden border group rounded-2xl border-slate-100 bg-slate-50"
                 >
                   <img
                     src={image.url}
@@ -213,7 +221,7 @@ const ImagesSection = () => {
                       size="sm"
                       className="transition-opacity duration-200 opacity-0 group-hover:opacity-100"
                     >
-                      <X className="h-4 w-4 text-white" />
+                      <X className="w-4 h-4 text-white" />
                     </Button>
                   </div>
                   <div className="p-2">
@@ -232,7 +240,7 @@ const ImagesSection = () => {
 
         {/* Error Message */}
         {errors.imageFiles && (
-          <div className="rounded-2xl bg-rose-50 p-3 text-sm font-medium text-rose-600">
+          <div className="p-3 text-sm font-medium rounded-2xl bg-rose-50 text-rose-600">
             {errors.imageFiles.message}
           </div>
         )}

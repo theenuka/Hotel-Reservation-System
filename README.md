@@ -65,10 +65,10 @@ npm run seed:local
 
 Prereqs: Node 18+, Docker Desktop
 
-1) Start MongoDB
+1) Start MongoDB (and Redis if you want queue processing)
 
 ```bash
-docker compose up -d
+docker compose up -d mongo redis
 ```
 
 2) Create env files
@@ -141,6 +141,46 @@ npm run dev
 ```
 
 Open http://localhost:5174
+
+## Docker (full stack)
+
+Prefer an end-to-end containerized workflow? Every microservice now ships with a multi-stage Dockerfile and the root `docker-compose.yml` wires them together. This spins up MongoDB, Redis, all backend services, the API gateway, and the Vite/NGINX frontend with a single command.
+
+1. Review/update `backend/.env.docker` (at minimum change `JWT_SECRET_KEY` and any third-party API keys).
+2. Build the images (run from the repo root):
+
+```bash
+docker compose build
+```
+
+3. Start the full stack:
+
+```bash
+docker compose up -d
+```
+
+4. Visit the frontend at http://localhost:4173 (it talks to the gateway on http://localhost:7008).
+5. Follow logs or stop the stack when you're done:
+
+```bash
+docker compose logs -f api-gateway
+docker compose down        # keep volumes
+docker compose down -v     # blow away Mongo/Redis data
+```
+
+Need to rebuild just one service? Swap the target name (e.g. `docker compose build hotel-service`). Want the frontend to hit a different gateway URL? Override the build arg: `docker compose build --build-arg VITE_API_BASE_URL=https://api.example.com frontend`.
+
+| Service | Container name | Exposed port | Dockerfile |
+| --- | --- | --- | --- |
+| API Gateway | api-gateway | 7008 | `backend/services/api-gateway/Dockerfile` |
+| Identity Service | identity-service | 7102 | `backend/services/identity-service/Dockerfile` |
+| Hotel Service | hotel-service | 7103 | `backend/services/hotel-service/Dockerfile` |
+| Booking Service | booking-service | 7104 | `backend/services/booking-service/Dockerfile` |
+| Search Service | search-service | 7105 | `backend/services/search-service/Dockerfile` |
+| Notification Service | notification-service | 7101 | `backend/services/notification-service/Dockerfile` |
+| Frontend | frontend | 4173 | `hotel-booking-frontend/Dockerfile` |
+| MongoDB | hotel-booking-mongo | 27018 | official `mongo:7` image |
+| Redis | hotel-booking-redis | 6379 | official `redis:7-alpine` image |
 
 ## Service map and routes
 
