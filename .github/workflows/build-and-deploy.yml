@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'backend/services/**'  # Run if backend changes
-      - 'frontend/**'          # Run if frontend changes
+      - 'hotel-booking-frontend/**'  # Run if frontend changes
   workflow_dispatch:           # Allows manual triggering button
 
 permissions:
@@ -22,7 +22,7 @@ jobs:
         service:
           # --- FRONTEND ---
           - name: frontend
-            path: frontend
+            path: hotel-booking-frontend
             repo: phoenix-frontend-service
 
           # --- BACKEND SERVICES ---
