@@ -147,8 +147,9 @@ const coerceString = (value: unknown) => {
 
 const buildContact = (body: any): ContactInfo | undefined => {
   const parsed = parseJSONField<ContactInfo>(body.contact) || {};
+  type ContactScalarKey = Exclude<keyof ContactInfo, "socials">;
   const contact: ContactInfo = { ...parsed };
-  const assign = (key: keyof ContactInfo, ...sources: string[]) => {
+  const assign = (key: ContactScalarKey, ...sources: string[]) => {
     for (const source of sources) {
       const value = coerceString(body?.[source]);
       if (!isEmpty(value)) {
@@ -162,17 +163,20 @@ const buildContact = (body: any): ContactInfo | undefined => {
   assign("website", "contactWebsite", "contact.website");
   assign("whatsapp", "contactWhatsapp", "contact.whatsapp");
 
-  const socials = parseJSONField<ContactInfo["socials"]>(body.contactSocials) || contact.socials || {};
-  [
-    ["facebook", "contact.facebook", "contactSocials.facebook"],
-    ["instagram", "contact.instagram", "contactSocials.instagram"],
-    ["twitter", "contact.twitter", "contactSocials.twitter"],
-    ["linkedin", "contact.linkedin", "contactSocials.linkedin"],
-  ].forEach(([key, ...sources]) => {
+  type SocialLinks = NonNullable<ContactInfo["socials"]>;
+  const socialsInput = parseJSONField<ContactInfo["socials"]>(body.contactSocials);
+  const socials: SocialLinks = { ...(contact.socials || {}), ...(socialsInput || {}) };
+  const socialSourceMap: Array<{ key: keyof SocialLinks; sources: string[] }> = [
+    { key: "facebook", sources: ["contact.facebook", "contactSocials.facebook"] },
+    { key: "instagram", sources: ["contact.instagram", "contactSocials.instagram"] },
+    { key: "twitter", sources: ["contact.twitter", "contactSocials.twitter"] },
+    { key: "linkedin", sources: ["contact.linkedin", "contactSocials.linkedin"] },
+  ];
+  socialSourceMap.forEach(({ key, sources }) => {
     for (const source of sources) {
       const value = coerceString(body?.[source]);
       if (!isEmpty(value)) {
-        socials[key as keyof ContactInfo["socials"]] = value;
+        socials[key] = value;
         break;
       }
     }
