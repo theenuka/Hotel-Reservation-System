@@ -308,13 +308,13 @@ Modal for viewing detailed booking information.
 
 ### **Public Pages**
 
-| Route              | Component      | Description                       |
-| ------------------ | -------------- | --------------------------------- |
-| `/`                | `Home.tsx`     | Landing page with hero and search |
-| `/search`          | `Search.tsx`   | Hotel search results with filters |
-| `/detail/:hotelId` | `Detail.tsx`   | Hotel details and booking form    |
-| `/register`        | `Register.tsx` | User registration form            |
-| `/sign-in`         | `SignIn.tsx`   | User authentication form          |
+| Route              | Component        | Description                                         |
+| ------------------ | ---------------- | --------------------------------------------------- |
+| `/`                | `Home.tsx`       | Landing page with hero and search                   |
+| `/search`          | `Search.tsx`     | Hotel search results with filters                   |
+| `/detail/:hotelId` | `Detail.tsx`     | Hotel details and booking form                      |
+| `/register`        | `AuthRedirect.tsx` | Legacy entry that kicks off Asgardeo hosted signup |
+| `/sign-in`         | `AuthRedirect.tsx` | Legacy entry that kicks off Asgardeo hosted login  |
 
 ### **Protected Pages**
 
@@ -371,6 +371,23 @@ const authConfig = {
 ### **Role-aware context**
 
 `AppContext` derives `user`, `roles`, and `isLoggedIn` directly from the Asgardeo session. Utility helpers such as `hasRole("hotel_owner")` drive protected routes and UI CTAs, while the backend enforces the same roles via the shared `shared/auth/asgardeo.ts` helper.
+
+#### Deploying the SPA with Docker
+
+The production image is built via `hotel-booking-frontend/Dockerfile`. Pass the Asgardeo values as build args so Vite bakes them into the bundle:
+
+```bash
+docker build \
+  --build-arg VITE_API_BASE_URL="https://api.yourdomain.com" \
+  --build-arg VITE_ASGARDEO_CLIENT_ID="your-client-id" \
+  --build-arg VITE_ASGARDEO_BASE_URL="https://api.asgardeo.io/t/your-tenant" \
+  --build-arg VITE_ASGARDEO_SIGN_IN_REDIRECT="https://app.yourdomain.com" \
+  --build-arg VITE_ASGARDEO_SIGN_OUT_REDIRECT="https://app.yourdomain.com" \
+  --build-arg "VITE_ASGARDEO_SCOPES=openid profile email" \
+  -t phoenix-booking-frontend .
+```
+
+If you rely on CI/CD variables (e.g., GitHub Actions, Terraform user data), forward the same values to the build step so every environment serves the hosted login rather than the deprecated local forms.
 
 ---
 
