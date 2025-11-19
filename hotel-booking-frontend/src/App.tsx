@@ -8,8 +8,6 @@ import Layout from "./layouts/Layout";
 import AuthLayout from "./layouts/AuthLayout";
 import ScrollToTop from "./components/ScrollToTop";
 import { Toaster } from "./components/ui/toaster";
-import Register from "./pages/Register";
-import SignIn from "./pages/SignIn";
 import AddHotel from "./pages/AddHotel";
 import useAppContext from "./hooks/useAppContext";
 import MyHotels from "./pages/MyHotels";
@@ -77,23 +75,6 @@ const App = () => {
             </Layout>
           }
         />
-        <Route
-          path="/register"
-          element={
-            <AuthLayout>
-              <Register />
-            </AuthLayout>
-          }
-        />
-        <Route
-          path="/sign-in"
-          element={
-            <AuthLayout>
-              <SignIn />
-            </AuthLayout>
-          }
-        />
-
         {isLoggedIn && (
           <>
             <Route
