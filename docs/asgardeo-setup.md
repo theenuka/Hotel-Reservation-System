@@ -88,6 +88,7 @@ Tips:
 | --- | --- | --- |
 | `Asgardeo configuration is incomplete` warning at startup | Missing `ASGARDEO_*` env vars | Re-check `backend/.env.*` files and redeploy |
 | 401 responses from the API gateway after login | Token not signed by expected issuer or audience | Confirm `ASGARDEO_ISSUER` and `ASGARDEO_CLIENT_ID` match the SPA app |
+| "Client Id is not present" error page in the hosted login | `VITE_ASGARDEO_CLIENT_ID` (or backend `ASGARDEO_CLIENT_ID`) is blank | Populate the env vars with the SPA's Client ID and restart `npm run dev` |
 | Redirect loop after login | Redirect URL not on the allowed list | Add the URL to the Asgardeo application and redeploy |
 | Roles not recognized | JWT lacks `hotel_owner`/`admin` claims | Update Asgardeo role assignments or mapping rules |
 
