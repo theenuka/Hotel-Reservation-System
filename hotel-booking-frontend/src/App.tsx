@@ -5,11 +5,9 @@ import {
   Navigate,
 } from "react-router-dom";
 import Layout from "./layouts/Layout";
-import AuthLayout from "./layouts/AuthLayout";
 import ScrollToTop from "./components/ScrollToTop";
 import { Toaster } from "./components/ui/toaster";
 import AddHotel from "./pages/AddHotel";
-import useAppContext from "./hooks/useAppContext";
 import MyHotels from "./pages/MyHotels";
 import EditHotel from "./pages/EditHotel";
 import Search from "./pages/Search";
@@ -21,8 +19,14 @@ import ApiDocs from "./pages/ApiDocs";
 import ApiStatus from "./pages/ApiStatus";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
+// 1. Import Asgardeo Hook
+import { useAuthContext } from "@asgardeo/auth-react";
+
 const App = () => {
-  const { isLoggedIn } = useAppContext();
+  // 2. Use Asgardeo's auth state instead of custom context
+  const { state } = useAuthContext();
+  const isLoggedIn = state.isAuthenticated;
+
   return (
     <Router>
       <ScrollToTop />
@@ -75,6 +79,8 @@ const App = () => {
             </Layout>
           }
         />
+        
+        {/* Protected Routes - Only accessible if logged in via Asgardeo */}
         {isLoggedIn && (
           <>
             <Route
@@ -85,7 +91,6 @@ const App = () => {
                 </Layout>
               }
             />
-
             <Route
               path="/add-hotel"
               element={
@@ -120,6 +125,8 @@ const App = () => {
             />
           </>
         )}
+        
+        {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <Toaster />
@@ -128,8 +135,3 @@ const App = () => {
 };
 
 export default App;
-
-
-
-
-//test workflow
