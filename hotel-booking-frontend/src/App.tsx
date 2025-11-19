@@ -18,6 +18,7 @@ import Home from "./pages/Home";
 import ApiDocs from "./pages/ApiDocs";
 import ApiStatus from "./pages/ApiStatus";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import AuthRedirect from "./pages/AuthRedirect";
 import useAppContext from "./hooks/useAppContext";
 
 const App = () => {
@@ -132,6 +133,10 @@ const App = () => {
             />
           </>
         )}
+
+        {/* Legacy routes -> kick off hosted login */}
+        <Route path="/sign-in" element={<AuthRedirect />} />
+        <Route path="/register" element={<AuthRedirect />} />
         
         {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" />} />
