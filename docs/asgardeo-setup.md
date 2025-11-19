@@ -80,6 +80,7 @@ Tips:
 - Store Asgardeo secrets (client ID, tenant, issuer, JWKS) in your cloud secret manager or CI/CD variable group.
 - When deploying the SPA, ensure `VITE_ASGARDEO_SIGN_IN_REDIRECT` and `VITE_ASGARDEO_SIGN_OUT_REDIRECT` match the deployed hostname; Asgardeo will block the redirect otherwise.
 - Each backend microservice reads the same `ASGARDEO_*` vars via Docker/Kubernetes manifests. Keep them synchronized across environments.
+- For Kubernetes, apply `phoenix-booking-infra/k8s-manifests/09-asgardeo-config.yaml` and reference it via `envFrom` (already wired for identity, hotel, booking, and the API gateway).
 - If you rotate the SPA Client ID or tenant, restart all services so `shared/auth/asgardeo.ts` reloads the updated values.
 
 ## 7. Troubleshooting

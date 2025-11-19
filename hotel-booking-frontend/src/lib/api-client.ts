@@ -7,7 +7,12 @@ const getBaseURL = () => {
     return import.meta.env.VITE_API_BASE_URL;
   }
 
-  // Fallback URLs
+  // During SSR tests there is no window object
+  if (typeof window === "undefined") {
+    return "http://localhost:7008";
+  }
+
+  // Explicit fallback for the legacy Netlify demo (points to Render backend)
   if (window.location.hostname === "mern-booking-hotel.netlify.app") {
     return "https://mern-hotel-booking-68ej.onrender.com";
   }
@@ -17,8 +22,9 @@ const getBaseURL = () => {
     return "http://localhost:7008";
   }
 
-  // Default to production
-  return "https://mern-hotel-booking-68ej.onrender.com";
+  // Otherwise use the current origin (ALB, custom domain, etc.)
+  const origin = window.location.origin.replace(/\/$/, "");
+  return `${origin}/api`;
 };
 
 // Extend axios config to include metadata

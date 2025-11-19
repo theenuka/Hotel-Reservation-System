@@ -16,6 +16,14 @@ jobs:
   build-and-push:
     name: Build ${{ matrix.service.name }}
     runs-on: ubuntu-latest
+    env:
+      PHOENIX_PUBLIC_URL: http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com
+      VITE_API_BASE_URL: http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com/api
+      VITE_ASGARDEO_CLIENT_ID: iYcA_MO8LwTND_hvunAg8VvBHDua
+      VITE_ASGARDEO_BASE_URL: https://api.asgardeo.io/t/theenukagranex
+      VITE_ASGARDEO_SIGN_IN_REDIRECT: http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com/sign-in
+      VITE_ASGARDEO_SIGN_OUT_REDIRECT: http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com/
+      VITE_ASGARDEO_SCOPES: "openid profile email"
     strategy:
       fail-fast: false         # If one service fails, don't kill the others
       matrix:
@@ -61,6 +69,9 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v4
 
+      - name: ⚙️ Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: 🔐 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -72,7 +83,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: 🐳 Build, Tag, and Push Docker Image
+      - name: 🐳 Build, Tag, and Push Docker Image (linux/amd64)
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ matrix.service.repo }}
@@ -94,17 +105,25 @@ jobs:
           fi
           RESOLVED_DOCKERFILE="$WORKSPACE/$DOCKERFILE"
 
-          # Build the image
-          docker build \
+          EXTRA_ARGS=()
+          if [ "${{ matrix.service.name }}" = "frontend" ]; then
+            echo "Injecting frontend build args for Vite environment"
+            EXTRA_ARGS+=(
+              "--build-arg" "VITE_API_BASE_URL=$VITE_API_BASE_URL"
+              "--build-arg" "VITE_ASGARDEO_CLIENT_ID=$VITE_ASGARDEO_CLIENT_ID"
+              "--build-arg" "VITE_ASGARDEO_BASE_URL=$VITE_ASGARDEO_BASE_URL"
+              "--build-arg" "VITE_ASGARDEO_SIGN_IN_REDIRECT=$VITE_ASGARDEO_SIGN_IN_REDIRECT"
+              "--build-arg" "VITE_ASGARDEO_SIGN_OUT_REDIRECT=$VITE_ASGARDEO_SIGN_OUT_REDIRECT"
+              "--build-arg" "VITE_ASGARDEO_SCOPES=$VITE_ASGARDEO_SCOPES"
+            )
+          fi
+
+          # Buildx pushes both tags as linux/amd64 so the cluster nodes can pull them
+          docker buildx build \
+            --platform linux/amd64 \
             -f "$RESOLVED_DOCKERFILE" \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            "${EXTRA_ARGS[@]}" \
+            --push \
             "$RESOLVED_CONTEXT"
-          
-          # Push the unique commit tag (for rollbacks)
-          echo "⬆️ Pushing tag: $IMAGE_TAG"
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          
-          # Also push 'latest' tag (for easy testing)
-          echo "⬆️ Pushing tag: latest"
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest

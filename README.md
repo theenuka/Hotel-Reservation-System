@@ -4,14 +4,44 @@ A modern hotel booking platform with a React + Vite frontend and Node/Express mi
 
 ## What’s inside
 
-- Frontend: React + Vite + TypeScript + React Query + Tailwind (`hotel-booking-frontend`)
-- Services (Node + Express + TypeScript) under `backend/services`:
   - api-gateway (7008)
   - identity-service (auth/users, 7102)
   - hotel-service (hotels & owner ops, 7103)
   - search-service (search queries, 7105)
   - booking-service (7104) and notification-service (7101) are optional for local quick start
-- Database: MongoDB Docker container at localhost:27018
+
+## Building release images (linux/amd64)
+
+The kubeadm cluster runs on x86_64 EC2 nodes, so every image we push to ECR must include a `linux/amd64` variant. GitHub Actions now enforces this via `docker buildx build --platform linux/amd64`, but you can produce the same artifacts locally with the helper script:
+
+```bash
+scripts/build-linux-amd64.sh frontend asgardeo-fix-amd64
+```
+
+The script wraps `docker buildx` for all services (pass `all` to rebuild everything) and pushes to ECR by default. Set `PUSH=false` if you only need to load the resulting image into your local Docker daemon. Override `ECR_REGISTRY` or `PLATFORM` as needed.
+
+- Frontend builds now inject the production Asgardeo + API URLs automatically. Override `FRONTEND_PUBLIC_URL`, `FRONTEND_API_BASE_URL`, or any `VITE_ASGARDEO_*` env var before running the helper if you are targeting a different host/tenant.
+- GitHub Actions (`.github/workflows/build-and-deploy.yml`) passes the same build args so every pushed image contains the right client ID and redirect URLs.
+
+### Kubernetes auth config
+
+Apply `phoenix-booking-infra/k8s-manifests/09-asgardeo-config.yaml` to share the SPA client info with every microservice:
+
+```bash
+kubectl apply -f phoenix-booking-infra/k8s-manifests/09-asgardeo-config.yaml
+```
+
+The identity, hotel, booking, and API gateway deployments consume that ConfigMap via `envFrom`. After you update credentials, re-apply the file and roll your deployments to pick up the new values.
+
+## Lint/build health checks
+
+Every pull request now runs `scripts/run-ci-checks.sh`, which iterates through each backend service with `npm ci && npm run build` and finishes by linting + building the Vite frontend. Run the same script locally before pushing changes:
+
+```bash
+scripts/run-ci-checks.sh
+```
+
+Set `RUN_INSTALL=false` if you already installed dependencies and just want to re-run the builds (helpful for local iteration). The GitHub Action defined in `.github/workflows/ci.yml` caches each package-lock file, so CI catches type or lint issues before container builds kick off.
 
 ## Project structure
 
