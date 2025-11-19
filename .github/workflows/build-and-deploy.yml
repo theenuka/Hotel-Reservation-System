@@ -28,22 +28,22 @@ jobs:
 
           # --- BACKEND SERVICES ---
           - name: api-gateway
-            context: backend/services/api-gateway
+            context: .
             dockerfile: backend/services/api-gateway/Dockerfile
             repo: phoenix-api-gateway-service
             
           - name: identity-service
-            context: backend/services/identity-service
+            context: .
             dockerfile: backend/services/identity-service/Dockerfile
             repo: phoenix-identity-service
             
           - name: hotel-service
-            context: backend/services/hotel-service
+            context: .
             dockerfile: backend/services/hotel-service/Dockerfile
             repo: phoenix-hotel-service
             
           - name: booking-service
-            context: backend/services/booking-service
+            context: .
             dockerfile: backend/services/booking-service/Dockerfile
             repo: phoenix-booking-service
             

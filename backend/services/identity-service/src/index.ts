@@ -343,7 +343,7 @@ app.get("/admin/users", verifyToken, requireRole(["admin"]), async (_req: Reques
 });
 
 app.patch("/admin/users/:id/role", verifyToken, requireRole(["admin"]), async (req: Request, res: Response) => {
-  const { role } = req.body || {};
+  const { role }: { role?: "user" | "admin" | "hotel_owner" } = req.body || {};
   if (!role || !["user", "admin", "hotel_owner"].includes(role)) {
     return res.status(400).json({ message: "invalid role" });
   }
