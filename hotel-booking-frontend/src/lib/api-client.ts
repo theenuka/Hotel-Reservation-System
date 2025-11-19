@@ -1,5 +1,5 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
-import Cookies from "js-cookie";
+import { getAccessTokenFromProvider } from "./asgardeo-token-bridge";
 
 // Define base URL based on environment
 const getBaseURL = () => {
@@ -36,17 +36,13 @@ const axiosInstance = axios.create({
   timeout: 30000, // 30 second timeout
 });
 
-// Request interceptor to add Authorization header with JWT token
-axiosInstance.interceptors.request.use((config: CustomAxiosRequestConfig) => {
-  // Get JWT token from localStorage (no more cookie dependency)
-  const token = localStorage.getItem("session_id");
-
+// Request interceptor to add Authorization header with Asgardeo access token
+axiosInstance.interceptors.request.use(async (config: CustomAxiosRequestConfig) => {
+  const token = await getAccessTokenFromProvider();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log("Using JWT token from localStorage for authentication");
   }
 
-  // Add retry count to track retries
   config.metadata = { retryCount: 0 };
 
   return config;
@@ -60,9 +56,7 @@ axiosInstance.interceptors.response.use(
 
     // Handle 401 errors by clearing session
     if (error.response?.status === 401) {
-      Cookies.remove("session_id");
-      localStorage.removeItem("session_id");
-      // Don't redirect automatically - let components handle it
+      // Let components react to unauthorized responses (e.g., show toast or redirect to login)
     }
 
     // Handle rate limiting (429) with retry logic

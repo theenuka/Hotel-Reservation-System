@@ -9,6 +9,7 @@ import "dotenv/config";
 import User, { IUser } from "./models/user";
 import RefreshToken from "./models/refreshToken";
 import PasswordResetToken from "./models/passwordResetToken";
+import { extractBearerToken, hasRequiredRole, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
 
 const app = express();
 app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], credentials: true }));
@@ -42,7 +43,11 @@ const connectWithRetry = async () => {
 };
 connectWithRetry();
 
-type AuthedRequest = Request & { userId?: string; role?: "user" | "admin" | "hotel_owner" };
+type AuthedRequest = Request & {
+  userId?: string;
+  role?: "user" | "admin" | "hotel_owner";
+  roles?: Array<"user" | "admin" | "hotel_owner" | string>;
+};
 type SanitizableUser = Pick<IUser, "_id" | "email" | "firstName" | "lastName" | "role" | "loyaltyPoints" | "emailVerified">;
 
 const millis = (days: number) => days * 24 * 60 * 60 * 1000;
@@ -104,22 +109,36 @@ const issueTokens = async (user: IUser) => {
   return { accessToken, refreshToken };
 };
 
-const verifyToken = (req: AuthedRequest, res: Response, next: NextFunction) => {
-  const auth = req.headers.authorization;
-  const token = auth?.startsWith("Bearer ") ? auth.split(" ")[1] : undefined;
+const verifyToken = async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  const token = extractBearerToken(req.headers.authorization as string | undefined);
   if (!token) return res.status(401).json({ message: "unauthorized" });
+
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role?: "user" | "admin" | "hotel_owner" };
-    req.userId = decoded.userId;
-    req.role = decoded.role;
-    next();
-  } catch {
-    return res.status(401).json({ message: "invalid token" });
+    const user = await verifyAsgardeoJwt(token);
+    req.userId = user.userId;
+    req.roles = user.roles as Array<"user" | "admin" | "hotel_owner">;
+    req.role = user.roles.find((role) => ["user", "admin", "hotel_owner"].includes(role)) as
+      | "user"
+      | "admin"
+      | "hotel_owner"
+      | undefined;
+    return next();
+  } catch (asgardeoError) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role?: "user" | "admin" | "hotel_owner" };
+      req.userId = decoded.userId;
+      req.role = decoded.role;
+      return next();
+    } catch {
+      console.warn("[identity-service] token verification failed", (asgardeoError as Error)?.message || asgardeoError);
+      return res.status(401).json({ message: "invalid token" });
+    }
   }
 };
 
 const requireRole = (roles: Array<"user" | "admin" | "hotel_owner">) => (req: AuthedRequest, res: Response, next: NextFunction) => {
-  if (!req.role || !roles.includes(req.role)) {
+  const effectiveRoles = req.roles?.length ? req.roles : req.role ? [req.role] : [];
+  if (!hasRequiredRole(effectiveRoles, roles)) {
     return res.status(403).json({ message: "forbidden" });
   }
   next();

@@ -13,7 +13,7 @@ import Hotel, {
 } from "./models/hotel";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
-import jwt from "jsonwebtoken";
+import { extractBearerToken, hasRequiredRole, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
 import Maintenance from "./models/maintenance";
 
 const app = express();
@@ -48,27 +48,37 @@ app.get("/hotels/:id", async (req: Request, res: Response) => {
 });
 
 // JWT middleware (shared secret for demo)
-const JWT_SECRET = process.env.JWT_SECRET_KEY || "dev_secret";
-const verifyToken = (req: Request & { userId?: string; role?: string }, res: Response, next: NextFunction) => {
-  const auth = req.headers.authorization;
-  const token = auth?.startsWith("Bearer ") ? auth.split(" ")[1] : undefined;
-  if (!token) return res.status(401).json({ message: "unauthorized" });
+type AuthedRequest = Request & { userId?: string; roles?: string[]; email?: string };
+
+const verifyToken = async (req: AuthedRequest, res: Response, next: NextFunction) => {
+  const token = extractBearerToken(req.headers.authorization as string | undefined);
+  if (!token) {
+    return res.status(401).json({ message: "unauthorized" });
+  }
+
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role?: string };
-    req.userId = decoded.userId;
-    req.role = decoded.role;
+    const user = await verifyAsgardeoJwt(token);
+    req.userId = user.userId;
+    req.roles = user.roles;
+    req.email = user.email;
     next();
-  } catch {
+  } catch (error) {
+    console.warn("[hotel-service] token verification failed", (error as Error)?.message || error);
     return res.status(401).json({ message: "invalid token" });
   }
 };
 
-// Guard: only hotel owners (or admins) can manage my-hotels
-const requireOwner = (req: Request & { role?: string }, res: Response, next: NextFunction) => {
-  const roleHeader = (req.headers["x-user-role"] as string | undefined) || req.role;
-  if (roleHeader === "hotel_owner" || roleHeader === "admin") return next();
-  return res.status(403).json({ message: "forbidden: owner role required" });
+const requireRole = (roles: string[]) => (req: AuthedRequest, res: Response, next: NextFunction) => {
+  const headerRoles = (req.headers["x-user-roles"] as string | undefined)?.split(",").filter(Boolean);
+  const effectiveRoles = req.roles?.length ? req.roles : headerRoles;
+  if (hasRequiredRole(effectiveRoles, roles)) {
+    return next();
+  }
+  return res.status(403).json({ message: "forbidden" });
 };
+
+// Guard: only hotel owners (or admins) can manage my-hotels
+const requireOwner = requireRole(["hotel_owner", "admin"]);
 
 // Multer for multipart forms (we ignore file bytes for now and use provided imageUrls)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -332,18 +342,18 @@ const uploadToCloudinary = async (files: Express.Multer.File[]): Promise<string[
 };
 
 // My Hotels (owner)
-app.get("/my-hotels", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+app.get("/my-hotels", verifyToken, requireOwner, async (req: AuthedRequest, res: Response) => {
   const hotels = await Hotel.find({ userId: req.userId }).sort("-lastUpdated");
   res.json(hotels);
 });
 
-app.get("/my-hotels/:id", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+app.get("/my-hotels/:id", verifyToken, requireOwner, async (req: AuthedRequest, res: Response) => {
   const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
   if (!hotel) return res.status(404).json({ message: "Hotel not found" });
   res.json(hotel);
 });
 
-app.post("/my-hotels", verifyToken, requireOwner, upload.array("imageFiles", 6), async (req: Request & { userId?: string }, res: Response) => {
+app.post("/my-hotels", verifyToken, requireOwner, upload.array("imageFiles", 6), async (req: AuthedRequest, res: Response) => {
   const uploaded = await uploadToCloudinary((req.files as Express.Multer.File[]) || []);
   let imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
   if (!Array.isArray(imageUrls)) imageUrls = imageUrls ? [imageUrls as any] : [];
@@ -357,7 +367,7 @@ app.post("/my-hotels", verifyToken, requireOwner, upload.array("imageFiles", 6),
   res.json(hotel);
 });
 
-app.put("/my-hotels/:id", verifyToken, requireOwner, upload.array("imageFiles", 6), async (req: Request & { userId?: string }, res: Response) => {
+app.put("/my-hotels/:id", verifyToken, requireOwner, upload.array("imageFiles", 6), async (req: AuthedRequest, res: Response) => {
   const uploaded = await uploadToCloudinary((req.files as Express.Multer.File[]) || []);
   let imageUrls = uploaded.length > 0 ? uploaded : extractImageUrls(req.body);
   if (!Array.isArray(imageUrls)) imageUrls = imageUrls ? [imageUrls as any] : [];
@@ -372,21 +382,21 @@ app.put("/my-hotels/:id", verifyToken, requireOwner, upload.array("imageFiles", 
 });
 
 // Delete a hotel
-app.delete("/my-hotels/:id", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+app.delete("/my-hotels/:id", verifyToken, requireOwner, async (req: AuthedRequest, res: Response) => {
   const deleted = await Hotel.findOneAndDelete({ _id: req.params.id, userId: req.userId });
   if (!deleted) return res.status(404).json({ message: "Hotel not found" });
   res.json({ success: true });
 });
 
 // --- Maintenance windows (owner) ---
-app.get("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+app.get("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: AuthedRequest, res: Response) => {
   const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
   if (!hotel) return res.status(404).json({ message: "Hotel not found" });
   const items = await Maintenance.find({ hotelId: req.params.id }).sort({ startDate: 1 });
   res.json(items);
 });
 
-app.post("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+app.post("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: AuthedRequest, res: Response) => {
   const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
   if (!hotel) return res.status(404).json({ message: "Hotel not found" });
   const { title, description, startDate, endDate } = req.body || {};
@@ -401,7 +411,7 @@ app.post("/my-hotels/:id/maintenance", verifyToken, requireOwner, async (req: Re
   res.status(201).json(item);
 });
 
-app.delete("/my-hotels/:id/maintenance/:mid", verifyToken, requireOwner, async (req: Request & { userId?: string }, res: Response) => {
+app.delete("/my-hotels/:id/maintenance/:mid", verifyToken, requireOwner, async (req: AuthedRequest, res: Response) => {
   const hotel = await Hotel.findOne({ _id: req.params.id, userId: req.userId });
   if (!hotel) return res.status(404).json({ message: "Hotel not found" });
   const deleted = await Maintenance.findOneAndDelete({ _id: req.params.mid, hotelId: req.params.id });

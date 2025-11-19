@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import "dotenv/config";
-import jwt from "jsonwebtoken";
+import { extractBearerToken, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
 
 const app = express();
 app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], credentials: true }));
@@ -13,18 +13,24 @@ app.use(express.json({ limit: "1mb" }));
 
 // Service URLs (env or defaults)
 // Attach user id from JWT (if present) to downstream request headers
-app.use((req, _res, next) => {
-  const auth = req.headers.authorization as string | undefined;
-  const token = auth?.startsWith("Bearer ") ? auth.split(" ")[1] : undefined;
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY || "dev_secret") as { userId?: string; role?: string };
-      if (decoded?.userId) req.headers["x-user-id"] = decoded.userId;
-      if (decoded?.role) req.headers["x-user-role"] = decoded.role;
-    } catch {
-      // ignore invalid tokens, downstream will handle auth
-    }
+app.use(async (req, _res, next) => {
+  const token = extractBearerToken(req.headers.authorization as string | undefined);
+  if (!token) {
+    return next();
   }
+
+  try {
+    const user = await verifyAsgardeoJwt(token);
+    if (user.userId) req.headers["x-user-id"] = user.userId;
+    if (user.email) req.headers["x-user-email"] = user.email;
+    if (user.roles?.length) {
+      req.headers["x-user-role"] = user.roles[0];
+      req.headers["x-user-roles"] = user.roles.join(",");
+    }
+  } catch (error) {
+    console.warn("[api-gateway] Asgardeo token verification failed", (error as Error)?.message || error);
+  }
+
   next();
 });
 const IDENTITY_URL = process.env.IDENTITY_SERVICE_URL || "http://localhost:7102";

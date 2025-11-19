@@ -338,57 +338,39 @@ Modal for viewing detailed booking information.
 
 ## 🔐 Authentication & State Management
 
-### **Dual Authentication System**
+### **Asgardeo-first auth**
 
-The frontend implements a **dual authentication system** to support both modern browsers and privacy-focused browsers:
+`@asgardeo/auth-react` now wraps the entire SPA. The tenant/org URLs plus SPA Client ID come from `VITE_ASGARDEO_*` env vars, so switching between environments only requires updating the `.env` file. The SDK handles login redirects, silent renew, and logout callbacks.
 
-```typescript
-// API Client with dual authentication
-const getRequestOptions = (method: string = "GET", body?: any) => {
-  const options: RequestInit = {
-    method,
-    credentials: "include", // Try cookies first
-    headers: getAuthHeaders(),
-  };
-
-  if (body) {
-    options.body = JSON.stringify(body);
-  }
-
-  return options;
+```tsx
+// src/main.tsx
+const authConfig = {
+  signInRedirectURL: import.meta.env.VITE_ASGARDEO_SIGN_IN_REDIRECT || window.location.origin,
+  signOutRedirectURL: import.meta.env.VITE_ASGARDEO_SIGN_OUT_REDIRECT || window.location.origin,
+  clientID: import.meta.env.VITE_ASGARDEO_CLIENT_ID || "",
+  baseUrl: import.meta.env.VITE_ASGARDEO_BASE_URL || "https://api.asgardeo.io/t/your-tenant",
+  scope: (import.meta.env.VITE_ASGARDEO_SCOPES || "openid profile email")
+    .split(/[ ,]/)
+    .map((scope) => scope.trim())
+    .filter(Boolean),
 };
 
-const getAuthHeaders = () => {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  // If we have a stored token, use Authorization header
-  if (authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`;
-  }
-
-  return headers;
-};
+<AuthProvider config={authConfig}>
+  <QueryClientProvider client={queryClient}>
+    <AppContextProvider>
+      <App />
+    </AppContextProvider>
+  </QueryClientProvider>
+</AuthProvider>
 ```
 
-### **Context Management**
+### **Token bridge & Axios client**
 
-```typescript
-// App Context for global state
-const AppContext = createContext<AppContextType | undefined>(undefined);
+`src/lib/asgardeo-token-bridge.ts` keeps the latest `getAccessToken` callback from the SDK. The Axios instance in `src/lib/api-client.ts` awaits a fresh access token before each request and sets `Authorization: Bearer <token>` automatically, so components never touch storage.
 
-export const AppContextProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<UserType | null>(null);
+### **Role-aware context**
 
-  return (
-    <AppContext.Provider value={{ isLoggedIn, setIsLoggedIn, user, setUser }}>
-      {children}
-    </AppContext.Provider>
-  );
-};
-```
+`AppContext` derives `user`, `roles`, and `isLoggedIn` directly from the Asgardeo session. Utility helpers such as `hasRole("hotel_owner")` drive protected routes and UI CTAs, while the backend enforces the same roles via the shared `shared/auth/asgardeo.ts` helper.
 
 ---
 

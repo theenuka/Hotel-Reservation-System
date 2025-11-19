@@ -2,13 +2,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import useSearchContext from "../hooks/useSearchContext";
 import { Calendar, LogIn, LogOut } from "lucide-react";
 import BrandLogo from "./BrandLogo";
-// 1. Import Asgardeo Hook
 import { useAuthContext } from "@asgardeo/auth-react";
+import useAppContext from "../hooks/useAppContext";
 
 const Header = () => {
-  // 2. Get Auth State from Asgardeo
-  const { state, signIn, signOut } = useAuthContext();
-  const isLoggedIn = state.isAuthenticated;
+  const { signIn, signOut } = useAuthContext();
+  const { isLoggedIn, userRoles } = useAppContext();
+  const canManage = userRoles.some((role) => role === "hotel_owner" || role === "admin");
 
   const search = useSearchContext();
   const navigate = useNavigate();
@@ -38,16 +38,15 @@ const Header = () => {
     { label: "Stories", type: "section" as const, target: "testimonials" },
   ];
 
-  // If not logged in, "Become a host" triggers the login popup
   const handleHostClick = () => {
-      if (isLoggedIn) {
-          navigate("/add-hotel");
-      } else {
-          signIn();
-      }
+    if (isLoggedIn && canManage) {
+      navigate("/add-hotel");
+    } else {
+      signIn();
+    }
   };
-  
-  const hostCtaLabel = isLoggedIn ? "List your stay" : "Become a host";
+
+  const hostCtaLabel = isLoggedIn && canManage ? "List your stay" : "Become a host";
 
   const handleLogoClick = () => {
     search.clearSearchValues();
@@ -84,7 +83,7 @@ const Header = () => {
                   </button>
                 )
               )}
-              {isLoggedIn && (
+              {isLoggedIn && canManage && (
                 <>
                   <Link
                     className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"

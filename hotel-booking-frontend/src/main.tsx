@@ -16,15 +16,24 @@ export const queryClient = new QueryClient({
   },
 });
 
-// 2. Define the Asgardeo Configuration
-// We use the keys from your screenshot and your ALB URL
 const authConfig = {
-    signInRedirectURL: "http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com",
-    signOutRedirectURL: "http://phoenix-alb-1908878835.us-east-1.elb.amazonaws.com",
-    clientID: "iYcA_MO8LwTND_hvunAg8VvBHDua",
-    baseUrl: "https://api.asgardeo.io/t/theenukagranex",
-    scope: [ "openid", "profile" ]
+  signInRedirectURL:
+    import.meta.env.VITE_ASGARDEO_SIGN_IN_REDIRECT || window.location.origin,
+  signOutRedirectURL:
+    import.meta.env.VITE_ASGARDEO_SIGN_OUT_REDIRECT || window.location.origin,
+  clientID: import.meta.env.VITE_ASGARDEO_CLIENT_ID || "",
+  baseUrl:
+    import.meta.env.VITE_ASGARDEO_BASE_URL || "https://api.asgardeo.io/t/theenukagranex",
+  scope:
+    (import.meta.env.VITE_ASGARDEO_SCOPES || "openid profile email")
+      .split(/[ ,]/)
+      .map((scope: string) => scope.trim())
+      .filter(Boolean),
 };
+
+if (!authConfig.clientID) {
+  console.warn("VITE_ASGARDEO_CLIENT_ID is not set. Auth flows will fail.");
+}
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

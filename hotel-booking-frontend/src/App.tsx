@@ -18,14 +18,13 @@ import Home from "./pages/Home";
 import ApiDocs from "./pages/ApiDocs";
 import ApiStatus from "./pages/ApiStatus";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
-
-// 1. Import Asgardeo Hook
-import { useAuthContext } from "@asgardeo/auth-react";
+import useAppContext from "./hooks/useAppContext";
 
 const App = () => {
-  // 2. Use Asgardeo's auth state instead of custom context
-  const { state } = useAuthContext();
-  const isLoggedIn = state.isAuthenticated;
+  const { isLoggedIn, userRoles } = useAppContext();
+  const roleSet = new Set(userRoles);
+  const canManageHotels = roleSet.has("hotel_owner") || roleSet.has("admin");
+  const canViewAnalytics = canManageHotels || roleSet.has("admin");
 
   return (
     <Router>
@@ -74,9 +73,13 @@ const App = () => {
         <Route
           path="/analytics"
           element={
-            <Layout>
-              <AnalyticsDashboard />
-            </Layout>
+            isLoggedIn && canViewAnalytics ? (
+              <Layout>
+                <AnalyticsDashboard />
+              </Layout>
+            ) : (
+              <Navigate to="/" />
+            )
           }
         />
         
@@ -91,30 +94,34 @@ const App = () => {
                 </Layout>
               }
             />
-            <Route
-              path="/add-hotel"
-              element={
-                <Layout>
-                  <AddHotel />
-                </Layout>
-              }
-            />
-            <Route
-              path="/edit-hotel/:hotelId"
-              element={
-                <Layout>
-                  <EditHotel />
-                </Layout>
-              }
-            />
-            <Route
-              path="/my-hotels"
-              element={
-                <Layout>
-                  <MyHotels />
-                </Layout>
-              }
-            />
+            {canManageHotels && (
+              <>
+                <Route
+                  path="/add-hotel"
+                  element={
+                    <Layout>
+                      <AddHotel />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/edit-hotel/:hotelId"
+                  element={
+                    <Layout>
+                      <EditHotel />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/my-hotels"
+                  element={
+                    <Layout>
+                      <MyHotels />
+                    </Layout>
+                  }
+                />
+              </>
+            )}
             <Route
               path="/my-bookings"
               element={
