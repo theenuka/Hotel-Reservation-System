@@ -17,6 +17,15 @@ BACKEND_SERVICES=(
 )
 RUN_INSTALL="${RUN_INSTALL:-true}"
 
+run_root_install() {
+  if [[ "$RUN_INSTALL" == "true" ]]; then
+    echo "[root] Installing shared dependencies"
+    pushd "$REPO_ROOT" >/dev/null
+    npm ci --no-audit --no-fund
+    popd >/dev/null
+  fi
+}
+
 run_install() {
   if [[ "$RUN_INSTALL" == "true" ]]; then
     npm ci --no-audit --no-fund
@@ -43,6 +52,7 @@ run_frontend() {
 }
 
 main() {
+  run_root_install
   for svc in "${BACKEND_SERVICES[@]}"; do
     run_backend_service "$svc"
   done
