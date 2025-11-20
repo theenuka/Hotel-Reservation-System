@@ -1,4 +1,3 @@
-```tsx
 import { useEffect } from "react";
 import { useAuthContext } from "@asgardeo/auth-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -23,10 +22,10 @@ const AuthRedirect = () => {
         <p className="mt-4 text-white/70">
           We couldn't verify your credentials. Please try again.
         </p>
-        {state.error && (
+        {(state as any).error && (
           <div className="mt-4 p-4 bg-red-900/20 border border-red-500/50 rounded text-left max-w-2xl overflow-auto">
             <p className="text-red-400 font-mono text-sm">
-              {JSON.stringify(state.error, null, 2)}
+              {JSON.stringify((state as any).error, null, 2)}
             </p>
           </div>
         )}
@@ -65,4 +64,3 @@ const AuthRedirect = () => {
 };
 
 export default AuthRedirect;
-```

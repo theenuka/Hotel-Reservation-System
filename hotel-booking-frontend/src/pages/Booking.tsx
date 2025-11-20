@@ -86,7 +86,6 @@ const Booking = () => {
     );
   }
 
-  ```tsx
   return (
     <div className="min-h-screen bg-night-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -224,7 +223,6 @@ const Booking = () => {
       </div>
     </div>
   );
-```
 };
 
 export default Booking;
