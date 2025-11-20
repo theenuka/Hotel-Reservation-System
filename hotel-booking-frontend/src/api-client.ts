@@ -88,13 +88,13 @@ export const searchHotels = async (
     queryParams.append("destination", searchParams.destination.trim());
   }
 
-  queryParams.append("checkIn", searchParams.checkIn || "");
-  queryParams.append("checkOut", searchParams.checkOut || "");
-  queryParams.append("adultCount", searchParams.adultCount || "");
-  queryParams.append("childCount", searchParams.childCount || "");
-  queryParams.append("page", searchParams.page || "");
-  queryParams.append("maxPrice", searchParams.maxPrice || "");
-  queryParams.append("sortOption", searchParams.sortOption || "");
+  if (searchParams.checkIn) queryParams.append("checkIn", searchParams.checkIn);
+  if (searchParams.checkOut) queryParams.append("checkOut", searchParams.checkOut);
+  if (searchParams.adultCount) queryParams.append("adultCount", searchParams.adultCount);
+  if (searchParams.childCount) queryParams.append("childCount", searchParams.childCount);
+  if (searchParams.page) queryParams.append("page", searchParams.page);
+  if (searchParams.maxPrice) queryParams.append("maxPrice", searchParams.maxPrice);
+  if (searchParams.sortOption) queryParams.append("sortOption", searchParams.sortOption);
 
   searchParams.facilities?.forEach((facility) =>
     queryParams.append("facilities", facility)
