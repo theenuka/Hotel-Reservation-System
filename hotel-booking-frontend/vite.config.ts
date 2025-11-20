@@ -4,5 +4,13 @@ import react from "@vitejs/plugin-react-swc";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Removed proxy since we're making direct requests to backend
+  server: {
+    port: 5175,
+    proxy: {
+      "/api": {
+        target: "http://localhost:7008",
+        changeOrigin: true,
+      },
+    },
+  },
 });

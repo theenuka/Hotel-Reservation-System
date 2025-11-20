@@ -1,6 +1,4 @@
 import axiosInstance from "./lib/api-client";
-import { RegisterFormData } from "./pages/Register";
-import { SignInFormData } from "./pages/SignIn";
 import {
   HotelSearchResponse,
   HotelType,
@@ -10,112 +8,18 @@ import {
   BookingType,
 } from "../../shared/types";
 import { BookingFormData } from "./forms/BookingForm/BookingForm";
-import { queryClient } from "./main";
+
+// NOTE: We removed 'register' and 'signIn' functions because Asgardeo handles auth now.
 
 export const fetchCurrentUser = async (): Promise<UserType> => {
   const response = await axiosInstance.get("/api/users/me");
   return response.data;
 };
 
-export const register = async (formData: RegisterFormData) => {
-  const response = await axiosInstance.post("/api/users/register", formData);
-
-  // Store JWT token from response body in localStorage (same as signIn)
-  const token = response.data?.token;
-  if (token) {
-    localStorage.setItem("session_id", token);
-    console.log("JWT token stored in localStorage after registration");
-  }
-
-  // Store user info for incognito mode fallback
-  if (response.data?.userId) {
-    localStorage.setItem("user_id", response.data.userId);
-  }
-
-  // Optionally validate token to refresh React Query caches
-  try {
-    const validationResult = await validateToken();
-    console.log("Token validation after register:", validationResult);
-    // Invalidate and refetch to update any UI depending on auth state
-    queryClient.invalidateQueries("validateToken");
-    await queryClient.refetchQueries("validateToken");
-  } catch (err) {
-    console.log("Token validation failed after registration");
-  }
-
-  return response.data;
-};
-
-
-export const signIn = async (formData: SignInFormData) => {
-  const response = await axiosInstance.post("/api/auth/login", formData);
-
-  // Store JWT token from response body in localStorage
-  const token = response.data?.token;
-  if (token) {
-    localStorage.setItem("session_id", token);
-    console.log("JWT token stored in localStorage for incognito compatibility");
-  }
-
-  // Store user info for incognito mode fallback
-  if (response.data?.userId) {
-    localStorage.setItem("user_id", response.data.userId);
-    console.log("User ID stored for incognito mode fallback");
-  }
-
-  // Force validate token after successful login to update React Query cache
-  try {
-    const validationResult = await validateToken();
-    console.log("Token validation after login:", validationResult);
-
-    // Invalidate and refetch the validateToken query to update the UI
-    queryClient.invalidateQueries("validateToken");
-
-    // Force a refetch to ensure the UI updates
-    await queryClient.refetchQueries("validateToken");
-  } catch (error) {
-    console.log("Token validation failed after login, but continuing...");
-
-    // Even if validation fails, if we have a token stored, consider it a success for incognito mode
-    if (localStorage.getItem("session_id")) {
-      console.log("Incognito mode detected - using stored token as fallback");
-    }
-  }
-
-  return response.data;
-};
-
-export const validateToken = async () => {
-  try {
-    const response = await axiosInstance.get("/api/auth/validate-token");
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 401) {
-      // Not logged in, throw error so React Query knows it failed
-      throw new Error("Token invalid");
-    }
-    // For any other error (network, etc.), also throw
-    throw new Error("Token validation failed");
-  }
-};
-
-export const signOut = async () => {
-  const response = await axiosInstance.post("/api/auth/logout");
-
-  // Clear localStorage (JWT tokens)
-  localStorage.removeItem("session_id");
-  localStorage.removeItem("user_id");
-
-  return response.data;
-};
-
 // Development utility to clear all browser storage
 export const clearAllStorage = () => {
-  // Clear localStorage
   localStorage.clear();
-  // Clear sessionStorage
   sessionStorage.clear();
-  // Clear cookies (by setting them to expire in the past)
   document.cookie.split(";").forEach((c) => {
     document.cookie = c
       .replace(/^ +/, "")
@@ -180,7 +84,6 @@ export const searchHotels = async (
 ): Promise<HotelSearchResponse> => {
   const queryParams = new URLSearchParams();
 
-  // Only add destination if it's not empty
   if (searchParams.destination && searchParams.destination.trim() !== "") {
     queryParams.append("destination", searchParams.destination.trim());
   }

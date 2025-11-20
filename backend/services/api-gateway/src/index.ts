@@ -3,28 +3,73 @@ import cors from "cors";
 import morgan from "morgan";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import "dotenv/config";
-import jwt from "jsonwebtoken";
+import { extractBearerToken, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
 
 const app = express();
-app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], credentials: true }));
+const defaultCorsOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+  "http://127.0.0.1:5175",
+  "https://mern-booking-hotel.netlify.app",
+];
+
+const parseCustomOrigins = (value?: string) =>
+  value
+    ?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? [];
+
+const allowedOrigins = new Set<string>([
+  ...defaultCorsOrigins,
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...parseCustomOrigins(process.env.CORS_ALLOWED_ORIGINS),
+]);
+
+const isLocalhostOrigin = (origin: string) => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.has(origin) || isLocalhostOrigin(origin)) {
+        return callback(null, true);
+      }
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`[api-gateway] Allowing unlisted origin in dev: ${origin}`);
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true,
+  })
+);
 app.use(morgan("dev"));
 // Parse JSON bodies for logging and optional downstream forward
 app.use(express.json({ limit: "1mb" }));
 
 // Service URLs (env or defaults)
 // Attach user id from JWT (if present) to downstream request headers
-app.use((req, _res, next) => {
-  const auth = req.headers.authorization as string | undefined;
-  const token = auth?.startsWith("Bearer ") ? auth.split(" ")[1] : undefined;
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY || "dev_secret") as { userId?: string; role?: string };
-      if (decoded?.userId) req.headers["x-user-id"] = decoded.userId;
-      if (decoded?.role) req.headers["x-user-role"] = decoded.role;
-    } catch {
-      // ignore invalid tokens, downstream will handle auth
-    }
+app.use(async (req, _res, next) => {
+  const token = extractBearerToken(req.headers.authorization as string | undefined);
+  if (!token) {
+    return next();
   }
+
+  try {
+    const user = await verifyAsgardeoJwt(token);
+    if (user.userId) req.headers["x-user-id"] = user.userId;
+    if (user.email) req.headers["x-user-email"] = user.email;
+    if (user.roles?.length) {
+      req.headers["x-user-role"] = user.roles[0];
+      req.headers["x-user-roles"] = user.roles.join(",");
+    }
+  } catch (error) {
+    console.warn("[api-gateway] Asgardeo token verification failed", (error as Error)?.message || error);
+  }
+
   next();
 });
 const IDENTITY_URL = process.env.IDENTITY_SERVICE_URL || "http://localhost:7102";

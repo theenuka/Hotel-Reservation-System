@@ -1,11 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { useQuery } from "react-query";
-import * as apiClient from "../api-client";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { useToast } from "../hooks/use-toast";
+import { useAuthContext } from "@asgardeo/auth-react";
+import {
+  clearAccessTokenProvider,
+  registerAccessTokenProvider,
+} from "../lib/asgardeo-token-bridge";
+import { resolveStripePublishableKey } from "../lib/runtime-config";
 
-const STRIPE_PUB_KEY = import.meta.env.VITE_STRIPE_PUB_KEY || "";
+const STRIPE_PUB_KEY = resolveStripePublishableKey();
+
+if (!STRIPE_PUB_KEY) {
+  console.warn(
+    "Stripe publishable key is not configured. Payment flows will be disabled until VITE_STRIPE_PUB_KEY (or runtime-config stripePublishableKey) is set."
+  );
+}
 
 type ToastMessage = {
   title: string;
@@ -16,6 +26,8 @@ type ToastMessage = {
 export type AppContext = {
   showToast: (toastMessage: ToastMessage) => void;
   isLoggedIn: boolean;
+  userRoles: string[];
+  userEmail?: string;
   stripePromise: Promise<Stripe | null>;
   showGlobalLoading: (message?: string) => void;
   hideGlobalLoading: () => void;
@@ -27,7 +39,9 @@ export const AppContext = React.createContext<AppContext | undefined>(
   undefined
 );
 
-const stripePromise = loadStripe(STRIPE_PUB_KEY);
+const stripePromise: Promise<Stripe | null> = STRIPE_PUB_KEY
+  ? loadStripe(STRIPE_PUB_KEY)
+  : Promise.resolve(null);
 
 export const AppContextProvider = ({
   children,
@@ -39,94 +53,50 @@ export const AppContextProvider = ({
     "Hotel room is getting ready..."
   );
   const { toast } = useToast();
+  const { state, getAccessToken } = useAuthContext();
 
-  // Simple check for stored tokens without API calls
-  const checkStoredAuth = () => {
-    const localToken = localStorage.getItem("session_id");
-    const userId = localStorage.getItem("user_id");
+  useEffect(() => {
+    registerAccessTokenProvider(async () => {
+      if (!state.isAuthenticated) return undefined;
+      return (await getAccessToken()) || undefined;
+    });
+    return () => clearAccessTokenProvider();
+  }, [getAccessToken, state.isAuthenticated]);
 
-    // Check if we have both token and user ID
-    const hasToken = !!localToken;
-    const hasUserId = !!userId;
+  const userRoles = useMemo(() => {
+    const decodedState = state as unknown as {
+      decodedAccessToken?: { payload?: Record<string, unknown> };
+      decodedIdToken?: { payload?: Record<string, unknown> };
+      profileInfo?: Record<string, unknown>;
+    };
 
-    if (hasToken && hasUserId) {
-      console.log("JWT authentication detected - token and user ID found");
-    }
+    const candidates = [
+      decodedState?.decodedAccessToken?.payload?.roles,
+      decodedState?.decodedAccessToken?.payload?.groups,
+      decodedState?.decodedIdToken?.payload?.roles,
+      decodedState?.decodedIdToken?.payload?.groups,
+      decodedState?.profileInfo?.roles,
+      decodedState?.profileInfo?.groups,
+    ];
 
-    return hasToken;
-  };
-
-  // Always run validation query - let it handle token checking internally
-  const { isError, isLoading, data } = useQuery(
-    "validateToken",
-    apiClient.validateToken,
-    {
-      retry: false,
-      refetchOnWindowFocus: false, // Don't refetch on focus
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      // Always enabled - let validateToken handle missing tokens
-      enabled: true,
-      // Add fallback for JWT authentication
-      onError: (error: any) => {
-        // If validateToken fails, check if we have a token in localStorage
-        const storedToken = localStorage.getItem("session_id");
-        const storedUserId = localStorage.getItem("user_id");
-
-        if (storedToken && error.response?.status === 401) {
-          console.log(
-            "JWT token found but validation failed - possible token expiration"
-          );
-
-          // If we also have a user ID, we can be more confident it's a valid session
-          if (storedUserId) {
-            console.log("JWT session confirmed - using localStorage fallback");
-          }
+    const roles = candidates
+      .flatMap((claim) => {
+        if (!claim) return [] as string[];
+        if (Array.isArray(claim)) return claim.map(String);
+        if (typeof claim === "string") {
+          return claim
+            .split(/[ ,]/)
+            .map((role) => role.trim())
+            .filter(Boolean);
         }
-      },
-    }
-  );
+        return [] as string[];
+      })
+      .filter(Boolean);
 
-  // Debug logging to understand the state
-  console.log("Auth Debug:", {
-    isLoading,
-    isError,
-    hasData: !!data,
-    hasStoredToken: checkStoredAuth(),
-    hasUserId: !!localStorage.getItem("user_id"),
-    data,
-  });
+    return Array.from(new Set(roles.map((role) => role.toLowerCase())));
+  }, [state]);
 
-  // Simple logic: logged in if we have valid data OR stored token as fallback
-  const isLoggedIn =
-    (!isLoading && !isError && !!data) || (checkStoredAuth() && isError); // Use stored token only if validation failed
-
-  // Additional fallback: if we just logged in and have a token, consider logged in
-  const justLoggedIn = checkStoredAuth() && !isLoading && !data && !isError;
-
-  // Enhanced JWT authentication detection and fallback
-  const isJWTFallback = () => {
-    // Check if we have a token but validation failed (typical JWT fallback behavior)
-    const hasStoredToken = checkStoredAuth();
-    const hasUserId = !!localStorage.getItem("user_id");
-    const isFallback = hasStoredToken && isError && !data && hasUserId;
-
-    if (isFallback) {
-      console.log(
-        "JWT fallback mode detected - using localStorage authentication"
-      );
-    }
-
-    return isFallback;
-  };
-
-  const finalIsLoggedIn = isLoggedIn || justLoggedIn || isJWTFallback();
-
-  console.log(
-    "Final isLoggedIn:",
-    finalIsLoggedIn,
-    "JWT Fallback:",
-    isJWTFallback()
-  );
+  const isLoggedIn = state.isAuthenticated;
 
   const showToast = (toastMessage: ToastMessage) => {
     const variant =
@@ -158,7 +128,9 @@ export const AppContextProvider = ({
     <AppContext.Provider
       value={{
         showToast,
-        isLoggedIn: finalIsLoggedIn,
+        isLoggedIn,
+        userRoles,
+        userEmail: state?.email || state?.username || state?.displayName,
         stripePromise,
         showGlobalLoading,
         hideGlobalLoading,

@@ -80,7 +80,15 @@ const testimonials = [
 ];
 
 const Home = () => {
-  const { data: hotels } = useQuery("fetchQuery", () => apiClient.fetchHotels());
+  const {
+    data: hotels,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery("fetchQuery", () => apiClient.fetchHotels(), {
+    retry: 1,
+  });
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -88,7 +96,17 @@ const Home = () => {
     console.log("Search initiated with:", searchData);
   };
 
-  const destinations = useMemo(() => hotels ?? [], [hotels]);
+  const destinations = useMemo(() => {
+    if (Array.isArray(hotels)) {
+      return hotels;
+    }
+
+    if (hotels && !Array.isArray(hotels)) {
+      console.warn("Unexpected /api/hotels payload", hotels);
+    }
+
+    return [];
+  }, [hotels]);
 
   useEffect(() => {
     const section = (location.state as { section?: string } | null)?.section;
@@ -249,8 +267,27 @@ const Home = () => {
           </button>
         </div>
 
-        {destinations.length === 0 ? (
-          <div className="py-8 text-center text-white/60">No hotels found yet. Add one from My Hotels or seed the database.</div>
+        {isLoading ? (
+          <div className="py-8 text-center text-white/60">Loading curated stays…</div>
+        ) : isError ? (
+          <div className="py-8 space-y-4 text-center">
+            <p className="text-white/70">
+              We couldn’t reach the hotel catalog ({(error as Error)?.message || "network error"}).
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm border rounded-full border-white/30 text-white hover:border-white/60"
+            >
+              Retry fetch
+            </button>
+            <p className="text-xs text-white/50">
+              Tip: ensure `docker compose up mongo redis` (or the API gateway) is running locally.
+            </p>
+          </div>
+        ) : destinations.length === 0 ? (
+          <div className="py-8 text-center text-white/60">
+            No hotels found yet. Add one from My Hotels or seed the database.
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {destinations.map((hotel) => (

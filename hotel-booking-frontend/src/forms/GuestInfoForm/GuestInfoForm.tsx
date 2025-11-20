@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import useSearchContext from "../../hooks/useSearchContext";
 import useAppContext from "../../hooks/useAppContext";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -15,6 +15,7 @@ import {
 } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { Calendar, Users, User, Baby, CreditCard } from "lucide-react";
+import { useAuthContext } from "@asgardeo/auth-react";
 
 type Props = {
   hotelId: string;
@@ -31,8 +32,8 @@ type GuestInfoFormData = {
 const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
   const search = useSearchContext();
   const { isLoggedIn } = useAppContext();
+  const { signIn } = useAuthContext();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const {
     watch,
@@ -72,7 +73,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       data.adultCount,
       data.childCount
     );
-    navigate("/sign-in", { state: { from: location } });
+    signIn();
   };
 
   const onSubmit = (data: GuestInfoFormData) => {

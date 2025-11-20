@@ -1,25 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
-import Cookies from "js-cookie";
-
-// Define base URL based on environment
-const getBaseURL = () => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-
-  // Fallback URLs
-  if (window.location.hostname === "mern-booking-hotel.netlify.app") {
-    return "https://mern-hotel-booking-68ej.onrender.com";
-  }
-
-  if (window.location.hostname === "localhost") {
-    // Default to API Gateway in microservices mode
-    return "http://localhost:7008";
-  }
-
-  // Default to production
-  return "https://mern-hotel-booking-68ej.onrender.com";
-};
+import { getAccessTokenFromProvider } from "./asgardeo-token-bridge";
+import { resolveApiBaseUrl } from "./runtime-config";
 
 // Extend axios config to include metadata
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -28,7 +9,7 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 
 // Create axios instance with consistent configuration
 const axiosInstance = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: resolveApiBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },
@@ -36,17 +17,13 @@ const axiosInstance = axios.create({
   timeout: 30000, // 30 second timeout
 });
 
-// Request interceptor to add Authorization header with JWT token
-axiosInstance.interceptors.request.use((config: CustomAxiosRequestConfig) => {
-  // Get JWT token from localStorage (no more cookie dependency)
-  const token = localStorage.getItem("session_id");
-
+// Request interceptor to add Authorization header with Asgardeo access token
+axiosInstance.interceptors.request.use(async (config: CustomAxiosRequestConfig) => {
+  const token = await getAccessTokenFromProvider();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log("Using JWT token from localStorage for authentication");
   }
 
-  // Add retry count to track retries
   config.metadata = { retryCount: 0 };
 
   return config;
@@ -60,9 +37,7 @@ axiosInstance.interceptors.response.use(
 
     // Handle 401 errors by clearing session
     if (error.response?.status === 401) {
-      Cookies.remove("session_id");
-      localStorage.removeItem("session_id");
-      // Don't redirect automatically - let components handle it
+      // Let components react to unauthorized responses (e.g., show toast or redirect to login)
     }
 
     // Handle rate limiting (429) with retry logic

@@ -8,7 +8,7 @@ import Booking from "./models/booking";
 import Waitlist from "./models/waitlist";
 import Maintenance from "./models/maintenance";
 import mongoosePkg from "mongoose";
-import jwt from "jsonwebtoken";
+import { extractBearerToken, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
 
 const app = express();
 app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], credentials: true }));
@@ -44,20 +44,28 @@ const stripe = STRIPE_KEY ? new Stripe(STRIPE_KEY) : undefined;
 // Health
 app.get("/health", (_req, res) => res.json({ status: "ok", service: "booking-service" }));
 // Simple auth: accept either gateway header x-user-id or Authorization token
-const JWT_SECRET = process.env.JWT_SECRET_KEY || "dev_secret";
-const attachUser = (req: Request & { userId?: string }, _res: Response, next: NextFunction) => {
+const attachUser = async (req: Request & { userId?: string; roles?: string[] }, _res: Response, next: NextFunction) => {
+  if (req.userId) return next();
+
   const headerUserId = req.headers["x-user-id"] as string | undefined;
-  if (headerUserId) { req.userId = headerUserId; return next(); }
-  const auth = req.headers.authorization;
-  const token = auth?.startsWith("Bearer ") ? auth.split(" ")[1] : undefined;
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-      req.userId = decoded.userId;
-    } catch {
-      // ignore
-    }
+  const headerRoles = (req.headers["x-user-roles"] as string | undefined)?.split(",").filter(Boolean);
+  if (headerUserId) {
+    req.userId = headerUserId;
+    req.roles = headerRoles;
+    return next();
   }
+
+  const token = extractBearerToken(req.headers.authorization as string | undefined);
+  if (!token) return next();
+
+  try {
+    const user = await verifyAsgardeoJwt(token);
+    req.userId = user.userId;
+    req.roles = user.roles;
+  } catch (error) {
+    console.warn("[booking-service] token verification failed", (error as Error)?.message || error);
+  }
+
   next();
 };
 

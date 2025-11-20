@@ -31,8 +31,8 @@ services:
 
   identity-service:
     build:
-      context: ./backend/services/identity-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/services/identity-service/Dockerfile
     env_file:
       - backend/.env.docker
     environment:
@@ -46,8 +46,8 @@ services:
 
   hotel-service:
     build:
-      context: ./backend/services/hotel-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/services/hotel-service/Dockerfile
     env_file:
       - backend/.env.docker
     environment:
@@ -63,8 +63,8 @@ services:
 
   booking-service:
     build:
-      context: ./backend/services/booking-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/services/booking-service/Dockerfile
     env_file:
       - backend/.env.docker
     environment:
@@ -112,8 +112,8 @@ services:
 
   api-gateway:
     build:
-      context: ./backend/services/api-gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/services/api-gateway/Dockerfile
     env_file:
       - backend/.env.docker
     environment:

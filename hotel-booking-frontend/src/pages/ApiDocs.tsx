@@ -6,10 +6,10 @@ import {
   Shield,
   Zap,
 } from "lucide-react";
+import { resolveApiBaseUrl } from "../lib/runtime-config";
 
 const ApiDocs = () => {
-  const apiBaseUrl =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:7002";
+  const apiBaseUrl = resolveApiBaseUrl();
 
   const apiEndpoints = [
     {

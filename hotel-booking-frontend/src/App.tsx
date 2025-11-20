@@ -5,13 +5,9 @@ import {
   Navigate,
 } from "react-router-dom";
 import Layout from "./layouts/Layout";
-import AuthLayout from "./layouts/AuthLayout";
 import ScrollToTop from "./components/ScrollToTop";
 import { Toaster } from "./components/ui/toaster";
-import Register from "./pages/Register";
-import SignIn from "./pages/SignIn";
 import AddHotel from "./pages/AddHotel";
-import useAppContext from "./hooks/useAppContext";
 import MyHotels from "./pages/MyHotels";
 import EditHotel from "./pages/EditHotel";
 import Search from "./pages/Search";
@@ -22,9 +18,15 @@ import Home from "./pages/Home";
 import ApiDocs from "./pages/ApiDocs";
 import ApiStatus from "./pages/ApiStatus";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import AuthRedirect from "./pages/AuthRedirect";
+import useAppContext from "./hooks/useAppContext";
 
 const App = () => {
-  const { isLoggedIn } = useAppContext();
+  const { isLoggedIn, userRoles } = useAppContext();
+  const roleSet = new Set(userRoles);
+  const canManageHotels = roleSet.has("hotel_owner") || roleSet.has("admin");
+  const canViewAnalytics = canManageHotels || roleSet.has("admin");
+
   return (
     <Router>
       <ScrollToTop />
@@ -72,28 +74,17 @@ const App = () => {
         <Route
           path="/analytics"
           element={
-            <Layout>
-              <AnalyticsDashboard />
-            </Layout>
+            isLoggedIn && canViewAnalytics ? (
+              <Layout>
+                <AnalyticsDashboard />
+              </Layout>
+            ) : (
+              <Navigate to="/" />
+            )
           }
         />
-        <Route
-          path="/register"
-          element={
-            <AuthLayout>
-              <Register />
-            </AuthLayout>
-          }
-        />
-        <Route
-          path="/sign-in"
-          element={
-            <AuthLayout>
-              <SignIn />
-            </AuthLayout>
-          }
-        />
-
+        
+        {/* Protected Routes - Only accessible if logged in via Asgardeo */}
         {isLoggedIn && (
           <>
             <Route
@@ -104,31 +95,34 @@ const App = () => {
                 </Layout>
               }
             />
-
-            <Route
-              path="/add-hotel"
-              element={
-                <Layout>
-                  <AddHotel />
-                </Layout>
-              }
-            />
-            <Route
-              path="/edit-hotel/:hotelId"
-              element={
-                <Layout>
-                  <EditHotel />
-                </Layout>
-              }
-            />
-            <Route
-              path="/my-hotels"
-              element={
-                <Layout>
-                  <MyHotels />
-                </Layout>
-              }
-            />
+            {canManageHotels && (
+              <>
+                <Route
+                  path="/add-hotel"
+                  element={
+                    <Layout>
+                      <AddHotel />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/edit-hotel/:hotelId"
+                  element={
+                    <Layout>
+                      <EditHotel />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/my-hotels"
+                  element={
+                    <Layout>
+                      <MyHotels />
+                    </Layout>
+                  }
+                />
+              </>
+            )}
             <Route
               path="/my-bookings"
               element={
@@ -139,6 +133,12 @@ const App = () => {
             />
           </>
         )}
+
+        {/* Legacy routes -> kick off hosted login */}
+        <Route path="/sign-in" element={<AuthRedirect />} />
+        <Route path="/register" element={<AuthRedirect />} />
+        
+        {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <Toaster />
@@ -147,8 +147,3 @@ const App = () => {
 };
 
 export default App;
-
-
-
-
-//test workflow

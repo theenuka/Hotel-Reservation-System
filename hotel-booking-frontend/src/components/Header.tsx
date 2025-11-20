@@ -1,12 +1,15 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import useAppContext from "../hooks/useAppContext";
 import useSearchContext from "../hooks/useSearchContext";
-import SignOutButton from "./SignOutButton";
-import { Calendar, LogIn } from "lucide-react";
+import { Calendar, LogIn, LogOut } from "lucide-react";
 import BrandLogo from "./BrandLogo";
+import { useAuthContext } from "@asgardeo/auth-react";
+import useAppContext from "../hooks/useAppContext";
 
 const Header = () => {
-  const { isLoggedIn } = useAppContext();
+  const { signIn, signOut } = useAuthContext();
+  const { isLoggedIn, userRoles } = useAppContext();
+  const canManage = userRoles.some((role) => role === "hotel_owner" || role === "admin");
+
   const search = useSearchContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,37 +38,37 @@ const Header = () => {
     { label: "Stories", type: "section" as const, target: "testimonials" },
   ];
 
-  const hostCtaHref = isLoggedIn ? "/add-hotel" : "/register";
-  const hostCtaLabel = isLoggedIn ? "List your stay" : "Become a host";
+  const handleHostClick = () => {
+    if (isLoggedIn && canManage) {
+      navigate("/add-hotel");
+    } else {
+      signIn();
+    }
+  };
+
+  const hostCtaLabel = isLoggedIn && canManage ? "List your stay" : "Become a host";
 
   const handleLogoClick = () => {
-    // Clear search context when going to home page
     search.clearSearchValues();
     navigate("/");
   };
 
   return (
     <>
-      {/* Development Banner */}
-      {/* {!import.meta.env.PROD && (
-        <div className="bg-yellow-500 text-black text-center py-1 text-xs font-medium">
-          🚧 Development Mode - Auth state persists between sessions
-        </div>
-      )} */}
-      <header className="sticky top-0 z-50 bg-night-900/85 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+      <header className="sticky top-0 z-50 border-b bg-night-900/85 backdrop-blur-xl border-white/10">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
             {/* Logo */}
             <BrandLogo onClick={handleLogoClick} className="shrink-0" />
 
             {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-1 text-white/80">
+            <nav className="items-center hidden space-x-1 md:flex text-white/80">
               {navItems.map((item) =>
                 item.type === "route" ? (
                   <Link
                     key={item.label}
                     to={item.href}
-                    className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                    className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
                   >
                     {item.label}
                   </Link>
@@ -74,22 +77,22 @@ const Header = () => {
                     key={item.label}
                     type="button"
                     onClick={() => scrollToSection(item.target)}
-                    className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                    className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
                   >
                     {item.label}
                   </button>
                 )
               )}
-              {isLoggedIn && (
+              {isLoggedIn && canManage && (
                 <>
                   <Link
-                    className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                    className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
                     to="/analytics"
                   >
                     Insights
                   </Link>
                   <Link
-                    className="px-4 py-2 rounded-full transition-colors hover:bg-white/10 hover:text-white"
+                    className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
                     to="/my-hotels"
                   >
                     Host Hub
@@ -104,35 +107,45 @@ const Header = () => {
                 <>
                   <Link
                     to="/my-bookings"
-                    className="hidden sm:inline-flex items-center px-4 py-2 rounded-full border border-white/20 text-sm text-white/80 hover:border-white/60"
+                    className="items-center hidden px-4 py-2 text-sm border rounded-full sm:inline-flex border-white/20 text-white/80 hover:border-white/60"
                   >
                     <Calendar className="w-4 h-4 mr-2" />
                     Trips
                   </Link>
-                  <SignOutButton />
+                  
+                  {/* Sign Out Button (Asgardeo) */}
+                  <button 
+                    onClick={() => signOut()}
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/15 bg-[#0B1424] text-white font-semibold shadow-[0_18px_30px_rgba(1,3,10,0.65)] hover:border-white/35 hover:-translate-y-0.5 transition"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
                 </>
               ) : (
                 <>
-                  <Link
-                    to={hostCtaHref}
-                    className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/20 text-sm text-white/80 hover:border-white/60"
+                  <button
+                    onClick={handleHostClick}
+                    className="items-center hidden gap-2 px-4 py-2 text-sm border rounded-full sm:inline-flex border-white/20 text-white/80 hover:border-white/60"
                   >
                     {hostCtaLabel}
-                  </Link>
-                  <Link
-                    to="/sign-in"
+                  </button>
+                  
+                  {/* Sign In Button (Asgardeo) */}
+                  <button
+                    onClick={() => signIn()}
                     className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/15 bg-[#0B1424] text-white font-semibold shadow-[0_18px_30px_rgba(1,3,10,0.65)] hover:border-white/35 hover:-translate-y-0.5 transition"
                   >
                     <LogIn className="w-4 h-4" />
                     Sign In
-                  </Link>
+                  </button>
                 </>
               )}
             </div>
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
-              <button aria-label="Open menu" className="text-white p-2 rounded-2xl border border-white/15">
+              <button aria-label="Open menu" className="p-2 text-white border rounded-2xl border-white/15">
                 <svg
                   className="w-6 h-6"
                   fill="none"

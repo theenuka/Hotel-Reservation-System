@@ -4,14 +4,44 @@ A modern hotel booking platform with a React + Vite frontend and Node/Express mi
 
 ## What’s inside
 
-- Frontend: React + Vite + TypeScript + React Query + Tailwind (`hotel-booking-frontend`)
-- Services (Node + Express + TypeScript) under `backend/services`:
   - api-gateway (7008)
   - identity-service (auth/users, 7102)
   - hotel-service (hotels & owner ops, 7103)
   - search-service (search queries, 7105)
   - booking-service (7104) and notification-service (7101) are optional for local quick start
-- Database: MongoDB Docker container at localhost:27018
+
+## Building release images (linux/amd64)
+
+The kubeadm cluster runs on x86_64 EC2 nodes, so every image we push to ECR must include a `linux/amd64` variant. GitHub Actions now enforces this via `docker buildx build --platform linux/amd64`, but you can produce the same artifacts locally with the helper script:
+
+```bash
+scripts/build-linux-amd64.sh frontend asgardeo-fix-amd64
+```
+
+The script wraps `docker buildx` for all services (pass `all` to rebuild everything) and pushes to ECR by default. Set `PUSH=false` if you only need to load the resulting image into your local Docker daemon. Override `ECR_REGISTRY` or `PLATFORM` as needed.
+
+- Frontend builds now inject the production Asgardeo + API URLs automatically. Override `FRONTEND_PUBLIC_URL`, `FRONTEND_API_BASE_URL`, or any `VITE_ASGARDEO_*` env var before running the helper if you are targeting a different host/tenant.
+- GitHub Actions (`.github/workflows/build-and-deploy.yml`) passes the same build args so every pushed image contains the right client ID and redirect URLs.
+
+### Kubernetes auth config
+
+Apply `phoenix-booking-infra/k8s-manifests/09-asgardeo-config.yaml` to share the SPA client info with every microservice:
+
+```bash
+kubectl apply -f phoenix-booking-infra/k8s-manifests/09-asgardeo-config.yaml
+```
+
+The identity, hotel, booking, and API gateway deployments consume that ConfigMap via `envFrom`. After you update credentials, re-apply the file and roll your deployments to pick up the new values.
+
+## Lint/build health checks
+
+Every pull request now runs `scripts/run-ci-checks.sh`, which iterates through each backend service with `npm ci && npm run build` and finishes by linting + building the Vite frontend. Run the same script locally before pushing changes:
+
+```bash
+scripts/run-ci-checks.sh
+```
+
+Set `RUN_INSTALL=false` if you already installed dependencies and just want to re-run the builds (helpful for local iteration). The GitHub Action defined in `.github/workflows/ci.yml` caches each package-lock file, so CI catches type or lint issues before container builds kick off.
 
 ## Project structure
 
@@ -85,13 +115,27 @@ Key fields in `backend/.env.local`:
 MONGODB_CONNECTION_STRING=mongodb://localhost:27018/hotel-booking
 FRONTEND_URL=http://localhost:5174
 JWT_SECRET_KEY=dev_secret
-# Identity security tuning (defaults shown)
 ALLOW_ROLE_FROM_REGISTER=true
 ACCESS_TOKEN_TTL=15m
 REFRESH_TOKEN_TTL_DAYS=30
 PASSWORD_RESET_TOKEN_TTL_MINUTES=60
 VERIFICATION_CODE_TTL_MINUTES=15
 REQUIRE_VERIFIED_EMAIL_FOR_LOGIN=false
+LOYALTY_POINTS_PER_CURRENCY=0.1
+
+# Service-to-service auth
+INTERNAL_SERVICE_API_KEY=local-internal-key
+NOTIFICATION_SERVICE_KEY=local-internal-key
+
+# Asgardeo (OIDC) – replace with your tenant + SPA client
+ASGARDEO_TENANT_DOMAIN=your-tenant
+ASGARDEO_ORG_URL=https://api.asgardeo.io/t/your-tenant
+ASGARDEO_CLIENT_ID=your-spa-client-id
+ASGARDEO_AUDIENCE=
+ASGARDEO_ISSUER=https://api.asgardeo.io/t/your-tenant/oauth2/token
+ASGARDEO_JWKS_URL=https://api.asgardeo.io/t/your-tenant/oauth2/jwks
+
+# Notification + third-party services
 SENDGRID_API_KEY=
 NOTIFICATION_FROM_EMAIL=no-reply@phoenix-booking.local
 NOTIFICATION_FROM_NAME=Phoenix Booking
@@ -101,6 +145,7 @@ TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_FROM_NUMBER=
 TWILIO_MESSAGING_SERVICE_SID=
+
 # Optional (pick one style):
 # CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>?secure=true
 # CLOUDINARY_CLOUD_NAME=your_cloud
@@ -118,6 +163,11 @@ cp hotel-booking-frontend/.env.example hotel-booking-frontend/.env.local
 
 ```
 VITE_API_BASE_URL=http://localhost:7008
+VITE_ASGARDEO_CLIENT_ID=your-spa-client-id
+VITE_ASGARDEO_BASE_URL=https://api.asgardeo.io/t/your-tenant
+VITE_ASGARDEO_SIGN_IN_REDIRECT=http://localhost:5174
+VITE_ASGARDEO_SIGN_OUT_REDIRECT=http://localhost:5174
+VITE_ASGARDEO_SCOPES=openid profile email
 ```
 
 3) Start core services (gateway, identity, hotel, search)
@@ -141,6 +191,14 @@ npm run dev
 ```
 
 Open http://localhost:5174
+
+### Configure Asgardeo (one-time)
+
+1. In Asgardeo, create an SPA application and note the `Client ID`, tenant domain, and org URL.
+2. Add `http://localhost:5174` to both authorized redirect URLs (sign-in and sign-out).
+3. Under scopes, include at least `openid profile email` and any custom roles you rely on (e.g. `hotel_owner`, `admin`).
+4. Copy the values into `backend/.env.local` (`ASGARDEO_*`) and `hotel-booking-frontend/.env.local` (`VITE_ASGARDEO_*`).
+5. Assign roles to users in Asgardeo so the JWT contains `hotel_owner`, `admin`, or `user` claims for the new role-based gates.
 
 ## Docker (full stack)
 
@@ -195,7 +253,7 @@ Need to rebuild just one service? Swap the target name (e.g. `docker compose bui
   - Admin-only endpoints: `GET /admin/users`, `PATCH /admin/users/:id/role`
   - Every login/register response returns `{ accessToken, refreshToken, emailVerified }`
 - Notification service now supports BullMQ-backed delivery with a Redis queue (`NOTIFICATION_QUEUE_MODE=queue`) and Twilio SMS in addition to SendGrid email. Without API keys/Redis it falls back to inline mocks and console logs.
-- JWT is stored in `localStorage` under `session_id` for the frontend.
+- Authentication flows now run entirely through Asgardeo via `@asgardeo/auth-react`; the frontend requests tokens from the SDK and the gateway/backends validate them with the shared `shared/auth/asgardeo.ts` helper.
 - CORS allows `FRONTEND_URL`.
 
 ## Troubleshooting
