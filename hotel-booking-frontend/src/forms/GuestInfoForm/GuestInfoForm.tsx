@@ -92,65 +92,66 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       <style>
         {`
           .react-datepicker {
-            background-color: white !important;
-            border: 1px solid #e5e7eb !important;
+            background-color: #0B1730 !important;
+            border: 1px solid #1e293b !important;
             border-radius: 8px !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3) !important;
             font-family: inherit !important;
+            color: #ffffff !important;
           }
           .react-datepicker__header {
-            background-color: #f8fafc !important;
-            border-bottom: 1px solid #e5e7eb !important;
+            background-color: #0F2145 !important;
+            border-bottom: 1px solid #1e293b !important;
             border-radius: 8px 8px 0 0 !important;
           }
           .react-datepicker__current-month {
-            color: #374151 !important;
+            color: #ffffff !important;
             font-weight: 600 !important;
           }
           .react-datepicker__day-name {
-            color: #6b7280 !important;
+            color: #9ca3af !important;
             font-weight: 500 !important;
           }
           .react-datepicker__day {
-            color: #374151 !important;
+            color: #e5e7eb !important;
             border-radius: 6px !important;
             margin: 2px !important;
           }
           .react-datepicker__day:hover {
-            background-color: #dbeafe !important;
-            color: #1e40af !important;
+            background-color: #1e3a8a !important;
+            color: #ffffff !important;
           }
           .react-datepicker__day--selected {
             background-color: #3b82f6 !important;
             color: white !important;
           }
           .react-datepicker__day--in-range {
-            background-color: #dbeafe !important;
-            color: #1e40af !important;
+            background-color: #1e3a8a !important;
+            color: #ffffff !important;
           }
           .react-datepicker__day--keyboard-selected {
             background-color: #3b82f6 !important;
             color: white !important;
           }
           .react-datepicker__day--outside-month {
-            color: #9ca3af !important;
+            color: #4b5563 !important;
           }
           .react-datepicker__navigation {
-            color: #6b7280 !important;
+            color: #9ca3af !important;
           }
           .react-datepicker__navigation:hover {
-            color: #374151 !important;
+            color: #ffffff !important;
           }
         `}
       </style>
-      <Card className="w-full shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
+      <Card className="w-full shadow-lg border border-white/10 bg-night-800">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center justify-between text-lg font-semibold">
+          <CardTitle className="flex items-center justify-between text-lg font-semibold text-white">
             <div className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-blue-600" />
+              <CreditCard className="h-5 w-5 text-brand-400" />
               <span>Booking Summary</span>
             </div>
-            <Badge variant="outline" className="text-sm">
+            <Badge variant="outline" className="text-sm border-white/20 text-gray-300">
               £{pricePerNight}/night
             </Badge>
           </CardTitle>
@@ -158,15 +159,15 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
 
         <CardContent className="space-y-6">
           {/* Price Display */}
-          <div className="flex justify-between items-center p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-center p-4 bg-night-900 rounded-lg border border-white/10 shadow-sm">
             <div className="flex items-center gap-2">
-              <span className="text-gray-600">
+              <span className="text-gray-400">
                 £{pricePerNight} × {numberOfNights} night
                 {numberOfNights > 1 ? "s" : ""}
               </span>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-brand-400">
                 £{totalPrice}
               </div>
               <div className="text-xs text-gray-500">Total Price</div>
@@ -181,7 +182,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
           >
             {/* Date Selection */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Label className="flex items-center gap-2 text-sm font-medium text-gray-300">
                 <Calendar className="h-4 w-4" />
                 Select Dates
               </Label>
@@ -198,7 +199,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
                     minDate={minDate}
                     maxDate={maxDate}
                     placeholderText="Check-in Date"
-                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full bg-night-900 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all duration-200"
                     wrapperClassName="w-full"
                   />
                 </div>
@@ -214,7 +215,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
                     minDate={minDate}
                     maxDate={maxDate}
                     placeholderText="Check-out Date"
-                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full bg-night-900 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all duration-200"
                     wrapperClassName="w-full"
                   />
                 </div>
@@ -223,14 +224,14 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
 
             {/* Guest Count */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Label className="flex items-center gap-2 text-sm font-medium text-gray-300">
                 <Users className="h-4 w-4" />
                 Guest Information
               </Label>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-xs text-gray-600">
+                  <Label className="flex items-center gap-2 text-xs text-gray-400">
                     <User className="h-3 w-3" />
                     Adults
                   </Label>
@@ -238,7 +239,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
                     type="number"
                     min={1}
                     max={20}
-                    className="text-center font-semibold"
+                    className="text-center font-semibold bg-night-900 border-white/10 text-white"
                     {...register("adultCount", {
                       required: "This field is required",
                       min: {
@@ -256,7 +257,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-xs text-gray-600">
+                  <Label className="flex items-center gap-2 text-xs text-gray-400">
                     <Baby className="h-3 w-3" />
                     Children
                   </Label>
@@ -264,7 +265,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
                     type="number"
                     min={0}
                     max={20}
-                    className="text-center font-semibold"
+                    className="text-center font-semibold bg-night-900 border-white/10 text-white"
                     {...register("childCount", {
                       valueAsNumber: true,
                     })}
@@ -276,7 +277,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
             {/* Action Button */}
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               {isLoggedIn ? (
                 <div className="flex items-center gap-2">
@@ -293,7 +294,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
           </form>
 
           {/* Additional Info */}
-          <div className="text-xs text-gray-500 text-center pt-2 border-t border-gray-100">
+          <div className="text-xs text-gray-500 text-center pt-2 border-t border-white/10">
             Free cancellation • No booking fees • Instant confirmation
           </div>
         </CardContent>

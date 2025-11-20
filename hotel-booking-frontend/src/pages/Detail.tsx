@@ -32,7 +32,7 @@ const Detail = () => {
 
   if (!hotel) {
     return (
-      <div className="text-center text-lg text-gray-500 py-10">
+      <div className="text-center text-lg text-gray-400 py-10">
         No hotel found.
       </div>
     );
@@ -46,10 +46,10 @@ const Detail = () => {
             <AiFillStar key={i} className="fill-yellow-400" />
           ))}
         </span>
-        <h1 className="text-3xl font-bold">{hotel.name}</h1>
+        <h1 className="text-3xl font-bold text-white">{hotel.name}</h1>
 
         {/* Location and Contact Info */}
-        <div className="flex items-center gap-4 mt-2 text-gray-600">
+        <div className="flex items-center gap-4 mt-2 text-gray-400">
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4" />
             <span>
@@ -69,7 +69,7 @@ const Detail = () => {
                 href={hotel.contact.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-blue-400 hover:underline"
               >
                 Website
               </a>
@@ -91,13 +91,13 @@ const Detail = () => {
               </Badge>
             )}
             {/* Rating Badge - Always show with appropriate message */}
-            <Badge variant="outline" className="text-gray-600">
+            <Badge variant="outline" className="text-gray-400 border-white/20">
               {hotel.averageRating && hotel.averageRating > 0
                 ? `${hotel.averageRating.toFixed(1)} avg rating`
                 : "Rating feature not yet implemented"}
             </Badge>
             {hotel.isFeatured && (
-              <Badge className="bg-yellow-100 text-yellow-800">Featured</Badge>
+              <Badge className="bg-yellow-900/30 text-yellow-400 border-yellow-500/30">Featured</Badge>
             )}
           </div>
         )}
@@ -109,7 +109,7 @@ const Detail = () => {
               <Badge
                 key={index}
                 variant="outline"
-                className="bg-blue-50 text-blue-700 border-blue-200"
+                className="bg-blue-900/20 text-blue-400 border-blue-500/30"
               >
                 {type}
               </Badge>
@@ -131,42 +131,42 @@ const Detail = () => {
         </div>
 
         {/* Price and Guest Info */}
-        <div className="flex items-center justify-between mt-4 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center justify-between mt-4 p-4 bg-night-800 rounded-lg border border-white/10">
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-white">
                 £{hotel.pricePerNight}
               </p>
-              <p className="text-sm text-gray-600">per night</p>
+              <p className="text-sm text-gray-400">per night</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <p className="text-lg font-semibold text-gray-900">
+                <p className="text-lg font-semibold text-white">
                   {hotel.adultCount}
                 </p>
-                <p className="text-sm text-gray-600">Adults</p>
+                <p className="text-sm text-gray-400">Adults</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-semibold text-gray-900">
+                <p className="text-lg font-semibold text-white">
                   {hotel.childCount}
                 </p>
-                <p className="text-sm text-gray-600">Children</p>
+                <p className="text-sm text-gray-400">Children</p>
               </div>
             </div>
           </div>
           <div className="text-center">
-            <p className="text-lg font-semibold text-gray-900">
+            <p className="text-lg font-semibold text-white">
               {hotel.starRating}
             </p>
-            <p className="text-sm text-gray-600">Star Rating</p>
+            <p className="text-sm text-gray-400">Star Rating</p>
           </div>
         </div>
 
         {/* Hotel Description */}
         {hotel.description && (
           <div className="mt-6">
-            <h3 className="text-xl font-semibold mb-3">About This Hotel</h3>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            <h3 className="text-xl font-semibold mb-3 text-white">About This Hotel</h3>
+            <p className="text-gray-300 leading-relaxed whitespace-pre-line">
               {hotel.description}
             </p>
           </div>
@@ -175,12 +175,12 @@ const Detail = () => {
 
       {/* Contact Information */}
       {hotel.contact && (
-        <div className="border border-slate-300 rounded-lg p-4">
-          <h3 className="text-xl font-semibold mb-3">Contact Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="border border-white/10 rounded-lg p-4 bg-night-800">
+          <h3 className="text-xl font-semibold mb-3 text-white">Contact Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-300">
             {hotel.contact.phone && (
               <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-gray-600" />
+                <Phone className="w-4 h-4 text-gray-400" />
                 <span>
                   <strong>Phone:</strong> {hotel.contact.phone}
                 </span>
@@ -188,7 +188,7 @@ const Detail = () => {
             )}
             {hotel.contact.email && (
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-gray-600" />
+                <Globe className="w-4 h-4 text-gray-400" />
                 <span>
                   <strong>Email:</strong> {hotel.contact.email}
                 </span>
@@ -196,14 +196,14 @@ const Detail = () => {
             )}
             {hotel.contact.website && (
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-gray-600" />
+                <Globe className="w-4 h-4 text-gray-400" />
                 <span>
                   <strong>Website:</strong>{" "}
                   <a
                     href={hotel.contact.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-400 hover:underline"
                   >
                     Visit Website
                   </a>
@@ -216,12 +216,12 @@ const Detail = () => {
 
       {/* Hotel Policies */}
       {hotel.policies && (
-        <div className="border border-slate-300 rounded-lg p-4">
-          <h3 className="text-xl font-semibold mb-3">Hotel Policies</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="border border-white/10 rounded-lg p-4 bg-night-800">
+          <h3 className="text-xl font-semibold mb-3 text-white">Hotel Policies</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
             {hotel.policies.checkInTime && (
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-600" />
+                <Clock className="w-4 h-4 text-gray-400" />
                 <span>
                   <strong>Check-in:</strong> {hotel.policies.checkInTime}
                 </span>
@@ -229,7 +229,7 @@ const Detail = () => {
             )}
             {hotel.policies.checkOutTime && (
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-600" />
+                <Clock className="w-4 h-4 text-gray-400" />
                 <span>
                   <strong>Check-out:</strong> {hotel.policies.checkOutTime}
                 </span>
@@ -256,12 +256,12 @@ const Detail = () => {
       )}
 
       {/* Facilities */}
-      <div className="border border-slate-300 rounded-lg p-4">
-        <h3 className="text-xl font-semibold mb-3">Facilities</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="border border-white/10 rounded-lg p-4 bg-night-800">
+        <h3 className="text-xl font-semibold mb-3 text-white">Facilities</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-gray-300">
           {hotel.facilities.map((facility) => (
             <div key={facility} className="flex items-center gap-2">
-              <div className="w-4 h-4 text-green-600">
+              <div className="w-4 h-4 text-green-500">
                 {facility === "Free WiFi" && <Wifi className="w-4 h-4" />}
                 {facility === "Parking" && <Car className="w-4 h-4" />}
                 {facility === "Airport Shuttle" && (
