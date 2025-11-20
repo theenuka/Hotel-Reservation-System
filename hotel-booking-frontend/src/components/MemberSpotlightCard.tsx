@@ -16,17 +16,21 @@ const spotlightCard = {
 
 const MemberSpotlightCard: FC = () => {
   return (
-    <article className="relative isolate flex min-h-[320px] w-full flex-col justify-end overflow-hidden rounded-[42px] border border-white/10 p-8 text-white shadow-2xl">
+    <article className="relative flex min-h-[320px] w-full flex-col justify-end overflow-hidden rounded-[42px] border border-white/10 p-8 text-white shadow-2xl">
+      {/* Background Image - z-0 */}
       <img
         src={spotlightCard.heroImage}
         alt={spotlightCard.locationLabel}
-        className="absolute inset-0 -z-20 h-full w-full object-cover object-center brightness-[1.1] contrast-[1.1]"
+        className="absolute inset-0 z-0 h-full w-full object-cover object-center brightness-[1.1] contrast-[1.1]"
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-black/40 via-transparent to-transparent" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(140,161,255,0.2),_transparent_65%)]" />
-      <div className="absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-gradient-to-t from-[#040619]/90 via-[#040619]/40 to-transparent" />
+      
+      {/* Gradient Overlays - z-10 */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/40 via-transparent to-transparent" />
+      <div className="absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,_rgba(140,161,255,0.2),_transparent_65%)]" />
+      <div className="absolute inset-x-0 bottom-0 z-10 h-1/2 bg-gradient-to-t from-[#040619]/90 via-[#040619]/40 to-transparent" />
 
-      <div className="relative z-10 space-y-3">
+      {/* Content - z-20 */}
+      <div className="relative z-20 space-y-3">
         <span className="text-xs uppercase tracking-[0.38em] text-white/60">
           {spotlightCard.locationLabel}
         </span>
@@ -39,7 +43,7 @@ const MemberSpotlightCard: FC = () => {
         </p>
       </div>
 
-      <div className="absolute right-4 top-4 z-10 rounded-[26px] border border-white/15 bg-black/50 px-5 py-4 text-right text-white/90 backdrop-blur-xl">
+      <div className="absolute right-4 top-4 z-20 rounded-[26px] border border-white/15 bg-black/50 px-5 py-4 text-right text-white/90 backdrop-blur-xl">
         <p className="text-[10px] font-semibold uppercase tracking-[0.4em] text-white/60">
           Member Spotlight
         </p>
