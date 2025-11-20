@@ -141,14 +141,15 @@ MM/YY: 12/35 CVC: 123`;
     }
   };
 
+  ```tsx
   return (
     <div className="p-6">
       <CardHeader className="pb-6">
-        <CardTitle className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-          <User className="h-6 w-6 text-blue-600" />
+        <CardTitle className="flex items-center gap-2 text-2xl font-bold text-white">
+          <User className="h-6 w-6 text-brand-400" />
           Confirm Your Details
         </CardTitle>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-400 mt-2">
           Please review and complete your booking information
         </p>
       </CardHeader>
@@ -157,71 +158,73 @@ MM/YY: 12/35 CVC: 123`;
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Personal Information */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <User className="h-5 w-5 text-brand-400" />
               Personal Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-sm font-medium text-gray-300">
                   First Name
                 </Label>
                 <Input
                   type="text"
                   readOnly
                   disabled
-                  className="bg-gray-50 text-gray-600"
+                  className="bg-night-900/50 border-white/10 text-gray-400"
                   {...register("firstName")}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-sm font-medium text-gray-300">
                   Last Name
                 </Label>
                 <Input
                   type="text"
                   readOnly
                   disabled
-                  className="bg-gray-50 text-gray-600"
+                  className="bg-night-900/50 border-white/10 text-gray-400"
                   {...register("lastName")}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-sm font-medium text-gray-300">
                   Email
                 </Label>
                 <Input
                   type="email"
                   readOnly
                   disabled
-                  className="bg-gray-50 text-gray-600"
+                  className="bg-night-900/50 border-white/10 text-gray-400"
                   {...register("email")}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                <Label className="text-sm font-medium text-gray-300 flex items-center gap-2">
                   <Phone className="h-4 w-4" />
                   Phone (Optional)
                 </Label>
                 <Input
                   type="tel"
                   placeholder="Enter your phone number"
-                  className="focus:ring-2 focus:ring-blue-500"
+                  className="bg-night-900 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-brand-500"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
             </div>
           </div>
+```
 
+          ```tsx
           {/* Special Requests */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-brand-400" />
               Special Requests (Optional)
             </h3>
 
@@ -229,16 +232,156 @@ MM/YY: 12/35 CVC: 123`;
               <textarea
                 rows={4}
                 placeholder="Any special requests, preferences, or additional information..."
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full rounded-md border border-white/10 bg-night-900 px-3 py-2 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
                 value={specialRequests}
                 onChange={(e) => setSpecialRequests(e.target.value)}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-400">
                 Let us know if you have any special requirements or preferences
                 for your stay.
               </p>
             </div>
           </div>
+
+          {/* Price Summary */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-brand-400" />
+              Price Summary
+            </h3>
+
+            <div className="bg-night-900/50 p-4 rounded-lg border border-white/10">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-300 font-medium">Total Cost</span>
+                <span className="text-2xl font-bold text-brand-400">
+                  £{paymentIntent.totalCost.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <CheckCircle className="h-3 w-3 text-green-500" />
+                Includes taxes and charges
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Details */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <Shield className="h-5 w-5 text-brand-400" />
+              Payment Details
+            </h3>
+
+            <div className="border border-white/10 rounded-lg p-4 bg-night-900">
+              <CardElement
+                id="payment-element"
+                className="text-sm"
+                options={{
+                  style: {
+                    base: {
+                      fontSize: "16px",
+                      color: "#ffffff",
+                      "::placeholder": {
+                        color: "#6b7280",
+                      },
+                    },
+                    invalid: {
+                      color: "#ef4444",
+                    },
+                  },
+                }}
+              />
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <Shield className="h-3 w-3 text-green-500" />
+              Your payment information is secure and encrypted
+            </div>
+          </div>
+
+          {/* Test Credentials Note */}
+          <div className="space-y-4">
+            <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-yellow-500 mb-2">
+                    For Testing Purpose
+                  </h4>
+                  <p className="text-sm text-yellow-200/80 mb-3">
+                    You can use these dummy credentials to complete checkout and
+                    see the booking status page, analytical page, or other pages
+                    to see the interactive results:
+                  </p>
+                  <div className="bg-night-900 border border-yellow-700/30 rounded-md p-3 relative">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-mono text-gray-300">
+                        <div>Card: 4242 4242 4242 4242</div>
+                        <div>MM/YY: 12/35 CVC: 123 ZIP: 12345</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCopyCredentials}
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-yellow-900/40 hover:bg-yellow-900/60 text-yellow-400 rounded transition-colors duration-200"
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check className="h-3 w-3 text-green-500" />
+                            <span className="text-green-500">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3 w-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-4">
+            <Button
+              disabled={isLoading}
+              type="submit"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Processing...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Confirm Booking
+                </div>
+              )}
+            </Button>
+          </div>
+        </form>
+
+        {/* Trust Indicators */}
+        <div className="border-t border-white/10 pt-4">
+          <div className="flex items-center justify-center gap-6 text-xs text-gray-400">
+            <div className="flex items-center gap-1">
+              <Shield className="h-3 w-3 text-green-500" />
+              Secure Payment
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle className="h-3 w-3 text-green-500" />
+              Instant Confirmation
+            </div>
+            <div className="flex items-center gap-1">
+              <MessageSquare className="h-3 w-3 text-green-500" />
+              24/7 Support
+            </div>
+          </div>
+        </div>
+```
 
           {/* Price Summary */}
           <div className="space-y-4">

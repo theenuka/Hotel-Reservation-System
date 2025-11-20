@@ -86,18 +86,19 @@ const Booking = () => {
     );
   }
 
+  ```tsx
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8">
+    <div className="min-h-screen bg-night-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <CreditCard className="h-6 w-6 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">
+            <CreditCard className="h-6 w-6 text-brand-400" />
+            <h1 className="text-3xl font-bold text-white">
               Complete Your Booking
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-400">
             Please review your details and complete the payment to confirm your
             reservation.
           </p>
@@ -107,14 +108,14 @@ const Booking = () => {
         <div className="grid lg:grid-cols-[1fr_2fr] gap-8">
           {/* Booking Summary */}
           <div className="space-y-6">
-            <Card className="shadow-lg border-0 bg-white">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                  <Calendar className="h-5 w-5 text-blue-600" />
+            <Card className="shadow-lg border-white/10 bg-night-800">
+              <CardHeader className="pb-4 border-b border-white/5">
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <Calendar className="h-5 w-5 text-brand-400" />
                   Booking Summary
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <BookingDetailsSummary
                   checkIn={search.checkIn}
                   checkOut={search.checkOut}
@@ -127,26 +128,26 @@ const Booking = () => {
             </Card>
 
             {/* Hotel Info Card */}
-            <Card className="shadow-lg border-0 bg-white">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                  <Users className="h-5 w-5 text-blue-600" />
+            <Card className="shadow-lg border-white/10 bg-night-800">
+              <CardHeader className="pb-4 border-b border-white/5">
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <Users className="h-5 w-5 text-brand-400" />
                   Hotel Information
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-6">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                  <h3 className="font-semibold text-white mb-2">
                     {hotel.name}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3">
+                  <p className="text-gray-400 text-sm mb-3">
                     {hotel.city}, {hotel.country}
                   </p>
                   <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs border-white/20 text-gray-300">
                       {hotel.starRating} Stars
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs border-white/20 text-gray-300">
                       £{hotel.pricePerNight}/night
                     </Badge>
                   </div>
@@ -156,7 +157,7 @@ const Booking = () => {
                         <Badge
                           key={index}
                           variant="outline"
-                          className="text-xs"
+                          className="text-xs border-white/20 text-gray-300"
                         >
                           {type}
                         </Badge>
@@ -171,21 +172,33 @@ const Booking = () => {
           {/* Booking Form */}
           <div className="space-y-6">
             {isLoadingPayment ? (
-              <Card className="shadow-lg border-0 bg-white">
+              <Card className="shadow-lg border-white/10 bg-night-800">
                 <CardContent className="flex items-center justify-center py-12">
                   <div className="flex items-center gap-3">
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                    <span className="text-gray-700">Preparing payment...</span>
+                    <Loader2 className="h-6 w-6 animate-spin text-brand-400" />
+                    <span className="text-gray-300">Preparing payment...</span>
                   </div>
                 </CardContent>
               </Card>
             ) : currentUser && paymentIntentData ? (
-              <Card className="shadow-lg border-0 bg-white">
+              <Card className="shadow-lg border-white/10 bg-night-800">
                 <CardContent className="p-0">
                   <Elements
                     stripe={stripePromise}
                     options={{
                       clientSecret: paymentIntentData.clientSecret,
+                      appearance: {
+                        theme: 'night',
+                        variables: {
+                          colorPrimary: '#4F82FF',
+                          colorBackground: '#0B1730',
+                          colorText: '#ffffff',
+                          colorDanger: '#ef4444',
+                          fontFamily: 'Manrope, system-ui, sans-serif',
+                          spacingUnit: '4px',
+                          borderRadius: '8px',
+                        },
+                      },
                     }}
                     key={paymentIntentData.clientSecret}
                   >
@@ -197,11 +210,11 @@ const Booking = () => {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="shadow-lg border-0 bg-white">
+              <Card className="shadow-lg border-white/10 bg-night-800">
                 <CardContent className="flex items-center justify-center py-12">
                   <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-3" />
-                    <p className="text-gray-700">Loading payment form...</p>
+                    <Loader2 className="h-8 w-8 animate-spin text-brand-400 mx-auto mb-3" />
+                    <p className="text-gray-300">Loading payment form...</p>
                   </div>
                 </CardContent>
               </Card>
@@ -211,6 +224,7 @@ const Booking = () => {
       </div>
     </div>
   );
+```
 };
 
 export default Booking;
