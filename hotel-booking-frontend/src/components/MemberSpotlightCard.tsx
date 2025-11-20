@@ -2,7 +2,7 @@ import { FC } from "react";
 
 const spotlightCard = {
   heroImage:
-    "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?auto=format&fit=crop&w=1600&q=80",
+    "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1600&q=80",
   locationLabel: "Marrakech skyline",
   location: "Marrakech, Morocco",
   description: "Private riad with desert rituals",
@@ -16,15 +16,15 @@ const spotlightCard = {
 
 const MemberSpotlightCard: FC = () => {
   return (
-    <article className="relative flex min-h-[320px] w-full flex-col justify-end overflow-hidden rounded-[42px] border border-white/8 bg-night-800 p-8 text-white shadow-[0_40px_140px_rgba(3,2,20,0.65)]">
+    <article className="relative isolate flex min-h-[320px] w-full flex-col justify-end overflow-hidden rounded-[42px] border border-white/10 p-8 text-white shadow-2xl">
       <img
         src={spotlightCard.heroImage}
         alt={spotlightCard.locationLabel}
-        className="absolute inset-0 h-full w-full object-cover object-center brightness-[1.1] contrast-[1.1]"
+        className="absolute inset-0 -z-20 h-full w-full object-cover object-center brightness-[1.1] contrast-[1.1]"
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-transparent" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(140,161,255,0.2),_transparent_65%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#040619]/90 via-[#040619]/40 to-transparent" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-black/40 via-transparent to-transparent" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(140,161,255,0.2),_transparent_65%)]" />
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-gradient-to-t from-[#040619]/90 via-[#040619]/40 to-transparent" />
 
       <div className="relative z-10 space-y-3">
         <span className="text-xs uppercase tracking-[0.38em] text-white/60">
