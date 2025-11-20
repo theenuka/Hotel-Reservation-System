@@ -7,8 +7,15 @@ import {
   clearAccessTokenProvider,
   registerAccessTokenProvider,
 } from "../lib/asgardeo-token-bridge";
+import { resolveStripePublishableKey } from "../lib/runtime-config";
 
-const STRIPE_PUB_KEY = import.meta.env.VITE_STRIPE_PUB_KEY || "";
+const STRIPE_PUB_KEY = resolveStripePublishableKey();
+
+if (!STRIPE_PUB_KEY) {
+  console.warn(
+    "Stripe publishable key is not configured. Payment flows will be disabled until VITE_STRIPE_PUB_KEY (or runtime-config stripePublishableKey) is set."
+  );
+}
 
 type ToastMessage = {
   title: string;
@@ -32,7 +39,9 @@ export const AppContext = React.createContext<AppContext | undefined>(
   undefined
 );
 
-const stripePromise = loadStripe(STRIPE_PUB_KEY);
+const stripePromise: Promise<Stripe | null> = STRIPE_PUB_KEY
+  ? loadStripe(STRIPE_PUB_KEY)
+  : Promise.resolve(null);
 
 export const AppContextProvider = ({
   children,

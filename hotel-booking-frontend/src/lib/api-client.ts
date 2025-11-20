@@ -1,31 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 import { getAccessTokenFromProvider } from "./asgardeo-token-bridge";
-
-// Define base URL based on environment
-const getBaseURL = () => {
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-
-  // During SSR tests there is no window object
-  if (typeof window === "undefined") {
-    return "http://localhost:7008";
-  }
-
-  // Explicit fallback for the legacy Netlify demo (points to Render backend)
-  if (window.location.hostname === "mern-booking-hotel.netlify.app") {
-    return "https://mern-hotel-booking-68ej.onrender.com";
-  }
-
-  if (window.location.hostname === "localhost") {
-    // Default to API Gateway in microservices mode
-    return "http://localhost:7008";
-  }
-
-  // Otherwise use the current origin (ALB, custom domain, etc.)
-  const origin = window.location.origin.replace(/\/$/, "");
-  return `${origin}/api`;
-};
+import { resolveApiBaseUrl } from "./runtime-config";
 
 // Extend axios config to include metadata
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -34,7 +9,7 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 
 // Create axios instance with consistent configuration
 const axiosInstance = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: resolveApiBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },

@@ -6,7 +6,46 @@ import "dotenv/config";
 import { extractBearerToken, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
 
 const app = express();
-app.use(cors({ origin: [process.env.FRONTEND_URL || "http://localhost:5174"], credentials: true }));
+const defaultCorsOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+  "http://127.0.0.1:5175",
+  "https://mern-booking-hotel.netlify.app",
+];
+
+const parseCustomOrigins = (value?: string) =>
+  value
+    ?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? [];
+
+const allowedOrigins = new Set<string>([
+  ...defaultCorsOrigins,
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...parseCustomOrigins(process.env.CORS_ALLOWED_ORIGINS),
+]);
+
+const isLocalhostOrigin = (origin: string) => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.has(origin) || isLocalhostOrigin(origin)) {
+        return callback(null, true);
+      }
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`[api-gateway] Allowing unlisted origin in dev: ${origin}`);
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true,
+  })
+);
 app.use(morgan("dev"));
 // Parse JSON bodies for logging and optional downstream forward
 app.use(express.json({ limit: "1mb" }));

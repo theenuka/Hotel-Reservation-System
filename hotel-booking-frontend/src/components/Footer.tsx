@@ -9,6 +9,13 @@ import {
 } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
+const socialLinks = [
+  { id: "facebook", Icon: Facebook, href: "https://facebook.com/phoenix-booking" },
+  { id: "twitter", Icon: Twitter, href: "https://twitter.com/phoenix-booking" },
+  { id: "instagram", Icon: Instagram, href: "https://instagram.com/phoenix-booking" },
+  { id: "linkedin", Icon: Linkedin, href: "https://linkedin.com/company/phoenix-booking" },
+];
+
 const Footer = () => {
   return (
     <footer className="mt-auto bg-night-900 border-t border-white/5 text-white">
@@ -20,8 +27,8 @@ const Footer = () => {
               Boutique stays, crafted experiences, and a concierge-inspired platform. We pair intentional design with tech that anticipates what you need before wheels up.
             </p>
             <div className="flex gap-4">
-              {[Facebook, Twitter, Instagram, Linkedin].map((Icon) => (
-                <a key={Icon.name} href="#" className="p-2 border border-white/10 rounded-full hover:border-white/50 transition-colors" aria-label={Icon.name}>
+              {socialLinks.map(({ id, Icon, href }) => (
+                <a key={id} href={href} className="p-2 border border-white/10 rounded-full hover:border-white/50 transition-colors" aria-label={id} target="_blank" rel="noreferrer">
                   <Icon className="w-4 h-4" />
                 </a>
               ))}

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { AppContextProvider } from "./contexts/AppContext.tsx";
 import { SearchContextProvider } from "./contexts/SearchContext.tsx";
 import { AuthProvider } from "@asgardeo/auth-react";
+import { getRuntimeConfig, pickFirst } from "./lib/runtime-config";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,11 +16,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-const pickFirst = <T,>(...values: Array<T | undefined | null>) => {
-  return values.find((value) => value !== undefined && value !== null && value !== "");
-};
-
-const runtimeConfig = window.__ASGARDEO_CONFIG;
+const runtimeConfig = getRuntimeConfig();
 
 const rawScopes = pickFirst<string | string[] | undefined>(
   Array.isArray(runtimeConfig?.scope)

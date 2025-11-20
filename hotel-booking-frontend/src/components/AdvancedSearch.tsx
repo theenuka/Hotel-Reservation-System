@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import useSearchContext from "../hooks/useSearchContext";
+import { resolveApiBaseUrl } from "../lib/runtime-config";
 
 interface AdvancedSearchProps {
   onSearch: (searchData: any) => void;
@@ -127,8 +128,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
           }
         }
 
-        const apiBaseUrl =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:7002";
+        const apiBaseUrl = resolveApiBaseUrl();
         const response = await fetch(`${apiBaseUrl}/api/hotels`);
 
         if (!response.ok) {

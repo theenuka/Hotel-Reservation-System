@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Compass, CalendarDays, Users } from "lucide-react";
+import { resolveApiBaseUrl } from "../lib/runtime-config";
 
 const SearchBar = () => {
   const navigate = useNavigate();
@@ -55,8 +56,7 @@ const SearchBar = () => {
           }
         }
 
-        const apiBaseUrl =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:7002";
+        const apiBaseUrl = resolveApiBaseUrl();
         const response = await fetch(`${apiBaseUrl}/api/hotels`);
 
         if (!response.ok) {
