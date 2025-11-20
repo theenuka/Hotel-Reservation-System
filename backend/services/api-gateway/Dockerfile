@@ -12,6 +12,7 @@ FROM node:${NODE_VERSION} AS build
 ARG SERVICE_PATH
 WORKDIR /workspace
 COPY shared ./shared
+COPY scripts ./scripts
 COPY ${SERVICE_PATH} ./${SERVICE_PATH}
 COPY --from=deps /workspace/${SERVICE_PATH}/node_modules /workspace/${SERVICE_PATH}/node_modules
 RUN ln -s /workspace/${SERVICE_PATH}/node_modules /workspace/node_modules
