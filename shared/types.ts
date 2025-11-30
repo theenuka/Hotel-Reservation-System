@@ -6,6 +6,9 @@ export type UserType = {
   lastName: string;
   role?: "user" | "admin" | "hotel_owner";
   phone?: string;
+  loyaltyPoints?: number;
+  totalSpent?: number;
+  totalBookings?: number;
   address?: {
     street: string;
     city: string;
@@ -21,8 +24,13 @@ export type UserType = {
       max: number;
     };
   };
-  totalBookings?: number;
-  totalSpent?: number;
+  notificationPreferences?: {
+    emailBookingConfirmation: boolean;
+    emailReminders: boolean;
+    emailPromotions: boolean;
+    smsBookingConfirmation: boolean;
+    smsReminders: boolean;
+  };
   lastLogin?: Date;
   isActive?: boolean;
   emailVerified?: boolean;

@@ -76,6 +76,7 @@ const IDENTITY_URL = process.env.IDENTITY_SERVICE_URL || "http://localhost:7102"
 const HOTEL_URL = process.env.HOTEL_SERVICE_URL || "http://localhost:7103";
 const BOOKING_URL = process.env.BOOKING_SERVICE_URL || "http://localhost:7104";
 const SEARCH_URL = process.env.SEARCH_SERVICE_URL || "http://localhost:7105";
+const NOTIFICATION_URL = process.env.NOTIFICATION_SERVICE_URL || "http://localhost:7101";
 
 // Health
 app.get("/health", (_req: Request, res: Response) => res.json({ status: "ok", service: "api-gateway" }));
@@ -173,6 +174,20 @@ app.use((req, res, next) => {
   }
   return next();
 });
+
+// Notification routes -> notification-service
+app.use(
+  "/api/notifications",
+  createProxyMiddleware({
+    target: NOTIFICATION_URL,
+    changeOrigin: true,
+    pathRewrite: (path) => {
+      if (path.startsWith("/notifications")) return path;
+      return `/notifications${path}`;
+    },
+    on: { proxyReq: forwardBodyIfPresent },
+  })
+);
 
 const port = process.env.PORT || 7008;
 app.listen(port, () => console.log(`api-gateway listening on :${port}`));

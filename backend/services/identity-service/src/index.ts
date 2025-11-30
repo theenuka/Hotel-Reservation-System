@@ -48,7 +48,7 @@ type AuthedRequest = Request & {
   role?: "user" | "admin" | "hotel_owner";
   roles?: Array<"user" | "admin" | "hotel_owner" | string>;
 };
-type SanitizableUser = Pick<IUser, "_id" | "email" | "firstName" | "lastName" | "role" | "loyaltyPoints" | "emailVerified">;
+type SanitizableUser = Pick<IUser, "_id" | "email" | "firstName" | "lastName" | "phone" | "role" | "loyaltyPoints" | "totalSpent" | "totalBookings" | "emailVerified" | "createdAt" | "notificationPreferences">;
 
 const millis = (days: number) => days * 24 * 60 * 60 * 1000;
 const minutesToMillis = (minutes: number) => minutes * 60 * 1000;
@@ -80,9 +80,14 @@ const sanitizeUser = (user: SanitizableUser) => ({
   email: user.email,
   firstName: user.firstName,
   lastName: user.lastName,
+  phone: user.phone,
   role: user.role,
   loyaltyPoints: user.loyaltyPoints,
+  totalSpent: user.totalSpent,
+  totalBookings: user.totalBookings,
   emailVerified: user.emailVerified,
+  createdAt: user.createdAt,
+  notificationPreferences: user.notificationPreferences,
 });
 
 const attachTokens = (user: SanitizableUser, tokens: { accessToken: string; refreshToken: string }) => ({
@@ -317,14 +322,82 @@ app.get("/users/me", verifyToken, async (req: AuthedRequest, res: Response) => {
   res.json(sanitizeUser(user));
 });
 
-// Update profile (first/last name)
+// Update profile (first/last name, phone)
 app.patch("/users/me", verifyToken, async (req: AuthedRequest, res: Response) => {
   const updates: any = {};
   if (typeof req.body?.firstName === 'string') updates.firstName = req.body.firstName;
   if (typeof req.body?.lastName === 'string') updates.lastName = req.body.lastName;
+  if (typeof req.body?.phone === 'string') updates.phone = req.body.phone;
   const user = await User.findByIdAndUpdate(req.userId, updates, { new: true });
   if (!user) return res.status(404).json({ message: "not found" });
   res.json(sanitizeUser(user));
+});
+
+// Get notification preferences
+app.get("/users/me/notifications", verifyToken, async (req: AuthedRequest, res: Response) => {
+  const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ message: "not found" });
+  res.json(user.notificationPreferences || {
+    emailBookingConfirmation: true,
+    emailReminders: true,
+    emailPromotions: false,
+    smsBookingConfirmation: true,
+    smsReminders: false,
+  });
+});
+
+// Update notification preferences
+app.patch("/users/me/notifications", verifyToken, async (req: AuthedRequest, res: Response) => {
+  const prefs = req.body || {};
+  const updates: any = {};
+  if (typeof prefs.emailBookingConfirmation === 'boolean') updates['notificationPreferences.emailBookingConfirmation'] = prefs.emailBookingConfirmation;
+  if (typeof prefs.emailReminders === 'boolean') updates['notificationPreferences.emailReminders'] = prefs.emailReminders;
+  if (typeof prefs.emailPromotions === 'boolean') updates['notificationPreferences.emailPromotions'] = prefs.emailPromotions;
+  if (typeof prefs.smsBookingConfirmation === 'boolean') updates['notificationPreferences.smsBookingConfirmation'] = prefs.smsBookingConfirmation;
+  if (typeof prefs.smsReminders === 'boolean') updates['notificationPreferences.smsReminders'] = prefs.smsReminders;
+  
+  const user = await User.findByIdAndUpdate(req.userId, { $set: updates }, { new: true });
+  if (!user) return res.status(404).json({ message: "not found" });
+  res.json({ success: true, notificationPreferences: user.notificationPreferences });
+});
+
+// Get loyalty info
+app.get("/users/me/loyalty", verifyToken, async (req: AuthedRequest, res: Response) => {
+  const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ message: "not found" });
+  
+  const points = user.loyaltyPoints || 0;
+  let tier: "bronze" | "silver" | "gold" | "platinum" = "bronze";
+  let nextTierPoints: number | undefined;
+  
+  if (points >= 15000) {
+    tier = "platinum";
+  } else if (points >= 5000) {
+    tier = "gold";
+    nextTierPoints = 15000;
+  } else if (points >= 1000) {
+    tier = "silver";
+    nextTierPoints = 5000;
+  } else {
+    tier = "bronze";
+    nextTierPoints = 1000;
+  }
+  
+  const benefits = {
+    bronze: ["1 point per £1 spent", "Birthday bonus points"],
+    silver: ["5% discount on bookings", "Priority customer support", "Early check-in when available"],
+    gold: ["10% discount on bookings", "Free room upgrades", "Late checkout", "Lounge access"],
+    platinum: ["15% discount on bookings", "Guaranteed room upgrades", "24/7 concierge", "Free airport transfers"],
+  };
+  
+  res.json({
+    tier,
+    points,
+    totalBookings: user.totalBookings || 0,
+    memberSince: user.createdAt?.toISOString() || new Date().toISOString(),
+    nextTierPoints,
+    benefits: benefits[tier],
+  });
 });
 
 // Add loyalty points to current user (demo)
