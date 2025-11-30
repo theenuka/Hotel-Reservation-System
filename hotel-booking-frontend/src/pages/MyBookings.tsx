@@ -31,6 +31,7 @@ import {
   XCircle,
   Loader2,
   AlertTriangle,
+  BedDouble,
 } from "lucide-react";
 
 const MyBookings = () => {
@@ -388,6 +389,14 @@ const MyBookings = () => {
                                 </span>{" "}
                                 Children
                               </div>
+                              {booking.roomCount && booking.roomCount > 1 && (
+                                <div className="mt-2 flex items-center gap-1 text-brand-400">
+                                  <BedDouble className="w-3 h-3" />
+                                  <span className="font-medium">
+                                    {booking.roomCount} Rooms
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
 
