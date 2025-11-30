@@ -7,6 +7,7 @@ import { resolveTemplate } from "./templates";
 import { NotificationChannel, NotificationJobPayload, NotificationRequestPayload } from "./types";
 import Notification from "./models/notification";
 import { extractBearerToken, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
+import { initializeScheduler } from "./scheduler";
 
 const allowedChannels: NotificationChannel[] = ["email", "sms"];
 
@@ -162,5 +163,30 @@ app.patch("/notifications/read-all", attachUser, async (req: AuthedRequest, res:
   res.json({ success: true });
 });
 
+// Admin endpoint to manually trigger reminders (protected by service key)
+app.post("/admin/trigger-reminders", verifyServiceKey, async (req: Request, res: Response) => {
+  const { sendCheckInReminders, sendCheckOutReminders } = await import("./scheduler");
+  const { type } = req.body || {};
+  
+  try {
+    if (type === "checkin" || !type) {
+      await sendCheckInReminders();
+    }
+    if (type === "checkout" || !type) {
+      await sendCheckOutReminders();
+    }
+    res.json({ success: true, message: `Triggered ${type || "all"} reminders` });
+  } catch (error) {
+    console.error("[admin:trigger-reminders]", error);
+    res.status(500).json({ message: "Failed to trigger reminders" });
+  }
+});
+
 const port = process.env.PORT || 7101;
-app.listen(port, () => console.log(`notification-service listening on :${port}`));
+app.listen(port, () => {
+  console.log(`notification-service listening on :${port}`);
+  // Initialize the reminder scheduler after MongoDB connects
+  if (MONGO_URI) {
+    initializeScheduler();
+  }
+});
