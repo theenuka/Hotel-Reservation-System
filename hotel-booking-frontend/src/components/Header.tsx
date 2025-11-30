@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import useSearchContext from "../hooks/useSearchContext";
-import { Calendar, LogIn, LogOut, Bell, User, Settings, Award, ChevronDown } from "lucide-react";
+import { Calendar, LogIn, LogOut, Bell, User, Settings, Award, ChevronDown, Sparkles } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import { useAuthContext } from "@asgardeo/auth-react";
 import useAppContext from "../hooks/useAppContext";
@@ -266,6 +266,14 @@ const Header = () => {
                           >
                             <Calendar className="w-4 h-4" />
                             My Bookings
+                          </Link>
+                          <Link
+                            to="/my-facility-bookings"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
+                            onClick={() => setProfileDropdownOpen(false)}
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            Facility Bookings
                           </Link>
                           <Link
                             to="/profile?tab=loyalty"

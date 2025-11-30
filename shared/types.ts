@@ -4,7 +4,7 @@ export type UserType = {
   password: string;
   firstName: string;
   lastName: string;
-  role?: "user" | "admin" | "hotel_owner";
+  role?: "user" | "admin" | "hotel_owner" | "staff";
   phone?: string;
   loyaltyPoints?: number;
   totalSpent?: number;
@@ -38,6 +38,22 @@ export type UserType = {
   updatedAt?: Date;
 };
 
+export type FacilitySpaceType = {
+  name: string;
+  type: string;
+  description?: string;
+  capacity?: number;
+  areaSqFt?: number;
+  pricePerHour?: number;
+  pricePerDay?: number;
+  currency?: string;
+  amenities?: string[];
+  bookingRules?: string[];
+  isAvailable?: boolean;
+  lastMaintainedAt?: Date;
+  images?: string[];
+};
+
 export type HotelType = {
   _id: string;
   userId: string;
@@ -49,6 +65,7 @@ export type HotelType = {
   adultCount: number;
   childCount: number;
   facilities: string[];
+  facilitySpaces?: FacilitySpaceType[];
   pricePerNight: number;
   starRating: number;
   imageUrls: string[];

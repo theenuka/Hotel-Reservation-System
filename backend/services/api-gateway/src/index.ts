@@ -144,8 +144,10 @@ app.use((req, res, next) => {
   const path = req.path;
   const isBooking =
     path.startsWith("/api/my-bookings") ||
+    path.startsWith("/api/my-facility-bookings") ||
     path.startsWith("/api/bookings") ||
-    (path.startsWith("/api/hotels/") && (path.includes("/bookings") || path.includes("/waitlist"))) ||
+    path.startsWith("/api/facility-bookings") ||
+    (path.startsWith("/api/hotels/") && (path.includes("/bookings") || path.includes("/waitlist") || path.includes("/facilities"))) ||
     path.startsWith("/api/business-insights");
   if (isBooking) {
     return createProxyMiddleware({

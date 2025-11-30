@@ -14,6 +14,7 @@ import Search from "./pages/Search";
 import Detail from "./pages/Detail";
 import Booking from "./pages/Booking";
 import MyBookings from "./pages/MyBookings";
+import MyFacilityBookings from "./pages/MyFacilityBookings";
 import UserProfile from "./pages/UserProfile";
 import Home from "./pages/Home";
 import ApiDocs from "./pages/ApiDocs";
@@ -129,6 +130,14 @@ const App = () => {
               element={
                 <Layout>
                   <MyBookings />
+                </Layout>
+              }
+            />
+            <Route
+              path="/my-facility-bookings"
+              element={
+                <Layout>
+                  <MyFacilityBookings />
                 </Layout>
               }
             />

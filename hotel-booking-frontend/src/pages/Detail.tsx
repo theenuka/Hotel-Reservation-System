@@ -3,6 +3,7 @@ import { useQueryWithLoading } from "../hooks/useLoadingHooks";
 import * as apiClient from "./../api-client";
 import { AiFillStar } from "react-icons/ai";
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
+import FacilityBooking from "../components/FacilityBooking";
 import { Badge } from "../components/ui/badge";
 import {
   MapPin,
@@ -294,6 +295,11 @@ const Detail = () => {
           ))}
         </div>
       </div>
+
+      {/* Facility Booking (Spa, Gym, Conference Rooms) */}
+      {hotel.facilitySpaces && hotel.facilitySpaces.length > 0 && (
+        <FacilityBooking hotelId={hotel._id} facilitySpaces={hotel.facilitySpaces} />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr]">
         <div className="h-fit">

@@ -262,3 +262,133 @@ export const getUnreadNotificationCount = async (): Promise<{ count: number }> =
   const response = await axiosInstance.get("/api/notifications/unread-count");
   return response.data;
 };
+
+// ============================================================================
+// FACILITY BOOKING API FUNCTIONS (Spa, Gym, Conference Rooms)
+// ============================================================================
+
+export interface FacilityBooking {
+  _id: string;
+  userId: string;
+  hotelId: string;
+  facilityName: string;
+  facilityType: "spa" | "gym" | "conference" | "pool" | "restaurant" | "other";
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  guestCount: number;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  totalCost: number;
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  specialRequests?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FacilityAvailability {
+  date: string;
+  facilityName: string;
+  bookedSlots: Array<{
+    startTime: string;
+    endTime: string;
+    guestCount: number;
+  }>;
+}
+
+export interface FacilityBookingInput {
+  facilityName: string;
+  facilityType: "spa" | "gym" | "conference" | "pool" | "restaurant" | "other";
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  guestCount: number;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  totalCost: number;
+  specialRequests?: string;
+}
+
+// Get facility availability for a specific date
+export const getFacilityAvailability = async (
+  hotelId: string,
+  facilityName: string,
+  date: string
+): Promise<FacilityAvailability> => {
+  const response = await axiosInstance.get(
+    `/api/hotels/${hotelId}/facilities/${encodeURIComponent(facilityName)}/availability`,
+    { params: { date } }
+  );
+  return response.data;
+};
+
+// Book a facility (spa, gym, conference room, etc.)
+export const bookFacility = async (
+  hotelId: string,
+  bookingData: FacilityBookingInput
+): Promise<{ bookingId: string; booking: FacilityBooking }> => {
+  const response = await axiosInstance.post(
+    `/api/hotels/${hotelId}/facilities/book`,
+    bookingData
+  );
+  return response.data;
+};
+
+// Get user's facility bookings
+export const getMyFacilityBookings = async (): Promise<FacilityBooking[]> => {
+  const response = await axiosInstance.get("/api/my-facility-bookings");
+  return response.data;
+};
+
+// Get facility bookings for a hotel (hotel owner)
+export const getHotelFacilityBookings = async (
+  hotelId: string,
+  filters?: {
+    facilityName?: string;
+    status?: string;
+    date?: string;
+  }
+): Promise<FacilityBooking[]> => {
+  const response = await axiosInstance.get(
+    `/api/hotels/${hotelId}/facility-bookings`,
+    { params: filters }
+  );
+  return response.data;
+};
+
+// Cancel a facility booking
+export const cancelFacilityBooking = async (
+  bookingId: string,
+  reason?: string
+): Promise<{ success: boolean }> => {
+  const response = await axiosInstance.post(
+    `/api/facility-bookings/${bookingId}/cancel`,
+    { reason }
+  );
+  return response.data;
+};
+
+// Update a facility booking
+export const updateFacilityBooking = async (
+  bookingId: string,
+  updates: Partial<{
+    bookingDate: string;
+    startTime: string;
+    endTime: string;
+    guestCount: number;
+    specialRequests: string;
+  }>
+): Promise<FacilityBooking> => {
+  const response = await axiosInstance.patch(
+    `/api/facility-bookings/${bookingId}`,
+    updates
+  );
+  return response.data;
+};
