@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import useSearchContext from "../hooks/useSearchContext";
-import { Calendar, LogIn, LogOut, Bell, User, Settings, Award, ChevronDown, Sparkles } from "lucide-react";
+import { Calendar, LogIn, LogOut, Bell, User, Settings, Award, ChevronDown, Sparkles, ClipboardList } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import { useAuthContext } from "@asgardeo/auth-react";
 import useAppContext from "../hooks/useAppContext";
@@ -11,6 +11,7 @@ const Header = () => {
   const { signIn, signOut, state } = useAuthContext();
   const { isLoggedIn, userRoles } = useAppContext();
   const canManage = userRoles.some((role) => role === "hotel_owner" || role === "admin");
+  const isStaff = userRoles.some((role) => role === "staff" || role === "admin" || role === "hotel_owner");
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
@@ -148,6 +149,14 @@ const Header = () => {
                   </Link>
                 </>
               )}
+              {isLoggedIn && isStaff && (
+                <Link
+                  className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
+                  to="/staff-dashboard"
+                >
+                  Staff
+                </Link>
+              )}
             </nav>
 
             {/* Actions */}
@@ -283,6 +292,16 @@ const Header = () => {
                             <Award className="w-4 h-4" />
                             Loyalty Program
                           </Link>
+                          {isStaff && (
+                            <Link
+                              to="/staff-dashboard"
+                              className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
+                              onClick={() => setProfileDropdownOpen(false)}
+                            >
+                              <ClipboardList className="w-4 h-4" />
+                              Staff Dashboard
+                            </Link>
+                          )}
                           <Link
                             to="/profile?tab=notifications"
                             className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"

@@ -8,8 +8,22 @@ import { NotificationChannel, NotificationJobPayload, NotificationRequestPayload
 import Notification from "./models/notification";
 import { extractBearerToken, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
 import { initializeScheduler } from "./scheduler";
+import webpush from "web-push";
 
-const allowedChannels: NotificationChannel[] = ["email", "sms"];
+const allowedChannels: NotificationChannel[] = ["email", "sms", "push"];
+
+// Configure web-push with VAPID keys
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "";
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "";
+const VAPID_SUBJECT = process.env.VAPID_SUBJECT || "mailto:notifications@phoenixbooking.com";
+
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  console.log("[notification-service] Web Push configured with VAPID keys");
+}
+
+// Store push subscriptions in memory (in production, use database)
+const pushSubscriptions = new Map<string, webpush.PushSubscription>();
 
 const app = express();
 const corsOrigins = notificationConfig.allowedOrigins.length
@@ -161,6 +175,104 @@ app.patch("/notifications/read-all", attachUser, async (req: AuthedRequest, res:
   if (!MONGO_URI) return res.json({ success: true });
   await Notification.updateMany({ userId: req.userId, read: false }, { read: true });
   res.json({ success: true });
+});
+
+// ============================================================================
+// PUSH NOTIFICATION ENDPOINTS
+// ============================================================================
+
+// Get VAPID public key
+app.get("/push/vapid-public-key", (_req, res) => {
+  res.json({ publicKey: VAPID_PUBLIC_KEY });
+});
+
+// Subscribe to push notifications
+app.post("/push/subscribe", attachUser, async (req: AuthedRequest, res: Response) => {
+  const { subscription } = req.body || {};
+  
+  if (!subscription || !req.userId) {
+    return res.status(400).json({ message: "Subscription data required" });
+  }
+
+  // Store the subscription
+  pushSubscriptions.set(req.userId, subscription as webpush.PushSubscription);
+  
+  // Optionally store in database for persistence
+  if (MONGO_URI) {
+    try {
+      // You could create a PushSubscription model to persist this
+      console.log(`[push:subscribe] User ${req.userId} subscribed to push notifications`);
+    } catch (err) {
+      console.warn("[push:subscribe:db:error]", err);
+    }
+  }
+
+  res.json({ success: true, message: "Successfully subscribed to push notifications" });
+});
+
+// Unsubscribe from push notifications
+app.post("/push/unsubscribe", attachUser, async (req: AuthedRequest, res: Response) => {
+  if (!req.userId) {
+    return res.status(400).json({ message: "User ID required" });
+  }
+
+  pushSubscriptions.delete(req.userId);
+  res.json({ success: true, message: "Successfully unsubscribed from push notifications" });
+});
+
+// Send push notification to a specific user (internal use)
+const sendPushNotification = async (userId: string, title: string, body: string, data?: Record<string, unknown>) => {
+  const subscription = pushSubscriptions.get(userId);
+  
+  if (!subscription || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    console.log(`[push:send] No subscription found for user ${userId} or VAPID not configured`);
+    return false;
+  }
+
+  try {
+    await webpush.sendNotification(
+      subscription,
+      JSON.stringify({
+        title,
+        body,
+        icon: "/logo.png",
+        badge: "/badge.png",
+        data,
+        timestamp: Date.now(),
+      })
+    );
+    console.log(`[push:send] Push notification sent to user ${userId}`);
+    return true;
+  } catch (error: any) {
+    if (error.statusCode === 410) {
+      // Subscription expired or invalid
+      pushSubscriptions.delete(userId);
+      console.log(`[push:send] Subscription expired for user ${userId}, removed`);
+    } else {
+      console.error(`[push:send:error] Failed to send push to user ${userId}:`, error.message);
+    }
+    return false;
+  }
+};
+
+// Test push notification endpoint
+app.post("/push/test", attachUser, async (req: AuthedRequest, res: Response) => {
+  if (!req.userId) {
+    return res.status(400).json({ message: "User ID required" });
+  }
+
+  const success = await sendPushNotification(
+    req.userId,
+    "Test Notification",
+    "This is a test push notification from Phoenix Booking!",
+    { type: "test", timestamp: Date.now() }
+  );
+
+  if (success) {
+    res.json({ success: true, message: "Test notification sent" });
+  } else {
+    res.status(400).json({ message: "Failed to send test notification. Make sure you're subscribed." });
+  }
 });
 
 // Admin endpoint to manually trigger reminders (protected by service key)

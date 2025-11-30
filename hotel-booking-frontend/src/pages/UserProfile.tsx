@@ -16,6 +16,7 @@ import { Badge } from "../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Switch } from "../components/ui/switch";
 import useAppContext from "../hooks/useAppContext";
+import usePushNotifications from "../hooks/usePushNotifications";
 import {
   User,
   Mail,
@@ -34,6 +35,7 @@ import {
   History,
   TrendingUp,
   Sparkles,
+  Smartphone,
 } from "lucide-react";
 
 // Loyalty tier configuration
@@ -43,6 +45,121 @@ const LOYALTY_TIERS = [
   { name: "Gold", minPoints: 5000, color: "bg-yellow-500", icon: Crown, discount: 10 },
   { name: "Platinum", minPoints: 15000, color: "bg-purple-500", icon: Sparkles, discount: 15 },
 ];
+
+// Push Notification Settings Component
+const PushNotificationSettings = () => {
+  const {
+    isSupported,
+    isSubscribed,
+    permission,
+    loading,
+    error,
+    subscribe,
+    unsubscribe,
+    sendTestNotification,
+  } = usePushNotifications();
+  const { showToast } = useAppContext();
+
+  const handleToggle = async () => {
+    try {
+      if (isSubscribed) {
+        await unsubscribe();
+        showToast({
+          title: "Push Notifications Disabled",
+          description: "You will no longer receive push notifications.",
+          type: "SUCCESS",
+        });
+      } else {
+        await subscribe();
+        showToast({
+          title: "Push Notifications Enabled",
+          description: "You will now receive push notifications.",
+          type: "SUCCESS",
+        });
+      }
+    } catch (err: any) {
+      showToast({
+        title: "Error",
+        description: err.message || "Failed to update push notification settings.",
+        type: "ERROR",
+      });
+    }
+  };
+
+  const handleTestNotification = async () => {
+    const success = await sendTestNotification();
+    if (success) {
+      showToast({
+        title: "Test Sent",
+        description: "Check your notifications!",
+        type: "SUCCESS",
+      });
+    } else {
+      showToast({
+        title: "Test Failed",
+        description: "Could not send test notification.",
+        type: "ERROR",
+      });
+    }
+  };
+
+  if (!isSupported) {
+    return (
+      <div className="space-y-4 pt-4 border-t border-white/10">
+        <h4 className="text-white font-medium flex items-center gap-2">
+          <Smartphone className="h-4 w-4 text-gray-500" />
+          Push Notifications
+        </h4>
+        <p className="text-gray-500 text-sm">
+          Push notifications are not supported in your browser.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 pt-4 border-t border-white/10">
+      <h4 className="text-white font-medium flex items-center gap-2">
+        <Smartphone className="h-4 w-4 text-brand-400" />
+        Push Notifications
+      </h4>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-white">Enable Push Notifications</p>
+            <p className="text-gray-400 text-sm">
+              Receive instant notifications on your device
+            </p>
+            {permission === "denied" && (
+              <p className="text-red-400 text-xs mt-1">
+                Notifications are blocked. Please enable them in your browser settings.
+              </p>
+            )}
+            {error && (
+              <p className="text-red-400 text-xs mt-1">{error}</p>
+            )}
+          </div>
+          <Switch
+            checked={isSubscribed}
+            onCheckedChange={handleToggle}
+            disabled={loading || permission === "denied"}
+          />
+        </div>
+        {isSubscribed && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleTestNotification}
+            className="border-white/20 text-gray-300 hover:bg-white/10"
+          >
+            <Bell className="h-4 w-4 mr-2" />
+            Send Test Notification
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const UserProfile = () => {
   const { signOut } = useAuthContext();
@@ -545,6 +662,9 @@ const UserProfile = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Push Notifications */}
+                <PushNotificationSettings />
 
                 <Button className="w-full bg-brand-600 hover:bg-brand-700">
                   <Save className="h-4 w-4 mr-2" />

@@ -78,7 +78,8 @@ const TabsTrigger = React.forwardRef<
       ref={ref}
       type="button"
       role="tab"
-      aria-selected={isSelected ? "true" : "false"}
+      aria-selected={isSelected}
+      tabIndex={isSelected ? 0 : -1}
       data-state={isSelected ? "active" : "inactive"}
       onClick={() => context.onValueChange(value)}
       className={cn(

@@ -16,6 +16,7 @@ import Booking from "./pages/Booking";
 import MyBookings from "./pages/MyBookings";
 import MyFacilityBookings from "./pages/MyFacilityBookings";
 import UserProfile from "./pages/UserProfile";
+import StaffDashboard from "./pages/StaffDashboard";
 import Home from "./pages/Home";
 import ApiDocs from "./pages/ApiDocs";
 import ApiStatus from "./pages/ApiStatus";
@@ -28,6 +29,7 @@ const App = () => {
   const roleSet = new Set(userRoles);
   const canManageHotels = roleSet.has("hotel_owner") || roleSet.has("admin");
   const canViewAnalytics = canManageHotels || roleSet.has("admin");
+  const isStaff = roleSet.has("staff") || roleSet.has("admin") || roleSet.has("hotel_owner");
 
   return (
     <Router>
@@ -149,6 +151,16 @@ const App = () => {
                 </Layout>
               }
             />
+            {isStaff && (
+              <Route
+                path="/staff-dashboard"
+                element={
+                  <Layout>
+                    <StaffDashboard />
+                  </Layout>
+                }
+              />
+            )}
           </>
         )}
 

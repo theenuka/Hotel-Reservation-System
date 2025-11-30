@@ -578,6 +578,36 @@ app.get("/my-bookings", attachUser, async (req: Request & { userId?: string }, r
   res.json(result);
 });
 
+// All bookings (staff/admin view)
+app.get("/bookings/all", attachUser, async (req: Request & { userId?: string; roles?: string[] }, res) => {
+  // Check if user has staff/admin role
+  const allowedRoles = ["staff", "admin", "hotel_owner"];
+  const hasPermission = req.roles?.some(role => allowedRoles.includes(role));
+  
+  if (!hasPermission) {
+    return res.status(403).json({ message: "Insufficient permissions" });
+  }
+
+  const { status, hotelId, startDate, endDate, limit = 100 } = req.query;
+  const filter: Record<string, unknown> = {};
+  
+  if (status) filter.status = status;
+  if (hotelId) filter.hotelId = hotelId;
+  if (startDate || endDate) {
+    const dateFilter: Record<string, Date> = {};
+    if (startDate) dateFilter.$gte = new Date(startDate as string);
+    if (endDate) dateFilter.$lte = new Date(endDate as string);
+    filter.checkIn = dateFilter;
+  }
+
+  const bookings = await Booking.find(filter)
+    .sort({ checkIn: -1 })
+    .limit(Number(limit))
+    .lean();
+
+  res.json(bookings);
+});
+
 // Hotel bookings
 app.get("/bookings/hotel/:hotelId", async (req, res) => {
   const bookings = await Booking.find({ hotelId: req.params.hotelId }).sort({ createdAt: -1 });
@@ -889,6 +919,104 @@ app.patch("/facility-bookings/:bookingId", attachUser, async (req: Request & { u
   });
 
   res.json(booking);
+});
+
+// ============================================================================
+// MAINTENANCE ENDPOINTS
+// ============================================================================
+
+// Create maintenance record
+app.post("/maintenance", attachUser, async (req: Request & { userId?: string; roles?: string[] }, res) => {
+  const allowedRoles = ["staff", "admin", "hotel_owner"];
+  const hasPermission = req.roles?.some(role => allowedRoles.includes(role));
+  
+  if (!hasPermission) {
+    return res.status(403).json({ message: "Insufficient permissions" });
+  }
+
+  const { hotelId, description, startDate, endDate, priority } = req.body || {};
+  
+  if (!hotelId || !startDate || !endDate) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const sd = new Date(startDate);
+  const ed = new Date(endDate);
+  
+  if (isNaN(sd.getTime()) || isNaN(ed.getTime()) || sd >= ed) {
+    return res.status(400).json({ message: "Invalid dates" });
+  }
+
+  const maintenance = await new Maintenance({
+    hotelId,
+    description,
+    startDate: sd,
+    endDate: ed,
+    priority: priority || "medium",
+    createdBy: req.userId,
+    status: "scheduled",
+  }).save();
+
+  res.status(201).json(maintenance);
+});
+
+// Get maintenance records
+app.get("/maintenance", async (req, res) => {
+  const { hotelId, status } = req.query;
+  const filter: Record<string, unknown> = {};
+  
+  if (hotelId) filter.hotelId = hotelId;
+  if (status) filter.status = status;
+
+  const records = await Maintenance.find(filter).sort({ startDate: -1 });
+  res.json(records);
+});
+
+// Update maintenance record
+app.patch("/maintenance/:maintenanceId", attachUser, async (req: Request & { userId?: string; roles?: string[] }, res) => {
+  const allowedRoles = ["staff", "admin", "hotel_owner"];
+  const hasPermission = req.roles?.some(role => allowedRoles.includes(role));
+  
+  if (!hasPermission) {
+    return res.status(403).json({ message: "Insufficient permissions" });
+  }
+
+  const { maintenanceId } = req.params;
+  const maintenance = await Maintenance.findById(maintenanceId);
+  
+  if (!maintenance) {
+    return res.status(404).json({ message: "Maintenance record not found" });
+  }
+
+  const { description, startDate, endDate, priority, status } = req.body || {};
+  
+  if (description) maintenance.description = description;
+  if (startDate) maintenance.startDate = new Date(startDate);
+  if (endDate) maintenance.endDate = new Date(endDate);
+  if (priority) maintenance.priority = priority;
+  if (status) maintenance.status = status;
+
+  await maintenance.save();
+  res.json(maintenance);
+});
+
+// Delete maintenance record
+app.delete("/maintenance/:maintenanceId", attachUser, async (req: Request & { userId?: string; roles?: string[] }, res) => {
+  const allowedRoles = ["staff", "admin", "hotel_owner"];
+  const hasPermission = req.roles?.some(role => allowedRoles.includes(role));
+  
+  if (!hasPermission) {
+    return res.status(403).json({ message: "Insufficient permissions" });
+  }
+
+  const { maintenanceId } = req.params;
+  const result = await Maintenance.findByIdAndDelete(maintenanceId);
+  
+  if (!result) {
+    return res.status(404).json({ message: "Maintenance record not found" });
+  }
+
+  res.json({ success: true });
 });
 
 const port = process.env.PORT || 7104;
