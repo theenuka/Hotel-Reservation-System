@@ -2,18 +2,26 @@ import * as React from "react"
 
 import { cn } from "../../lib/utils"
 
-interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+interface SwitchProps {
   checked?: boolean
   onCheckedChange?: (checked: boolean) => void
+  disabled?: boolean
+  className?: string
+  id?: string
+  name?: string
 }
 
-const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
-  ({ className, checked, onCheckedChange, ...props }, ref) => {
+const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
+  ({ className, checked = false, onCheckedChange, disabled, id, name }, ref) => {
     return (
       <button
+        ref={ref}
         type="button"
         role="switch"
-        aria-checked={checked}
+        id={id}
+        aria-checked={checked ? "true" : "false"}
+        data-state={checked ? "checked" : "unchecked"}
+        disabled={disabled}
         onClick={() => onCheckedChange?.(!checked)}
         className={cn(
           "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
@@ -27,14 +35,13 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             checked ? "translate-x-5" : "translate-x-0"
           )}
         />
-        <input
-          ref={ref}
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onCheckedChange?.(e.target.checked)}
-          className="sr-only"
-          {...props}
-        />
+        {name && (
+          <input
+            type="hidden"
+            name={name}
+            value={checked ? "true" : "false"}
+          />
+        )}
       </button>
     )
   }
