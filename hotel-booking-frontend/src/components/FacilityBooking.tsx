@@ -333,6 +333,8 @@ const FacilityBooking = ({ hotelId, facilitySpaces }: FacilityBookingProps) => {
                 value={selectedDate}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setSelectedDate(e.target.value)}
+                aria-label="Select booking date"
+                title="Select booking date"
                 className="flex-1 p-2 rounded-lg bg-night-900 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-brand-400"
               />
               <Button

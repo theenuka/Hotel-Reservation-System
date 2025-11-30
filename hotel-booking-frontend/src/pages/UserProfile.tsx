@@ -480,7 +480,7 @@ const UserProfile = () => {
                       </div>
                       <Switch
                         checked={notificationPrefs.emailBookingConfirmation}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={(checked: boolean) =>
                           setNotificationPrefs({ ...notificationPrefs, emailBookingConfirmation: checked })
                         }
                       />
@@ -492,7 +492,7 @@ const UserProfile = () => {
                       </div>
                       <Switch
                         checked={notificationPrefs.emailReminders}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={(checked: boolean) =>
                           setNotificationPrefs({ ...notificationPrefs, emailReminders: checked })
                         }
                       />
@@ -504,7 +504,7 @@ const UserProfile = () => {
                       </div>
                       <Switch
                         checked={notificationPrefs.emailPromotions}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={(checked: boolean) =>
                           setNotificationPrefs({ ...notificationPrefs, emailPromotions: checked })
                         }
                       />
@@ -526,7 +526,7 @@ const UserProfile = () => {
                       </div>
                       <Switch
                         checked={notificationPrefs.smsBookingConfirmation}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={(checked: boolean) =>
                           setNotificationPrefs({ ...notificationPrefs, smsBookingConfirmation: checked })
                         }
                       />
@@ -538,7 +538,7 @@ const UserProfile = () => {
                       </div>
                       <Switch
                         checked={notificationPrefs.smsReminders}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={(checked: boolean) =>
                           setNotificationPrefs({ ...notificationPrefs, smsReminders: checked })
                         }
                       />
