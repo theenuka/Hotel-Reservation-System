@@ -14,6 +14,7 @@ import Search from "./pages/Search";
 import Detail from "./pages/Detail";
 import Booking from "./pages/Booking";
 import MyBookings from "./pages/MyBookings";
+import UserProfile from "./pages/UserProfile";
 import Home from "./pages/Home";
 import ApiDocs from "./pages/ApiDocs";
 import ApiStatus from "./pages/ApiStatus";
@@ -128,6 +129,14 @@ const App = () => {
               element={
                 <Layout>
                   <MyBookings />
+                </Layout>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <Layout>
+                  <UserProfile />
                 </Layout>
               }
             />
