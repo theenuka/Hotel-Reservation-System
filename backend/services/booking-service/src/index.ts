@@ -423,9 +423,9 @@ app.get("/business-insights/performance", async (_req, res) => {
 
 // Payment intent (mock if Stripe not configured)
 app.post("/hotels/:hotelId/bookings/payment-intent", async (req, res) => {
-  const { numberOfNights } = req.body;
+  const { numberOfNights, roomCount = 1 } = req.body;
   const pricePerNight = Number(process.env.DEFAULT_PRICE_PER_NIGHT || 100);
-  const totalCost = pricePerNight * Number(numberOfNights || 1);
+  const totalCost = pricePerNight * Number(numberOfNights || 1) * Number(roomCount);
 
   if (!stripe) {
     return res.json({ paymentIntentId: "mock_intent", clientSecret: "mock_secret", totalCost });
@@ -434,7 +434,7 @@ app.post("/hotels/:hotelId/bookings/payment-intent", async (req, res) => {
   const paymentIntent = await stripe.paymentIntents.create({
     amount: totalCost * 100,
     currency: "gbp",
-    metadata: { hotelId: req.params.hotelId },
+    metadata: { hotelId: req.params.hotelId, roomCount: String(roomCount) },
   });
 
   res.json({ paymentIntentId: paymentIntent.id, clientSecret: paymentIntent.client_secret, totalCost });
