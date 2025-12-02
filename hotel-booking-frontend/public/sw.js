@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+/* eslint-env serviceworker */
 
 // Phoenix Booking Service Worker for Push Notifications
 

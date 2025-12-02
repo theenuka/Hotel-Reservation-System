@@ -195,16 +195,16 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
           ].map(({ label, description, icon: Icon }) => (
             <div
               key={label}
-              className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 shadow-sm"
+              className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-sm"
             >
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                <Icon className="h-3.5 w-3.5 text-indigo-500" />
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-400">
+                <Icon className="h-3.5 w-3.5 text-brand-400" />
                 Step
               </div>
-              <p className="mt-3 text-lg font-semibold text-slate-900">
+              <p className="mt-3 text-lg font-semibold text-white">
                 {label}
               </p>
-              <p className="text-sm text-slate-500">{description}</p>
+              <p className="text-sm text-gray-400">{description}</p>
             </div>
           ))}
         </div>
@@ -217,14 +217,14 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         <PoliciesSection />
         <ImagesSection />
 
-        <div className="flex flex-col gap-3 border-t border-slate-100 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
           <span>
             You can edit this listing any time after publishing. Changes go live instantly.
           </span>
           <button
             disabled={isLoading}
             type="submit"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 px-8 py-3 text-lg font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 disabled:cursor-progress disabled:opacity-70"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-600 via-purple-600 to-blue-600 px-8 py-3 text-lg font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:cursor-progress disabled:opacity-70"
           >
             {isLoading ? "Saving your stay..." : "Publish stay"}
           </button>

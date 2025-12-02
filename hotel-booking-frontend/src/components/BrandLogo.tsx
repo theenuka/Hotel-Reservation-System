@@ -91,7 +91,7 @@ const BrandLogo = ({
           <span className="text-[10px] uppercase tracking-[0.55em] text-white block">
             Phoenix
           </span>
-          <span className="text-2xl font-display leading-none text-white block">
+          <span className="block text-2xl leading-none text-white font-display">
             Booking
           </span>
         </div>

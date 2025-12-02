@@ -14,12 +14,14 @@ interface SwitchProps {
 const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
   ({ className, checked = false, onCheckedChange, disabled, id, name }, ref) => {
     return (
+      // eslint-disable-next-line
       <button
         ref={ref}
         type="button"
         role="switch"
         id={id}
-        aria-checked={checked}
+        // eslint-disable-next-line
+        aria-checked={checked ? "true" : "false"}
         data-state={checked ? "checked" : "unchecked"}
         disabled={disabled}
         onClick={() => onCheckedChange?.(!checked)}

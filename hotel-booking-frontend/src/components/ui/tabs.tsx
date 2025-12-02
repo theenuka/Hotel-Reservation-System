@@ -74,11 +74,13 @@ const TabsTrigger = React.forwardRef<
   const isSelected = context.value === value
 
   return (
+    // eslint-disable-next-line
     <button
       ref={ref}
       type="button"
       role="tab"
-      aria-selected={isSelected}
+      // eslint-disable-next-line
+      aria-selected={isSelected ? "true" : "false"}
       tabIndex={isSelected ? 0 : -1}
       data-state={isSelected ? "active" : "inactive"}
       onClick={() => context.onValueChange(value)}
