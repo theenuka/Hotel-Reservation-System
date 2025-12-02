@@ -34,11 +34,12 @@ const Booking = () => {
   }, [search.checkIn, search.checkOut]);
 
   const { data: paymentIntentData, isLoading: isLoadingPayment } = useQuery(
-    "createPaymentIntent",
+    ["createPaymentIntent", numberOfNights, search.roomCount],
     () =>
       apiClient.createPaymentIntent(
         hotelId as string,
-        numberOfNights.toString()
+        numberOfNights.toString(),
+        search.roomCount || 1
       ),
     {
       enabled: !!hotelId && numberOfNights > 0,
@@ -121,6 +122,7 @@ const Booking = () => {
                   adultCount={search.adultCount}
                   childCount={search.childCount}
                   numberOfNights={numberOfNights}
+                  roomCount={search.roomCount}
                   hotel={hotel}
                 />
               </CardContent>

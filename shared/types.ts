@@ -4,8 +4,11 @@ export type UserType = {
   password: string;
   firstName: string;
   lastName: string;
-  role?: "user" | "admin" | "hotel_owner";
+  role?: "user" | "admin" | "hotel_owner" | "staff";
   phone?: string;
+  loyaltyPoints?: number;
+  totalSpent?: number;
+  totalBookings?: number;
   address?: {
     street: string;
     city: string;
@@ -21,13 +24,34 @@ export type UserType = {
       max: number;
     };
   };
-  totalBookings?: number;
-  totalSpent?: number;
+  notificationPreferences?: {
+    emailBookingConfirmation: boolean;
+    emailReminders: boolean;
+    emailPromotions: boolean;
+    smsBookingConfirmation: boolean;
+    smsReminders: boolean;
+  };
   lastLogin?: Date;
   isActive?: boolean;
   emailVerified?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+};
+
+export type FacilitySpaceType = {
+  name: string;
+  type: string;
+  description?: string;
+  capacity?: number;
+  areaSqFt?: number;
+  pricePerHour?: number;
+  pricePerDay?: number;
+  currency?: string;
+  amenities?: string[];
+  bookingRules?: string[];
+  isAvailable?: boolean;
+  lastMaintainedAt?: Date;
+  images?: string[];
 };
 
 export type HotelType = {
@@ -41,6 +65,7 @@ export type HotelType = {
   adultCount: number;
   childCount: number;
   facilities: string[];
+  facilitySpaces?: FacilitySpaceType[];
   pricePerNight: number;
   starRating: number;
   imageUrls: string[];
@@ -94,6 +119,15 @@ export type HotelType = {
   updatedAt?: Date;
 };
 
+export type RoomAllocationType = {
+  roomType: string;
+  roomNumber?: string;
+  adultCount: number;
+  childCount: number;
+  pricePerNight: number;
+  specialRequests?: string;
+};
+
 export type BookingType = {
   _id: string;
   userId: string;
@@ -107,6 +141,9 @@ export type BookingType = {
   checkIn: Date;
   checkOut: Date;
   totalCost: number;
+  // Multi-room support
+  roomCount?: number;
+  rooms?: RoomAllocationType[];
   status?: "pending" | "confirmed" | "cancelled" | "completed" | "refunded";
   paymentStatus?: "pending" | "paid" | "failed" | "refunded";
   paymentMethod?: string;

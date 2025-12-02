@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import Stripe from "stripe";
 import "dotenv/config";
 import Booking from "./models/booking";
+import FacilityBooking from "./models/facilityBooking";
 import Waitlist from "./models/waitlist";
 import Maintenance from "./models/maintenance";
 import mongoosePkg from "mongoose";
@@ -422,9 +423,9 @@ app.get("/business-insights/performance", async (_req, res) => {
 
 // Payment intent (mock if Stripe not configured)
 app.post("/hotels/:hotelId/bookings/payment-intent", async (req, res) => {
-  const { numberOfNights } = req.body;
+  const { numberOfNights, roomCount = 1 } = req.body;
   const pricePerNight = Number(process.env.DEFAULT_PRICE_PER_NIGHT || 100);
-  const totalCost = pricePerNight * Number(numberOfNights || 1);
+  const totalCost = pricePerNight * Number(numberOfNights || 1) * Number(roomCount);
 
   if (!stripe) {
     return res.json({ paymentIntentId: "mock_intent", clientSecret: "mock_secret", totalCost });
@@ -433,7 +434,7 @@ app.post("/hotels/:hotelId/bookings/payment-intent", async (req, res) => {
   const paymentIntent = await stripe.paymentIntents.create({
     amount: totalCost * 100,
     currency: "gbp",
-    metadata: { hotelId: req.params.hotelId },
+    metadata: { hotelId: req.params.hotelId, roomCount: String(roomCount) },
   });
 
   res.json({ paymentIntentId: paymentIntent.id, clientSecret: paymentIntent.client_secret, totalCost });
@@ -577,6 +578,36 @@ app.get("/my-bookings", attachUser, async (req: Request & { userId?: string }, r
   res.json(result);
 });
 
+// All bookings (staff/admin view)
+app.get("/bookings/all", attachUser, async (req: Request & { userId?: string; roles?: string[] }, res) => {
+  // Check if user has staff/admin role
+  const allowedRoles = ["staff", "admin", "hotel_owner"];
+  const hasPermission = req.roles?.some(role => allowedRoles.includes(role));
+  
+  if (!hasPermission) {
+    return res.status(403).json({ message: "Insufficient permissions" });
+  }
+
+  const { status, hotelId, startDate, endDate, limit = 100 } = req.query;
+  const filter: Record<string, unknown> = {};
+  
+  if (status) filter.status = status;
+  if (hotelId) filter.hotelId = hotelId;
+  if (startDate || endDate) {
+    const dateFilter: Record<string, Date> = {};
+    if (startDate) dateFilter.$gte = new Date(startDate as string);
+    if (endDate) dateFilter.$lte = new Date(endDate as string);
+    filter.checkIn = dateFilter;
+  }
+
+  const bookings = await Booking.find(filter)
+    .sort({ checkIn: -1 })
+    .limit(Number(limit))
+    .lean();
+
+  res.json(bookings);
+});
+
 // Hotel bookings
 app.get("/bookings/hotel/:hotelId", async (req, res) => {
   const bookings = await Booking.find({ hotelId: req.params.hotelId }).sort({ createdAt: -1 });
@@ -634,6 +665,358 @@ app.post("/hotels/:hotelId/waitlist", attachUser, async (req: Request & { userId
 app.get("/hotels/:hotelId/waitlist", async (req, res) => {
   const items = await Waitlist.find({ hotelId: req.params.hotelId }).sort({ createdAt: -1 });
   res.json(items);
+});
+
+// ============================================================================
+// FACILITY BOOKING ENDPOINTS (Spa, Gym, Conference Rooms, etc.)
+// ============================================================================
+
+// Check facility time slot availability
+const hasFacilityOverlap = async (
+  hotelId: string,
+  facilityName: string,
+  bookingDate: Date,
+  startTime: string,
+  endTime: string,
+  excludeId?: string
+) => {
+  const dayStart = new Date(bookingDate);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+
+  const query: Record<string, unknown> = {
+    hotelId,
+    facilityName,
+    bookingDate: { $gte: dayStart, $lt: dayEnd },
+    status: { $in: ["pending", "confirmed"] },
+    $or: [
+      { startTime: { $lt: endTime }, endTime: { $gt: startTime } },
+    ],
+  };
+  if (excludeId) {
+    query._id = { $ne: excludeId };
+  }
+  return FacilityBooking.exists(query);
+};
+
+// Get facility availability for a date
+app.get("/hotels/:hotelId/facilities/:facilityName/availability", async (req, res) => {
+  const { hotelId, facilityName } = req.params;
+  const { date } = req.query;
+  
+  if (!date) return res.status(400).json({ message: "Date is required" });
+  
+  const bookingDate = new Date(date as string);
+  const dayStart = new Date(bookingDate);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+
+  const existingBookings = await FacilityBooking.find({
+    hotelId,
+    facilityName,
+    bookingDate: { $gte: dayStart, $lt: dayEnd },
+    status: { $in: ["pending", "confirmed"] },
+  }).select("startTime endTime guestCount").lean();
+
+  // Return booked slots
+  res.json({
+    date: date,
+    facilityName,
+    bookedSlots: existingBookings.map(b => ({
+      startTime: b.startTime,
+      endTime: b.endTime,
+      guestCount: b.guestCount,
+    })),
+  });
+});
+
+// Create facility booking
+app.post("/hotels/:hotelId/facilities/book", attachUser, async (req: Request & { userId?: string }, res) => {
+  const hotelId = req.params.hotelId;
+  const {
+    facilityName,
+    facilityType,
+    firstName,
+    lastName,
+    email,
+    phone,
+    guestCount,
+    bookingDate,
+    startTime,
+    endTime,
+    duration,
+    totalCost,
+    specialRequests,
+  } = req.body || {};
+
+  // Validation
+  if (!facilityName || !facilityType || !firstName || !lastName || !email || !bookingDate || !startTime || !endTime) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const bd = new Date(bookingDate);
+  if (isNaN(bd.getTime())) {
+    return res.status(400).json({ message: "Invalid booking date" });
+  }
+
+  // Check for conflicts
+  const hasConflict = await hasFacilityOverlap(hotelId, facilityName, bd, startTime, endTime);
+  if (hasConflict) {
+    return res.status(409).json({
+      message: "This time slot is already booked",
+      reason: "slot_unavailable",
+    });
+  }
+
+  const newFacilityBooking = await new FacilityBooking({
+    userId: req.userId,
+    hotelId,
+    facilityName,
+    facilityType,
+    firstName,
+    lastName,
+    email,
+    phone,
+    guestCount: guestCount || 1,
+    bookingDate: bd,
+    startTime,
+    endTime,
+    duration: duration || 1,
+    totalCost: totalCost || 0,
+    specialRequests,
+    status: "confirmed",
+    paymentStatus: "paid",
+  }).save();
+
+  // Award loyalty points for facility booking
+  await awardLoyaltyPoints(req.userId, totalCost || 0, String(newFacilityBooking._id));
+
+  // Send confirmation notification
+  await sendNotification({
+    type: "facility_booking_confirmation",
+    to: email,
+    subject: `${facilityName} Booking Confirmation`,
+    message: `Hi ${firstName}, your ${facilityName} booking is confirmed for ${bd.toDateString()} from ${startTime} to ${endTime}.`,
+    metadata: {
+      bookingId: newFacilityBooking._id,
+      hotelId,
+      facilityName,
+      facilityType,
+      bookingDate: bd.toISOString(),
+      startTime,
+      endTime,
+      totalCost,
+    },
+  });
+
+  res.status(201).json({ bookingId: newFacilityBooking._id, booking: newFacilityBooking });
+});
+
+// Get user's facility bookings
+app.get("/my-facility-bookings", attachUser, async (req: Request & { userId?: string }, res) => {
+  const filter = req.userId ? { userId: req.userId } : {};
+  const bookings = await FacilityBooking.find(filter).sort({ bookingDate: -1, startTime: 1 }).lean();
+  res.json(bookings);
+});
+
+// Get facility bookings for a hotel
+app.get("/hotels/:hotelId/facility-bookings", async (req, res) => {
+  const { facilityName, status, date } = req.query;
+  const filter: Record<string, unknown> = { hotelId: req.params.hotelId };
+  
+  if (facilityName) filter.facilityName = facilityName;
+  if (status) filter.status = status;
+  if (date) {
+    const d = new Date(date as string);
+    const dayStart = new Date(d);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    filter.bookingDate = { $gte: dayStart, $lt: dayEnd };
+  }
+
+  const bookings = await FacilityBooking.find(filter).sort({ bookingDate: -1, startTime: 1 });
+  res.json(bookings);
+});
+
+// Cancel facility booking
+app.post("/facility-bookings/:bookingId/cancel", attachUser, async (req: Request & { userId?: string }, res) => {
+  const { bookingId } = req.params;
+  const booking = await FacilityBooking.findById(bookingId);
+  if (!booking) return res.status(404).json({ message: "Facility booking not found" });
+
+  booking.status = "cancelled";
+  booking.paymentStatus = booking.paymentStatus === "paid" ? "refunded" : booking.paymentStatus;
+  booking.cancellationReason = req.body?.reason || "User cancelled";
+  await booking.save();
+
+  await sendNotification({
+    type: "facility_booking_cancelled",
+    to: booking.email,
+    subject: `${booking.facilityName} Booking Cancelled`,
+    message: `Your ${booking.facilityName} booking for ${booking.bookingDate.toDateString()} has been cancelled.`,
+    metadata: {
+      bookingId: booking._id,
+      hotelId: booking.hotelId,
+      facilityName: booking.facilityName,
+      bookingDate: booking.bookingDate?.toISOString?.() || booking.bookingDate,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+    },
+  });
+
+  res.json({ success: true });
+});
+
+// Update facility booking
+app.patch("/facility-bookings/:bookingId", attachUser, async (req: Request & { userId?: string }, res) => {
+  const { bookingId } = req.params;
+  const booking = await FacilityBooking.findById(bookingId);
+  if (!booking) return res.status(404).json({ message: "Facility booking not found" });
+
+  const { bookingDate, startTime, endTime, guestCount, specialRequests, status } = req.body || {};
+
+  // If changing time, check for conflicts
+  if (bookingDate || startTime || endTime) {
+    const bd = bookingDate ? new Date(bookingDate) : booking.bookingDate;
+    const st = startTime || booking.startTime;
+    const et = endTime || booking.endTime;
+
+    const hasConflict = await hasFacilityOverlap(booking.hotelId, booking.facilityName, bd, st, et, bookingId);
+    if (hasConflict) {
+      return res.status(409).json({
+        message: "This time slot is already booked",
+        reason: "slot_unavailable",
+      });
+    }
+
+    if (bookingDate) booking.bookingDate = bd;
+    if (startTime) booking.startTime = st;
+    if (endTime) booking.endTime = et;
+  }
+
+  if (guestCount !== undefined) booking.guestCount = guestCount;
+  if (specialRequests !== undefined) booking.specialRequests = specialRequests;
+  if (status) booking.status = status;
+
+  await booking.save();
+
+  await sendNotification({
+    type: "facility_booking_updated",
+    to: booking.email,
+    subject: `${booking.facilityName} Booking Updated`,
+    message: `Your ${booking.facilityName} booking has been updated.`,
+    metadata: {
+      bookingId: booking._id,
+      hotelId: booking.hotelId,
+      facilityName: booking.facilityName,
+      bookingDate: booking.bookingDate?.toISOString?.() || booking.bookingDate,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+    },
+  });
+
+  res.json(booking);
+});
+
+// ============================================================================
+// MAINTENANCE ENDPOINTS
+// ============================================================================
+
+// Create maintenance record
+app.post("/maintenance", attachUser, async (req: Request & { userId?: string; roles?: string[] }, res) => {
+  const allowedRoles = ["staff", "admin", "hotel_owner"];
+  const hasPermission = req.roles?.some(role => allowedRoles.includes(role));
+  
+  if (!hasPermission) {
+    return res.status(403).json({ message: "Insufficient permissions" });
+  }
+
+  const { hotelId, description, startDate, endDate, priority } = req.body || {};
+  
+  if (!hotelId || !startDate || !endDate) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const sd = new Date(startDate);
+  const ed = new Date(endDate);
+  
+  if (isNaN(sd.getTime()) || isNaN(ed.getTime()) || sd >= ed) {
+    return res.status(400).json({ message: "Invalid dates" });
+  }
+
+  const maintenance = await new Maintenance({
+    hotelId,
+    description,
+    startDate: sd,
+    endDate: ed,
+    priority: priority || "medium",
+    createdBy: req.userId,
+    status: "scheduled",
+  }).save();
+
+  res.status(201).json(maintenance);
+});
+
+// Get maintenance records
+app.get("/maintenance", async (req, res) => {
+  const { hotelId, status } = req.query;
+  const filter: Record<string, unknown> = {};
+  
+  if (hotelId) filter.hotelId = hotelId;
+  if (status) filter.status = status;
+
+  const records = await Maintenance.find(filter).sort({ startDate: -1 });
+  res.json(records);
+});
+
+// Update maintenance record
+app.patch("/maintenance/:maintenanceId", attachUser, async (req: Request & { userId?: string; roles?: string[] }, res) => {
+  const allowedRoles = ["staff", "admin", "hotel_owner"];
+  const hasPermission = req.roles?.some(role => allowedRoles.includes(role));
+  
+  if (!hasPermission) {
+    return res.status(403).json({ message: "Insufficient permissions" });
+  }
+
+  const { maintenanceId } = req.params;
+  const maintenance = await Maintenance.findById(maintenanceId);
+  
+  if (!maintenance) {
+    return res.status(404).json({ message: "Maintenance record not found" });
+  }
+
+  const { description, startDate, endDate, priority, status } = req.body || {};
+  
+  if (description) maintenance.description = description;
+  if (startDate) maintenance.startDate = new Date(startDate);
+  if (endDate) maintenance.endDate = new Date(endDate);
+  if (priority) maintenance.priority = priority;
+  if (status) maintenance.status = status;
+
+  await maintenance.save();
+  res.json(maintenance);
+});
+
+// Delete maintenance record
+app.delete("/maintenance/:maintenanceId", attachUser, async (req: Request & { userId?: string; roles?: string[] }, res) => {
+  const allowedRoles = ["staff", "admin", "hotel_owner"];
+  const hasPermission = req.roles?.some(role => allowedRoles.includes(role));
+  
+  if (!hasPermission) {
+    return res.status(403).json({ message: "Insufficient permissions" });
+  }
+
+  const { maintenanceId } = req.params;
+  const result = await Maintenance.findByIdAndDelete(maintenanceId);
+  
+  if (!result) {
+    return res.status(404).json({ message: "Maintenance record not found" });
+  }
+
+  res.json({ success: true });
 });
 
 const port = process.env.PORT || 7104;

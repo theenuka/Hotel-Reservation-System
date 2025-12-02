@@ -1,4 +1,4 @@
-export type NotificationChannel = "email" | "sms";
+export type NotificationChannel = "email" | "sms" | "push";
 
 export interface TemplateContext {
   subject?: string;

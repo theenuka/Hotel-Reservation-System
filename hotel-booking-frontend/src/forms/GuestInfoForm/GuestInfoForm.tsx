@@ -14,8 +14,9 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import { Calendar, Users, User, Baby, CreditCard } from "lucide-react";
+import { Calendar, Users, User, Baby, CreditCard, BedDouble, Plus, Minus } from "lucide-react";
 import { useAuthContext } from "@asgardeo/auth-react";
+import { useState } from "react";
 
 type Props = {
   hotelId: string;
@@ -27,6 +28,7 @@ type GuestInfoFormData = {
   checkOut: Date;
   adultCount: number;
   childCount: number;
+  roomCount: number;
 };
 
 const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
@@ -34,6 +36,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
   const { isLoggedIn } = useAppContext();
   const { signIn } = useAuthContext();
   const navigate = useNavigate();
+  const [roomCount, setRoomCount] = useState(1);
 
   const {
     watch,
@@ -47,6 +50,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       checkOut: search.checkOut,
       adultCount: search.adultCount,
       childCount: search.childCount,
+      roomCount: 1,
     },
   });
 
@@ -59,11 +63,17 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
     const diff = checkOut.getTime() - checkIn.getTime();
     numberOfNights = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   }
-  const totalPrice = pricePerNight * numberOfNights;
+  const totalPrice = pricePerNight * numberOfNights * roomCount;
 
   const minDate = new Date();
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 1);
+
+  const handleRoomCountChange = (change: number) => {
+    const newCount = Math.max(1, Math.min(10, roomCount + change));
+    setRoomCount(newCount);
+    setValue("roomCount", newCount);
+  };
 
   const onSignInClick = (data: GuestInfoFormData) => {
     search.saveSearchValues(
@@ -71,7 +81,8 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       data.checkIn,
       data.checkOut,
       data.adultCount,
-      data.childCount
+      data.childCount,
+      roomCount
     );
     signIn();
   };
@@ -82,7 +93,8 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       data.checkIn,
       data.checkOut,
       data.adultCount,
-      data.childCount
+      data.childCount,
+      roomCount
     );
     navigate(`/hotel/${hotelId}/booking`);
   };
@@ -160,11 +172,15 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
         <CardContent className="space-y-6">
           {/* Price Display */}
           <div className="flex justify-between items-center p-4 bg-night-900 rounded-lg border border-white/10 shadow-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-gray-400">
-                £{pricePerNight} × {numberOfNights} night
-                {numberOfNights > 1 ? "s" : ""}
+            <div className="flex flex-col gap-1">
+              <span className="text-gray-400 text-sm">
+                £{pricePerNight} × {numberOfNights} night{numberOfNights > 1 ? "s" : ""} × {roomCount} room{roomCount > 1 ? "s" : ""}
               </span>
+              {roomCount > 1 && (
+                <span className="text-xs text-green-400">
+                  Multi-room booking
+                </span>
+              )}
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-brand-400">
@@ -272,6 +288,45 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Room Count */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2 text-sm font-medium text-gray-300">
+                <BedDouble className="h-4 w-4" />
+                Number of Rooms
+              </Label>
+              <div className="flex items-center justify-center gap-4 p-3 bg-night-900 rounded-lg border border-white/10">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleRoomCountChange(-1)}
+                  disabled={roomCount <= 1}
+                  className="h-10 w-10 rounded-full border-white/20 bg-night-800 hover:bg-night-700 disabled:opacity-50"
+                >
+                  <Minus className="h-4 w-4 text-white" />
+                </Button>
+                <div className="flex flex-col items-center min-w-[60px]">
+                  <span className="text-2xl font-bold text-white">{roomCount}</span>
+                  <span className="text-xs text-gray-400">room{roomCount > 1 ? "s" : ""}</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleRoomCountChange(1)}
+                  disabled={roomCount >= 10}
+                  className="h-10 w-10 rounded-full border-white/20 bg-night-800 hover:bg-night-700 disabled:opacity-50"
+                >
+                  <Plus className="h-4 w-4 text-white" />
+                </Button>
+              </div>
+              {roomCount > 1 && (
+                <p className="text-xs text-center text-gray-500">
+                  Book multiple rooms for your group
+                </p>
+              )}
             </div>
 
             {/* Action Button */}

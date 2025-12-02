@@ -119,11 +119,12 @@ export const fetchHotelById = async (hotelId: string): Promise<HotelType> => {
 
 export const createPaymentIntent = async (
   hotelId: string,
-  numberOfNights: string
+  numberOfNights: string,
+  roomCount: number = 1
 ): Promise<PaymentIntentResponse> => {
   const response = await axiosInstance.post(
     `/api/hotels/${hotelId}/bookings/payment-intent`,
-    { numberOfNights }
+    { numberOfNights, roomCount }
   );
   return response.data;
 };
@@ -162,6 +163,233 @@ export const fetchBusinessInsightsForecast = async () => {
 export const fetchBusinessInsightsPerformance = async () => {
   const response = await axiosInstance.get(
     "/api/business-insights/performance"
+  );
+  return response.data;
+};
+
+// User Profile API functions
+export interface UpdateProfileData {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    zipCode?: string;
+  };
+}
+
+export const updateUserProfile = async (data: UpdateProfileData): Promise<UserType> => {
+  const response = await axiosInstance.patch("/api/users/me", data);
+  return response.data;
+};
+
+export interface NotificationPreferences {
+  email: boolean;
+  sms: boolean;
+  push: boolean;
+  bookingConfirmation: boolean;
+  bookingReminder: boolean;
+  promotions: boolean;
+  newsletter: boolean;
+}
+
+export const updateNotificationPreferences = async (
+  preferences: NotificationPreferences
+): Promise<{ success: boolean }> => {
+  const response = await axiosInstance.patch("/api/users/me/notifications", preferences);
+  return response.data;
+};
+
+export const getNotificationPreferences = async (): Promise<NotificationPreferences> => {
+  const response = await axiosInstance.get("/api/users/me/notifications");
+  return response.data;
+};
+
+// Loyalty Program API functions
+export interface LoyaltyInfo {
+  tier: "bronze" | "silver" | "gold" | "platinum";
+  points: number;
+  totalBookings: number;
+  memberSince: string;
+  nextTierPoints?: number;
+  benefits: string[];
+}
+
+export const getLoyaltyInfo = async (): Promise<LoyaltyInfo> => {
+  const response = await axiosInstance.get("/api/users/me/loyalty");
+  return response.data;
+};
+
+// Booking Cancellation API
+export const cancelBooking = async (
+  bookingId: string,
+  reason?: string
+): Promise<{ success: boolean; refundAmount?: number }> => {
+  const response = await axiosInstance.post(`/api/bookings/${bookingId}/cancel`, {
+    reason,
+  });
+  return response.data;
+};
+
+// Notifications API
+export interface Notification {
+  _id: string;
+  type: "booking" | "reminder" | "promotion" | "system";
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  link?: string;
+}
+
+export const getNotifications = async (): Promise<Notification[]> => {
+  const response = await axiosInstance.get("/api/notifications");
+  return response.data;
+};
+
+export const markNotificationRead = async (notificationId: string): Promise<void> => {
+  await axiosInstance.patch(`/api/notifications/${notificationId}/read`);
+};
+
+export const markAllNotificationsRead = async (): Promise<void> => {
+  await axiosInstance.patch("/api/notifications/read-all");
+};
+
+export const getUnreadNotificationCount = async (): Promise<{ count: number }> => {
+  const response = await axiosInstance.get("/api/notifications/unread-count");
+  return response.data;
+};
+
+// ============================================================================
+// FACILITY BOOKING API FUNCTIONS (Spa, Gym, Conference Rooms)
+// ============================================================================
+
+export interface FacilityBooking {
+  _id: string;
+  userId: string;
+  hotelId: string;
+  facilityName: string;
+  facilityType: "spa" | "gym" | "conference" | "pool" | "restaurant" | "other";
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  guestCount: number;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  totalCost: number;
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  specialRequests?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FacilityAvailability {
+  date: string;
+  facilityName: string;
+  bookedSlots: Array<{
+    startTime: string;
+    endTime: string;
+    guestCount: number;
+  }>;
+}
+
+export interface FacilityBookingInput {
+  facilityName: string;
+  facilityType: "spa" | "gym" | "conference" | "pool" | "restaurant" | "other";
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  guestCount: number;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  totalCost: number;
+  specialRequests?: string;
+}
+
+// Get facility availability for a specific date
+export const getFacilityAvailability = async (
+  hotelId: string,
+  facilityName: string,
+  date: string
+): Promise<FacilityAvailability> => {
+  const response = await axiosInstance.get(
+    `/api/hotels/${hotelId}/facilities/${encodeURIComponent(facilityName)}/availability`,
+    { params: { date } }
+  );
+  return response.data;
+};
+
+// Book a facility (spa, gym, conference room, etc.)
+export const bookFacility = async (
+  hotelId: string,
+  bookingData: FacilityBookingInput
+): Promise<{ bookingId: string; booking: FacilityBooking }> => {
+  const response = await axiosInstance.post(
+    `/api/hotels/${hotelId}/facilities/book`,
+    bookingData
+  );
+  return response.data;
+};
+
+// Get user's facility bookings
+export const getMyFacilityBookings = async (): Promise<FacilityBooking[]> => {
+  const response = await axiosInstance.get("/api/my-facility-bookings");
+  return response.data;
+};
+
+// Get facility bookings for a hotel (hotel owner)
+export const getHotelFacilityBookings = async (
+  hotelId: string,
+  filters?: {
+    facilityName?: string;
+    status?: string;
+    date?: string;
+  }
+): Promise<FacilityBooking[]> => {
+  const response = await axiosInstance.get(
+    `/api/hotels/${hotelId}/facility-bookings`,
+    { params: filters }
+  );
+  return response.data;
+};
+
+// Cancel a facility booking
+export const cancelFacilityBooking = async (
+  bookingId: string,
+  reason?: string
+): Promise<{ success: boolean }> => {
+  const response = await axiosInstance.post(
+    `/api/facility-bookings/${bookingId}/cancel`,
+    { reason }
+  );
+  return response.data;
+};
+
+// Update a facility booking
+export const updateFacilityBooking = async (
+  bookingId: string,
+  updates: Partial<{
+    bookingDate: string;
+    startTime: string;
+    endTime: string;
+    guestCount: number;
+    specialRequests: string;
+  }>
+): Promise<FacilityBooking> => {
+  const response = await axiosInstance.patch(
+    `/api/facility-bookings/${bookingId}`,
+    updates
   );
   return response.data;
 };

@@ -1,4 +1,5 @@
 import { HotelType } from "../../../shared/types";
+import { BedDouble, Users } from "lucide-react";
 
 type Props = {
   checkIn: Date;
@@ -6,6 +7,7 @@ type Props = {
   adultCount: number;
   childCount: number;
   numberOfNights: number;
+  roomCount?: number;
   hotel: HotelType;
 };
 
@@ -15,6 +17,7 @@ const BookingDetailsSummary = ({
   adultCount,
   childCount,
   numberOfNights,
+  roomCount = 1,
   hotel,
 }: Props) => {
   return (
@@ -39,12 +42,24 @@ const BookingDetailsSummary = ({
         <div className="font-bold text-white">{numberOfNights} nights</div>
       </div>
 
-      <div>
-        Guests{" "}
-        <div className="font-bold text-white">
-          {adultCount} adults & {childCount} children
+      <div className="flex justify-between">
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-brand-400" />
+          Guests
+          <div className="font-bold text-white">
+            {adultCount} adults & {childCount} children
+          </div>
         </div>
       </div>
+
+      {roomCount > 1 && (
+        <div className="flex items-center gap-2 bg-brand-900/20 p-3 rounded-lg border border-brand-500/30">
+          <BedDouble className="h-5 w-5 text-brand-400" />
+          <span className="text-brand-300">
+            Multi-room booking: <span className="font-bold text-white">{roomCount} rooms</span>
+          </span>
+        </div>
+      )}
     </div>
   );
 };
