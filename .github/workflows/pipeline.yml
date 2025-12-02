@@ -32,6 +32,18 @@ jobs:
       - name: 🧪 Run CI Checks
         run: scripts/run-ci-checks.sh
 
+      - name: 📊 SonarQube Analysis
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=hotel-reservation-system
+            -Dsonar.sources=.
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
   security:
     name: 🛡️ Security Scan (Trivy)
     runs-on: ubuntu-latest
@@ -101,6 +113,14 @@ jobs:
       - name: ⚙️ Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: ⚡ Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: 🔐 Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -150,9 +170,16 @@ jobs:
             -f "$RESOLVED_DOCKERFILE" \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
             "${EXTRA_ARGS[@]}" \
             --push \
             "$RESOLVED_CONTEXT"
+
+      - name: 🚚 Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: 🏗️ Update Config Repo (GitOps)
         if: success()
