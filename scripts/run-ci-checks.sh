@@ -39,6 +39,12 @@ run_backend_service() {
   pushd "$svc_dir" >/dev/null
   run_install
   npm run build
+  
+  if grep -q '"test":' package.json; then
+    echo "[backend] Running tests for $service"
+    npm test
+  fi
+
   popd >/dev/null
 }
 
@@ -48,6 +54,12 @@ run_frontend() {
   run_install
   npm run lint
   npm run build
+
+  if grep -q '"test":' package.json; then
+    echo "[frontend] Running tests"
+    npm test
+  fi
+
   popd >/dev/null
 }
 
