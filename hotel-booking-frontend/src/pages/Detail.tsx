@@ -17,6 +17,11 @@ import {
   Sparkles,
   Plane,
   Building2,
+  Utensils,
+  Coffee,
+  Monitor,
+  ShieldCheck,
+  Info
 } from "lucide-react";
 
 const Detail = () => {
@@ -33,280 +38,252 @@ const Detail = () => {
 
   if (!hotel) {
     return (
-      <div className="text-center text-lg text-gray-400 py-10">
-        No hotel found.
+      <div className="flex items-center justify-center min-h-screen bg-night-900">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-white">Hotel Not Found</h2>
+          <p className="text-gray-400">The hotel you are looking for does not exist or has been removed.</p>
+        </div>
       </div>
     );
   }
 
+  const getFacilityIcon = (facility: string) => {
+    switch (facility) {
+      case "Free WiFi": return <Wifi className="w-4 h-4" />;
+      case "Parking": return <Car className="w-4 h-4" />;
+      case "Airport Shuttle": return <Plane className="w-4 h-4" />;
+      case "Outdoor Pool": return <Waves className="w-4 h-4" />;
+      case "Spa": return <Sparkles className="w-4 h-4" />;
+      case "Fitness Center": return <Dumbbell className="w-4 h-4" />;
+      case "Restaurant": return <Utensils className="w-4 h-4" />;
+      case "Bar": return <Coffee className="w-4 h-4" />;
+      case "Business Center": return <Monitor className="w-4 h-4" />;
+      default: return <Building2 className="w-4 h-4" />;
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
-        <span className="flex">
-          {Array.from({ length: hotel.starRating }).map((_, i) => (
-            <AiFillStar key={i} className="fill-yellow-400" />
-          ))}
-        </span>
-        <h1 className="text-3xl font-bold text-white">{hotel.name}</h1>
+    <div className="min-h-screen bg-night-900 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-brand-900/20 to-night-900 pointer-events-none" />
+      <div className="absolute -top-40 right-0 w-[32rem] h-[32rem] bg-brand-500/10 blur-[160px] pointer-events-none" />
 
-        {/* Location and Contact Info */}
-        <div className="flex items-center gap-4 mt-2 text-gray-400">
-          <div className="flex items-center gap-1">
-            <MapPin className="w-4 h-4" />
-            <span>
-              {hotel.city}, {hotel.country}
-            </span>
-          </div>
-          {hotel.contact?.phone && (
-            <div className="flex items-center gap-1">
-              <Phone className="w-4 h-4" />
-              <span>{hotel.contact.phone}</span>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 space-y-8">
+        {/* Header Section */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20">
+              {Array.from({ length: hotel.starRating }).map((_, i) => (
+                <AiFillStar key={i} className="w-4 h-4 text-yellow-500" />
+              ))}
+              <span className="ml-1 text-xs font-medium text-yellow-500">{hotel.starRating} Star Hotel</span>
             </div>
-          )}
-          {hotel.contact?.website && (
-            <div className="flex items-center gap-1">
-              <Globe className="w-4 h-4" />
-              <a
-                href={hotel.contact.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:underline"
-              >
-                Website
-              </a>
-            </div>
-          )}
-        </div>
-
-        {/* Hotel Stats */}
-        {((hotel.totalBookings && hotel.totalBookings > 0) ||
-          (hotel.totalRevenue && hotel.totalRevenue > 0) ||
-          hotel.isFeatured) && (
-          <div className="flex gap-4 mt-4">
-            {hotel.totalBookings && hotel.totalBookings > 0 && (
-              <Badge variant="outline">{hotel.totalBookings} bookings</Badge>
-            )}
-            {hotel.totalRevenue && hotel.totalRevenue > 0 && (
-              <Badge variant="outline">
-                £{hotel.totalRevenue.toLocaleString()} revenue
-              </Badge>
-            )}
-            {/* Rating Badge - Always show with appropriate message */}
-            <Badge variant="outline" className="text-gray-400 border-white/20">
-              {hotel.averageRating && hotel.averageRating > 0
-                ? `${hotel.averageRating.toFixed(1)} avg rating`
-                : "Rating feature not yet implemented"}
-            </Badge>
-            {hotel.isFeatured && (
-              <Badge className="bg-yellow-900/30 text-yellow-400 border-yellow-500/30">Featured</Badge>
-            )}
-          </div>
-        )}
-
-        {/* Hotel Types */}
-        {hotel.type && hotel.type.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {hotel.type.map((type, index) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className="bg-blue-900/20 text-blue-400 border-blue-500/30"
-              >
+            {hotel.type?.map((type, index) => (
+              <Badge key={index} variant="outline" className="bg-brand-500/10 text-brand-400 border-brand-500/20">
                 {type}
               </Badge>
             ))}
           </div>
-        )}
 
-        {/* Hotel Images */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
-          {hotel.imageUrls.map((image: string, i: number) => (
-            <div key={i} className="h-[300px]">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-2">{hotel.name}</h1>
+              <div className="flex items-center gap-2 text-gray-400">
+                <MapPin className="w-4 h-4 text-brand-400" />
+                <span>{hotel.city}, {hotel.country}</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              {hotel.totalBookings > 0 && (
+                <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <p className="text-2xl font-bold text-white">{hotel.totalBookings}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider">Bookings</p>
+                </div>
+              )}
+              {hotel.averageRating > 0 && (
+                <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-center">
+                  <p className="text-2xl font-bold text-brand-400">{hotel.averageRating.toFixed(1)}</p>
+                  <p className="text-xs text-gray-400 uppercase tracking-wider">Rating</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Image Gallery */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[500px]">
+          {hotel.imageUrls.slice(0, 5).map((image, i) => (
+            <div 
+              key={i} 
+              className={`relative rounded-2xl overflow-hidden group ${
+                i === 0 ? "md:col-span-2 md:row-span-2" : "col-span-1 row-span-1"
+              }`}
+            >
               <img
                 src={image}
-                alt={hotel.name}
-                className="rounded-md w-full h-full object-cover object-center"
+                alt={`${hotel.name} view ${i + 1}`}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+          {/* Main Content */}
+          <div className="space-y-8">
+            {/* Description */}
+            <div className="glass-panel rounded-2xl p-8 space-y-4">
+              <h2 className="text-2xl font-bold text-white">About this stay</h2>
+              <p className="text-gray-300 leading-relaxed whitespace-pre-line">
+                {hotel.description}
+              </p>
+            </div>
+
+            {/* Facilities */}
+            <div className="glass-panel rounded-2xl p-8 space-y-6">
+              <h2 className="text-2xl font-bold text-white">Amenities & Facilities</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {hotel.facilities.map((facility) => (
+                  <div key={facility} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                    <div className="p-2 rounded-lg bg-brand-500/20 text-brand-400">
+                      {getFacilityIcon(facility)}
+                    </div>
+                    <span className="text-gray-300 text-sm font-medium">{facility}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Facility Booking */}
+            {hotel.facilitySpaces && hotel.facilitySpaces.length > 0 && (
+              <FacilityBooking hotelId={hotel._id} facilitySpaces={hotel.facilitySpaces} />
+            )}
+
+            {/* Policies */}
+            <div className="glass-panel rounded-2xl p-8 space-y-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <ShieldCheck className="w-6 h-6 text-brand-400" />
+                Hotel Policies
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-gray-400" />
+                      <span className="text-gray-300">Check-in</span>
+                    </div>
+                    <span className="text-white font-medium">{hotel.policies?.checkInTime || "14:00"}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-gray-400" />
+                      <span className="text-gray-300">Check-out</span>
+                    </div>
+                    <span className="text-white font-medium">{hotel.policies?.checkOutTime || "11:00"}</span>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {hotel.policies?.cancellationPolicy && (
+                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
+                      <span className="text-sm text-gray-400 uppercase tracking-wider">Cancellation</span>
+                      <p className="text-white">{hotel.policies.cancellationPolicy}</p>
+                    </div>
+                  )}
+                  {hotel.policies?.petPolicy && (
+                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
+                      <span className="text-sm text-gray-400 uppercase tracking-wider">Pets</span>
+                      <p className="text-white">{hotel.policies.petPolicy}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Contact */}
+            <div className="glass-panel rounded-2xl p-8 space-y-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Info className="w-6 h-6 text-brand-400" />
+                Contact Information
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {hotel.contact?.phone && (
+                  <div className="flex items-center gap-3 text-gray-300">
+                    <Phone className="w-5 h-5 text-gray-400" />
+                    <span>{hotel.contact.phone}</span>
+                  </div>
+                )}
+                {hotel.contact?.email && (
+                  <div className="flex items-center gap-3 text-gray-300">
+                    <Globe className="w-5 h-5 text-gray-400" />
+                    <span>{hotel.contact.email}</span>
+                  </div>
+                )}
+                {hotel.contact?.website && (
+                  <div className="flex items-center gap-3 text-gray-300 md:col-span-2">
+                    <Globe className="w-5 h-5 text-gray-400" />
+                    <a
+                      href={hotel.contact.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-brand-400 hover:text-brand-300 hover:underline transition-colors"
+                    >
+                      Visit Official Website
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Booking Sidebar */}
+          <div className="lg:sticky lg:top-8 h-fit space-y-6">
+            <div className="glass-panel rounded-2xl p-6 border border-brand-500/20 shadow-glow">
+              <div className="flex items-end justify-between mb-6 pb-6 border-b border-white/10">
+                <div>
+                  <p className="text-sm text-gray-400 mb-1">Price starts from</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-white">£{hotel.pricePerNight}</span>
+                    <span className="text-gray-400">/ night</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-sm text-gray-400 mb-1">
+                    <Utensils className="w-3 h-3" />
+                    <span>Breakfast included</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-sm text-green-400">
+                    <ShieldCheck className="w-3 h-3" />
+                    <span>Free cancellation</span>
+                  </div>
+                </div>
+              </div>
+              
+              <GuestInfoForm
+                pricePerNight={hotel.pricePerNight}
+                hotelId={hotel._id}
               />
             </div>
-          ))}
-        </div>
 
-        {/* Price and Guest Info */}
-        <div className="flex items-center justify-between mt-4 p-4 bg-night-800 rounded-lg border border-white/10">
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-white">
-                £{hotel.pricePerNight}
-              </p>
-              <p className="text-sm text-gray-400">per night</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <p className="text-lg font-semibold text-white">
-                  {hotel.adultCount}
-                </p>
-                <p className="text-sm text-gray-400">Adults</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-semibold text-white">
-                  {hotel.childCount}
-                </p>
-                <p className="text-sm text-gray-400">Children</p>
-              </div>
+            <div className="p-6 rounded-2xl bg-brand-900/20 border border-brand-500/20">
+              <h3 className="font-semibold text-white mb-2">Why book with us?</h3>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-brand-400" />
+                  Best price guarantee
+                </li>
+                <li className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-brand-400" />
+                  No hidden booking fees
+                </li>
+                <li className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-brand-400" />
+                  Instant confirmation
+                </li>
+              </ul>
             </div>
           </div>
-          <div className="text-center">
-            <p className="text-lg font-semibold text-white">
-              {hotel.starRating}
-            </p>
-            <p className="text-sm text-gray-400">Star Rating</p>
-          </div>
-        </div>
-
-        {/* Hotel Description */}
-        {hotel.description && (
-          <div className="mt-6">
-            <h3 className="text-xl font-semibold mb-3 text-white">About This Hotel</h3>
-            <p className="text-gray-300 leading-relaxed whitespace-pre-line">
-              {hotel.description}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Contact Information */}
-      {hotel.contact && (
-        <div className="border border-white/10 rounded-lg p-4 bg-night-800">
-          <h3 className="text-xl font-semibold mb-3 text-white">Contact Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-300">
-            {hotel.contact.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-gray-400" />
-                <span>
-                  <strong>Phone:</strong> {hotel.contact.phone}
-                </span>
-              </div>
-            )}
-            {hotel.contact.email && (
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-gray-400" />
-                <span>
-                  <strong>Email:</strong> {hotel.contact.email}
-                </span>
-              </div>
-            )}
-            {hotel.contact.website && (
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-gray-400" />
-                <span>
-                  <strong>Website:</strong>{" "}
-                  <a
-                    href={hotel.contact.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
-                  >
-                    Visit Website
-                  </a>
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Hotel Policies */}
-      {hotel.policies && (
-        <div className="border border-white/10 rounded-lg p-4 bg-night-800">
-          <h3 className="text-xl font-semibold mb-3 text-white">Hotel Policies</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
-            {hotel.policies.checkInTime && (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-400" />
-                <span>
-                  <strong>Check-in:</strong> {hotel.policies.checkInTime}
-                </span>
-              </div>
-            )}
-            {hotel.policies.checkOutTime && (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-400" />
-                <span>
-                  <strong>Check-out:</strong> {hotel.policies.checkOutTime}
-                </span>
-              </div>
-            )}
-            {hotel.policies.cancellationPolicy && (
-              <div>
-                <strong>Cancellation:</strong>{" "}
-                {hotel.policies.cancellationPolicy}
-              </div>
-            )}
-            {hotel.policies.petPolicy && (
-              <div>
-                <strong>Pet Policy:</strong> {hotel.policies.petPolicy}
-              </div>
-            )}
-            {hotel.policies.smokingPolicy && (
-              <div>
-                <strong>Smoking:</strong> {hotel.policies.smokingPolicy}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Facilities */}
-      <div className="border border-white/10 rounded-lg p-4 bg-night-800">
-        <h3 className="text-xl font-semibold mb-3 text-white">Facilities</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-gray-300">
-          {hotel.facilities.map((facility) => (
-            <div key={facility} className="flex items-center gap-2">
-              <div className="w-4 h-4 text-green-500">
-                {facility === "Free WiFi" && <Wifi className="w-4 h-4" />}
-                {facility === "Parking" && <Car className="w-4 h-4" />}
-                {facility === "Airport Shuttle" && (
-                  <Plane className="w-4 h-4" />
-                )}
-                {facility === "Outdoor Pool" && <Waves className="w-4 h-4" />}
-                {facility === "Spa" && <Sparkles className="w-4 h-4" />}
-                {facility === "Fitness Center" && (
-                  <Dumbbell className="w-4 h-4" />
-                )}
-                {facility === "Family Rooms" && (
-                  <Building2 className="w-4 h-4" />
-                )}
-                {facility === "Non-Smoking Rooms" && (
-                  <Building2 className="w-4 h-4" />
-                )}
-                {![
-                  "Free WiFi",
-                  "Parking",
-                  "Airport Shuttle",
-                  "Outdoor Pool",
-                  "Spa",
-                  "Fitness Center",
-                  "Family Rooms",
-                  "Non-Smoking Rooms",
-                ].includes(facility) && <Building2 className="w-4 h-4" />}
-              </div>
-              <span>{facility}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Facility Booking (Spa, Gym, Conference Rooms) */}
-      {hotel.facilitySpaces && hotel.facilitySpaces.length > 0 && (
-        <FacilityBooking hotelId={hotel._id} facilitySpaces={hotel.facilitySpaces} />
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr]">
-        <div className="h-fit">
-          <GuestInfoForm
-            pricePerNight={hotel.pricePerNight}
-            hotelId={hotel._id}
-          />
         </div>
       </div>
     </div>

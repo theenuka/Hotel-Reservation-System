@@ -10,13 +10,13 @@ const FacilitiesSection = () => {
   } = useFormContext<HotelFormData>();
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/5">
+    <section className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-lg shadow-black/5">
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-indigo-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-brand-400">
           03 · Amenities
         </p>
-        <h2 className="text-3xl font-semibold text-slate-900">Amenities guests rave about</h2>
-        <p className="text-base text-slate-500">
+        <h2 className="text-3xl font-semibold text-white">Amenities guests rave about</h2>
+        <p className="text-base text-gray-400">
           Toggle as many as apply. Popular picks surface your stay in curated search collections.
         </p>
       </div>
@@ -37,8 +37,8 @@ const FacilitiesSection = () => {
                 },
               })}
             />
-            <span className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm font-semibold text-slate-600 transition peer-checked:border-indigo-500 peer-checked:bg-indigo-50">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 bg-white text-transparent transition peer-checked:border-indigo-500 peer-checked:bg-indigo-600 peer-checked:text-white">
+            <span className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-gray-300 transition peer-checked:border-brand-500 peer-checked:bg-brand-500/10 peer-checked:text-brand-400 hover:bg-white/10">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-white/5 text-transparent transition peer-checked:border-brand-500 peer-checked:bg-brand-500 peer-checked:text-white">
                 <Check className="h-4 w-4" />
               </span>
               {facility}

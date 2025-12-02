@@ -36,11 +36,11 @@ const AddHotel = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.45),_transparent_55%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-night-900 text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.15),_transparent_55%)]" />
       <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 lg:px-0">
         <section className="grid gap-8 lg:grid-cols-[1.6fr,1fr]">
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-indigo-500 via-purple-600 to-blue-600 p-10 shadow-2xl">
+          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-brand-600 via-purple-600 to-blue-600 p-10 shadow-2xl">
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-white/70">
               Host Hub
             </p>
@@ -70,13 +70,13 @@ const AddHotel = () => {
             </div>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
-            <h2 className="text-2xl font-semibold">What to expect</h2>
-            <p className="mt-2 text-white/70">
+            <h2 className="text-2xl font-semibold text-white">What to expect</h2>
+            <p className="mt-2 text-gray-400">
               The redesigned Add Hotel flow breaks your submission into guided sections so nothing feels overwhelming.
             </p>
-            <ul className="mt-6 space-y-4 text-sm text-white/80">
+            <ul className="mt-6 space-y-4 text-sm text-gray-300">
               <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-indigo-400" />
+                <span className="mt-1 h-2 w-2 rounded-full bg-brand-400" />
                 Share essentials like name, story, and nightly rates.
               </li>
               <li className="flex items-start gap-3">
@@ -88,14 +88,14 @@ const AddHotel = () => {
                 Upload hero imagery with inline previews before publishing.
               </li>
             </ul>
-            <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
+            <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
               Need help? Our concierge team can audit your listing before it goes live. Contact <span className="font-semibold text-white">hosts@aurora.travel</span>.
             </div>
           </div>
         </section>
 
-        <section className="rounded-[34px] border border-white/10 bg-white/10 p-1 text-slate-900 shadow-2xl shadow-indigo-900/20 backdrop-blur">
-          <div className="rounded-[30px] bg-white px-4 py-10 sm:px-10">
+        <section className="rounded-[34px] border border-white/10 bg-white/5 p-1 shadow-2xl shadow-black/20 backdrop-blur">
+          <div className="rounded-[30px] bg-night-800 px-4 py-10 sm:px-10">
             <ManageHotelForm onSave={handleSave} isLoading={isLoading} />
           </div>
         </section>

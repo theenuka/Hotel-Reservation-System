@@ -10,24 +10,24 @@ const GuestsSection = () => {
   } = useFormContext<HotelFormData>();
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/5">
+    <section className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-lg shadow-black/5">
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-indigo-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-brand-400">
           04 · Capacity
         </p>
-        <h2 className="text-3xl font-semibold text-slate-900">Guest capacity & comfort</h2>
-        <p className="text-base text-slate-500">
+        <h2 className="text-3xl font-semibold text-white">Guest capacity & comfort</h2>
+        <p className="text-base text-gray-400">
           Set realistic occupancy to keep satisfaction scores high.
         </p>
       </div>
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
-        <label className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+        <label className="flex flex-col gap-2 text-sm font-semibold text-gray-300">
           <span className="flex items-center gap-2 text-base">
-            <Users className="h-4 w-4 text-indigo-500" /> Adults
+            <Users className="h-4 w-4 text-brand-400" /> Adults
           </span>
           <Input
-            className="h-12 rounded-2xl border-slate-200 bg-slate-50/80 text-base"
+            className="h-12 rounded-2xl border-white/10 bg-white/5 text-base text-white placeholder:text-gray-500 focus:border-brand-500/50"
             type="number"
             min={1}
             {...register("adultCount", {
@@ -40,12 +40,12 @@ const GuestsSection = () => {
             </span>
           )}
         </label>
-        <label className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+        <label className="flex flex-col gap-2 text-sm font-semibold text-gray-300">
           <span className="flex items-center gap-2 text-base">
-            <UserRound className="h-4 w-4 text-indigo-500" /> Children
+            <UserRound className="h-4 w-4 text-brand-400" /> Children
           </span>
           <Input
-            className="h-12 rounded-2xl border-slate-200 bg-slate-50/80 text-base"
+            className="h-12 rounded-2xl border-white/10 bg-white/5 text-base text-white placeholder:text-gray-500 focus:border-brand-500/50"
             type="number"
             min={0}
             {...register("childCount", {
