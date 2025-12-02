@@ -7,7 +7,7 @@ import "dotenv/config";
 import Booking from "./models/booking";
 import FacilityBooking from "./models/facilityBooking";
 import Waitlist from "./models/waitlist";
-import Maintenance from "./models/maintenance";
+import Maintenance, { IMaintenanceDocument } from "./models/maintenance";
 import mongoosePkg from "mongoose";
 import { extractBearerToken, verifyAsgardeoJwt } from "../../../../shared/auth/asgardeo";
 
@@ -982,7 +982,7 @@ app.patch("/maintenance/:maintenanceId", attachUser, async (req: Request & { use
   }
 
   const { maintenanceId } = req.params;
-  const maintenance = await Maintenance.findById(maintenanceId);
+  const maintenance = await Maintenance.findById(maintenanceId) as IMaintenanceDocument;
   
   if (!maintenance) {
     return res.status(404).json({ message: "Maintenance record not found" });
