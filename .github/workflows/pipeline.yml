@@ -32,9 +32,25 @@ jobs:
       - name: 🧪 Run CI Checks
         run: scripts/run-ci-checks.sh
 
+  security:
+    name: 🛡️ Security Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🛡️ Run Trivy FS Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
   deploy:
     name: 🐳 Build & Push ${{ matrix.service.name }}
-    needs: quality
+    needs: [quality, security]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
@@ -137,3 +153,52 @@ jobs:
             "${EXTRA_ARGS[@]}" \
             --push \
             "$RESOLVED_CONTEXT"
+
+      - name: 🏗️ Update Config Repo (GitOps)
+        if: success()
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPO: ${{ matrix.service.repo }}
+          IMAGE_TAG: ${{ github.sha }}
+          SERVICE_NAME: ${{ matrix.service.name }}
+        run: |
+          # Install yq
+          wget https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
+
+          # Configure Git
+          git config --global user.email "ci-bot@pheonix.live"
+          git config --global user.name "CI Bot"
+
+          # Clone Config Repo
+          git clone https://$GH_PAT@github.com/theenuka/pheonix-booking-config-repo.git config-repo
+          cd config-repo
+
+          # Map Service Name to Config Folder
+          # Note: Adjust these mappings based on your actual config repo structure
+          CONFIG_FOLDER=""
+          if [ "$SERVICE_NAME" == "frontend" ]; then CONFIG_FOLDER="apps/frontend"; fi
+          if [ "$SERVICE_NAME" == "api-gateway" ]; then CONFIG_FOLDER="apps/api-gateway"; fi
+          if [ "$SERVICE_NAME" == "identity-service" ]; then CONFIG_FOLDER="apps/identity-service"; fi
+          if [ "$SERVICE_NAME" == "hotel-service" ]; then CONFIG_FOLDER="apps/hotel-service"; fi
+          if [ "$SERVICE_NAME" == "booking-service" ]; then CONFIG_FOLDER="apps/booking-service"; fi
+          if [ "$SERVICE_NAME" == "search-service" ]; then CONFIG_FOLDER="apps/search-service"; fi
+          if [ "$SERVICE_NAME" == "notification-service" ]; then CONFIG_FOLDER="apps/notification-service"; fi
+          
+          # Fallback for user-service if naming differs
+          if [ "$SERVICE_NAME" == "user-service" ]; then CONFIG_FOLDER="apps/user-service"; fi
+
+          if [ -d "$CONFIG_FOLDER" ]; then
+            echo "📝 Updating $CONFIG_FOLDER/values.yaml..."
+            
+            # Update Image Repository and Tag
+            yq -i ".image.repository = \"$ECR_REGISTRY/$ECR_REPO\"" "$CONFIG_FOLDER/values.yaml"
+            yq -i ".image.tag = \"$IMAGE_TAG\"" "$CONFIG_FOLDER/values.yaml"
+            
+            # Commit and Push
+            git add .
+            git commit -m "🚀 Deploy $SERVICE_NAME: $IMAGE_TAG"
+            git push origin main
+          else
+            echo "⚠️ Config folder $CONFIG_FOLDER not found. Skipping GitOps update."
+          fi
