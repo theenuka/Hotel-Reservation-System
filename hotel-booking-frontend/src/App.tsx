@@ -25,6 +25,7 @@ import AuthRedirect from "./pages/AuthRedirect";
 import useAppContext from "./hooks/useAppContext";
 
 const App = () => {
+  // Trigger CI build
   const { isLoggedIn, userRoles } = useAppContext();
   const roleSet = new Set(userRoles);
   const canManageHotels = roleSet.has("hotel_owner") || roleSet.has("admin");
