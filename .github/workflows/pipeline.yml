@@ -61,10 +61,68 @@ jobs:
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
 
+  changes:
+    name: 🔍 Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Detect Changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'hotel-booking-frontend/**'
+              - 'shared/**'
+            api-gateway:
+              - 'backend/services/api-gateway/**'
+              - 'shared/**'
+            identity-service:
+              - 'backend/services/identity-service/**'
+              - 'shared/**'
+            hotel-service:
+              - 'backend/services/hotel-service/**'
+              - 'shared/**'
+            booking-service:
+              - 'backend/services/booking-service/**'
+              - 'shared/**'
+            search-service:
+              - 'backend/services/search-service/**'
+              - 'shared/**'
+            notification-service:
+              - 'backend/services/notification-service/**'
+              - 'shared/**'
+
+      - name: 🧩 Generate Matrix
+        id: matrix
+        run: |
+          # Define the full configuration
+          CONFIG='[
+            {"name": "frontend", "context": ".", "dockerfile": "hotel-booking-frontend/Dockerfile", "repo": "phoenix-frontend-service"},
+            {"name": "api-gateway", "context": ".", "dockerfile": "backend/services/api-gateway/Dockerfile", "repo": "phoenix-api-gateway-service"},
+            {"name": "identity-service", "context": ".", "dockerfile": "backend/services/identity-service/Dockerfile", "repo": "phoenix-identity-service"},
+            {"name": "hotel-service", "context": ".", "dockerfile": "backend/services/hotel-service/Dockerfile", "repo": "phoenix-hotel-service"},
+            {"name": "booking-service", "context": ".", "dockerfile": "backend/services/booking-service/Dockerfile", "repo": "phoenix-booking-service"},
+            {"name": "search-service", "context": ".", "dockerfile": "backend/services/search-service/Dockerfile", "repo": "phoenix-search-service"},
+            {"name": "notification-service", "context": ".", "dockerfile": "backend/services/notification-service/Dockerfile", "repo": "phoenix-notification-service"}
+          ]'
+          
+          # Get the list of changed services from the filter step
+          CHANGES='${{ steps.filter.outputs.changes }}'
+          
+          # Use jq to filter the config based on the changes
+          MATRIX=$(echo "$CONFIG" | jq --argjson changes "$CHANGES" 'map(select([.name] | inside($changes)))')
+          
+          echo "matrix=$(echo $MATRIX | tr -d '\n')" >> $GITHUB_OUTPUT
+
   deploy:
     name: 🐳 Build & Push ${{ matrix.service.name }}
-    needs: [quality, security]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [quality, security, changes]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.matrix != '[]' && needs.changes.outputs.matrix != '' }}
     runs-on: ubuntu-latest
     env:
       PHOENIX_PUBLIC_URL: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com
@@ -77,35 +135,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service:
-          - name: frontend
-            context: .
-            dockerfile: hotel-booking-frontend/Dockerfile
-            repo: phoenix-frontend-service
-          - name: api-gateway
-            context: .
-            dockerfile: backend/services/api-gateway/Dockerfile
-            repo: phoenix-api-gateway-service
-          - name: identity-service
-            context: .
-            dockerfile: backend/services/identity-service/Dockerfile
-            repo: phoenix-identity-service
-          - name: hotel-service
-            context: .
-            dockerfile: backend/services/hotel-service/Dockerfile
-            repo: phoenix-hotel-service
-          - name: booking-service
-            context: .
-            dockerfile: backend/services/booking-service/Dockerfile
-            repo: phoenix-booking-service
-          - name: search-service
-            context: .
-            dockerfile: backend/services/search-service/Dockerfile
-            repo: phoenix-search-service
-          - name: notification-service
-            context: .
-            dockerfile: backend/services/notification-service/Dockerfile
-            repo: phoenix-notification-service
+        service: ${{ fromJson(needs.changes.outputs.matrix) }}
 
     steps:
       - name: ⬇️ Checkout Code
