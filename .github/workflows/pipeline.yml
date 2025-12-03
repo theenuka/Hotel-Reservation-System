@@ -99,11 +99,11 @@ jobs:
             dockerfile: backend/services/booking-service/Dockerfile
             repo: phoenix-booking-service
           - name: search-service
-            context: backend/services/search-service
+            context: .
             dockerfile: backend/services/search-service/Dockerfile
             repo: phoenix-search-service
           - name: notification-service
-            context: backend/services/notification-service
+            context: .
             dockerfile: backend/services/notification-service/Dockerfile
             repo: phoenix-notification-service
 
