@@ -18,6 +18,7 @@
     "seed:local": "TS_NODE_TRANSPILE_ONLY=1 ts-node --compiler-options '{\"module\":\"commonjs\",\"moduleResolution\":\"node\"}' scripts/seed-local.ts"
   },
   "devDependencies": {
+    "@types/node": "^20.9.0",
     "concurrently": "^8.2.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
