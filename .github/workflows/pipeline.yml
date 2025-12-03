@@ -237,7 +237,7 @@ jobs:
             # Commit and Push
             git add "$TARGET_FILE"
             git commit -m "🚀 Deploy $SERVICE_NAME: $IMAGE_TAG"
-            git push origin main
+            git push origin master
           else
             echo "⚠️ Target file $TARGET_FILE not found. Skipping GitOps update."
           fi
