@@ -95,15 +95,15 @@ const Detail = () => {
             </div>
             
             <div className="flex flex-wrap gap-3">
-              {hotel.totalBookings > 0 && (
+              {(hotel?.totalBookings ?? 0) > 0 && (
                 <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-center">
-                  <p className="text-2xl font-bold text-white">{hotel.totalBookings}</p>
+                  <p className="text-2xl font-bold text-white">{hotel?.totalBookings}</p>
                   <p className="text-xs text-gray-400 uppercase tracking-wider">Bookings</p>
                 </div>
               )}
-              {hotel.averageRating > 0 && (
+              {(hotel?.averageRating ?? 0) > 0 && (
                 <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-center">
-                  <p className="text-2xl font-bold text-brand-400">{hotel.averageRating.toFixed(1)}</p>
+                  <p className="text-2xl font-bold text-brand-400">{(hotel?.averageRating ?? 0).toFixed(1)}</p>
                   <p className="text-xs text-gray-400 uppercase tracking-wider">Rating</p>
                 </div>
               )}
