@@ -39,6 +39,14 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Mock global fetch to prevent network errors during tests
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve([]),
+    ok: true,
+  })
+) as any;
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
