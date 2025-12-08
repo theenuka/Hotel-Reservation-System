@@ -44,6 +44,7 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.verbose=true
 
   security:
     name: 🛡️ Security Scan (Trivy)
