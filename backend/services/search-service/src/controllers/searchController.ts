@@ -146,7 +146,7 @@ export const searchHotels = async (req: Request, res: Response) => {
         priceRange: [{ $group: { _id: null, min: { $min: "$pricePerNight" }, max: { $max: "$pricePerNight" } } }],
       },
     },
-  ]).then((result) => {
+  ]).then((result: any[]) => {
     const [facets] = result;
     return {
       stars: facets?.starBuckets || [],

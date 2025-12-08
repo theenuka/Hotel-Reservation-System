@@ -82,8 +82,8 @@ services:
 
   search-service:
     build:
-      context: ./backend/services/search-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/services/search-service/Dockerfile
     env_file:
       - backend/.env.docker
     environment:
@@ -97,8 +97,8 @@ services:
 
   notification-service:
     build:
-      context: ./backend/services/notification-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/services/notification-service/Dockerfile
     env_file:
       - backend/.env.docker
     environment:
