@@ -489,7 +489,6 @@ const UserProfile = () => {
                     <div className="w-full h-4 rounded-full bg-black/20 backdrop-blur-sm overflow-hidden">
                       <div
                         className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-1000 ease-out"
-                        // eslint-disable-next-line
                         style={{ width: `${progressToNextTier}%` }}
                       />
                     </div>
