@@ -23,9 +23,10 @@ FROM node:${NODE_VERSION} AS runtime
 ARG SERVICE_PATH
 WORKDIR /app
 ENV NODE_ENV=production
+ENV SERVICE_PATH=${SERVICE_PATH}
 COPY ${SERVICE_PATH}/package*.json ./
 RUN npm ci --omit=dev
 COPY --from=build /workspace/${SERVICE_PATH}/dist ./dist
 EXPOSE 7103
 USER node
-CMD ["node", "dist/index.js"]
+CMD node dist/${SERVICE_PATH}/src/index.js

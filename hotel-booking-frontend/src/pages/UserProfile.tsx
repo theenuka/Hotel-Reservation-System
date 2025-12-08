@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
 import { useAuthContext } from "@asgardeo/auth-react";
@@ -240,6 +240,14 @@ const UserProfile = () => {
   const progressToNextTier = nextTier
     ? ((loyaltyPoints - currentTier.minPoints) / (nextTier.minPoints - currentTier.minPoints)) * 100
     : 100;
+
+  const progressBarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (progressBarRef.current) {
+      progressBarRef.current.style.width = `${progressToNextTier}%`;
+    }
+  }, [progressToNextTier]);
 
   if (isLoading) {
     return (
@@ -488,8 +496,8 @@ const UserProfile = () => {
                     </div>
                     <div className="w-full h-4 rounded-full bg-black/20 backdrop-blur-sm overflow-hidden">
                       <div
+                        ref={progressBarRef}
                         className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-1000 ease-out"
-                        style={{ width: `${progressToNextTier}%` }}
                       />
                     </div>
                     <p className="mt-2 text-sm text-white/80 text-center">

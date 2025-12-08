@@ -5,8 +5,15 @@ import { AuthedRequest } from "../middleware/auth";
 import { buildHotelPayload, extractImageUrls, uploadToCloudinary } from "../utils/hotelUtils";
 
 export const getAllHotels = async (_req: Request, res: Response) => {
-  const hotels = await Hotel.find({ imageUrls: { $exists: true, $ne: [] } }).sort("-lastUpdated");
-  res.json(hotels);
+  try {
+    console.log("Attempting to fetch hotels...");
+    const hotels = await Hotel.find({ imageUrls: { $exists: true, $ne: [] } }).sort("-lastUpdated");
+    console.log(`Fetched ${hotels.length} hotels`);
+    res.json(hotels);
+  } catch (error) {
+    console.error("Error fetching hotels:", error);
+    res.status(500).json({ message: "Error fetching hotels", error: String(error) });
+  }
 };
 
 export const getHotelById = async (req: Request, res: Response) => {
