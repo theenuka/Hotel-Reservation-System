@@ -60,10 +60,8 @@ export const resolveApiBaseUrl = () => {
   const shouldPreferSameOrigin = () => {
     if (!isBrowser()) return false;
     if (!isLocalHost()) return false;
-    if (!envConfigured) return true;
-    // If env points to another localhost origin while we're on localhost,
-    // prefer the development proxy to avoid CORS preflight failures.
-    return envConfigured.startsWith("http://localhost") || envConfigured.startsWith("http://127.0.0.1");
+    // Always prefer same origin in development to use Vite proxy
+    return true;
   };
 
   const sameOriginDevBase = shouldPreferSameOrigin()
