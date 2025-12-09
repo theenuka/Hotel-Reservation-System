@@ -174,6 +174,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
         </div>
       </div>
     </div>
+  );
 };
 
 export default SearchResultsCard;
