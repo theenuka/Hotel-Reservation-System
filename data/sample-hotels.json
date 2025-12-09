@@ -36,8 +36,7 @@
           "childCount": 0,
           "amenities": ["WiFi", "Desk"]
         }
-      ]
-    ],
+      ],
     "location": { "addressLine1": "12 Frost Street", "city": "Reykjavík", "country": "Iceland" },
     "tags": ["northern lights", "glass suites"],
     "isFeatured": true
