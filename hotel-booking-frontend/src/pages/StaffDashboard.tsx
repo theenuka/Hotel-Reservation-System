@@ -21,6 +21,7 @@ import {
 } from "../components/ui/dialog";
 import { Textarea } from "../components/ui/textarea";
 import useAppContext from "../hooks/useAppContext";
+import UserManagement from "../components/UserManagement";
 import {
   Users,
   Calendar,
@@ -421,6 +422,10 @@ const StaffDashboard = () => {
                 <TabsTrigger value="all" className="data-[state=active]:bg-brand-600">
                   <ClipboardList className="h-4 w-4 mr-2" />
                   All Bookings
+                </TabsTrigger>
+                <TabsTrigger value="users" className="data-[state=active]:bg-brand-600">
+                  <Users className="h-4 w-4 mr-2" />
+                  User Management
                 </TabsTrigger>
               </TabsList>
 

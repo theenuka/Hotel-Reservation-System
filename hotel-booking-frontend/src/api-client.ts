@@ -6,6 +6,8 @@ import {
   UserType,
   HotelWithBookingsType,
   BookingType,
+  RoomType,
+  Room,
 } from "../../shared/types";
 import { BookingFormData } from "./forms/BookingForm/BookingForm";
 
@@ -65,6 +67,63 @@ export const deleteMyHotelById = async (hotelId: string) => {
   return response.data;
 };
 
+export const getRoomTypes = async (hotelId: string): Promise<RoomType[]> => {
+  const response = await axiosInstance.get(`/api/hotels/${hotelId}/room-types`);
+  return response.data;
+};
+
+export const createRoomType = async (hotelId: string, roomTypeData: FormData): Promise<RoomType> => {
+  const response = await axiosInstance.post(`/api/hotels/${hotelId}/room-types`, roomTypeData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const updateRoomType = async (hotelId: string, roomTypeId: string, roomTypeData: FormData): Promise<RoomType> => {
+  const response = await axiosInstance.patch(`/api/hotels/${hotelId}/room-types/${roomTypeId}`, roomTypeData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const deleteRoomType = async (hotelId: string, roomTypeId: string) => {
+  const response = await axiosInstance.delete(`/api/hotels/${hotelId}/room-types/${roomTypeId}`);
+  return response.data;
+};
+
+export const getRooms = async (hotelId: string, roomTypeId: string): Promise<Room[]> => {
+  const response = await axiosInstance.get(`/api/hotels/${hotelId}/rooms`, {
+    params: { roomTypeId },
+  });
+  return response.data;
+};
+
+export const createRoom = async (hotelId: string, roomData: { roomNumber: string; roomTypeId: string }): Promise<Room> => {
+  const response = await axiosInstance.post(`/api/hotels/${hotelId}/rooms`, roomData);
+  return response.data;
+};
+
+export const updateRoom = async (hotelId: string, roomId: string, roomData: { roomNumber: string; isAvailable: boolean }): Promise<Room> => {
+  const response = await axiosInstance.patch(`/api/hotels/${hotelId}/rooms/${roomId}`, roomData);
+  return response.data;
+};
+
+export const deleteRoom = async (hotelId: string, roomId: string) => {
+  const response = await axiosInstance.delete(`/api/hotels/${hotelId}/rooms/${roomId}`);
+  return response.data;
+};
+
+export const getAllRoomTypes = async (): Promise<RoomType[]> => {
+  const response = await axiosInstance.get("/api/room-types");
+  return response.data;
+};
+
+
+
 export type SearchParams = {
   destination?: string;
   checkIn?: string;
@@ -77,6 +136,7 @@ export type SearchParams = {
   stars?: string[];
   maxPrice?: string;
   sortOption?: string;
+  roomTypeId?: string;
 };
 
 export const searchHotels = async (
@@ -95,6 +155,7 @@ export const searchHotels = async (
   if (searchParams.page) queryParams.append("page", searchParams.page);
   if (searchParams.maxPrice) queryParams.append("maxPrice", searchParams.maxPrice);
   if (searchParams.sortOption) queryParams.append("sortOption", searchParams.sortOption);
+  if (searchParams.roomTypeId) queryParams.append("roomTypeId", searchParams.roomTypeId);
 
   searchParams.facilities?.forEach((facility) =>
     queryParams.append("facilities", facility)
@@ -120,11 +181,12 @@ export const fetchHotelById = async (hotelId: string): Promise<HotelType> => {
 export const createPaymentIntent = async (
   hotelId: string,
   numberOfNights: string,
-  roomCount: number = 1
+  roomCount: number = 1,
+  roomTypeId: string
 ): Promise<PaymentIntentResponse> => {
   const response = await axiosInstance.post(
     `/api/hotels/${hotelId}/bookings/payment-intent`,
-    { numberOfNights, roomCount }
+    { numberOfNights, roomCount, roomTypeId }
   );
   return response.data;
 };
@@ -168,6 +230,11 @@ export const fetchBusinessInsightsPerformance = async () => {
 };
 
 // User Profile API functions
+export const fetchAllUsers = async (): Promise<UserType[]> => {
+  const response = await axiosInstance.get("/api/admin/users");
+  return response.data;
+};
+
 export interface UpdateProfileData {
   firstName?: string;
   lastName?: string;

@@ -8,13 +8,15 @@ export type SearchContext = {
   childCount: number;
   roomCount: number;
   hotelId: string;
+  roomTypeId: string;
   saveSearchValues: (
     destination: string,
     checkIn: Date,
     checkOut: Date,
     adultCount: number,
     childCount: number,
-    roomCount?: number
+    roomCount?: number,
+    roomTypeId?: string
   ) => void;
   clearSearchValues: () => void;
 };
@@ -53,6 +55,9 @@ export const SearchContextProvider = ({
   const [hotelId, setHotelId] = useState<string>(
     () => sessionStorage.getItem("hotelID") || ""
   );
+  const [roomTypeId, setRoomTypeId] = useState<string>(
+    () => sessionStorage.getItem("roomTypeId") || ""
+  );
 
   const saveSearchValues = (
     destination: string,
@@ -61,7 +66,8 @@ export const SearchContextProvider = ({
     adultCount: number,
     childCount: number,
     roomCount?: number,
-    hotelId?: string
+    hotelId?: string,
+    roomTypeId?: string
   ) => {
     setDestination(destination);
     setCheckIn(checkIn);
@@ -73,6 +79,9 @@ export const SearchContextProvider = ({
     }
     if (hotelId) {
       setHotelId(hotelId);
+    }
+    if (roomTypeId) {
+      setRoomTypeId(roomTypeId);
     }
 
     sessionStorage.setItem("destination", destination);
@@ -87,6 +96,9 @@ export const SearchContextProvider = ({
     if (hotelId) {
       sessionStorage.setItem("hotelId", hotelId);
     }
+    if (roomTypeId) {
+      sessionStorage.setItem("roomTypeId", roomTypeId);
+    }
   };
 
   const clearSearchValues = () => {
@@ -97,6 +109,7 @@ export const SearchContextProvider = ({
     setChildCount(0);
     setRoomCount(1);
     setHotelId("");
+    setRoomTypeId("");
 
     sessionStorage.removeItem("destination");
     sessionStorage.removeItem("checkIn");
@@ -105,6 +118,7 @@ export const SearchContextProvider = ({
     sessionStorage.removeItem("childCount");
     sessionStorage.removeItem("roomCount");
     sessionStorage.removeItem("hotelId");
+    sessionStorage.removeItem("roomTypeId");
 
     // Clear cached places data if it's older than 5 minutes
     const cacheTime = localStorage.getItem("hotelPlacesTime");
@@ -127,6 +141,7 @@ export const SearchContextProvider = ({
         childCount,
         roomCount,
         hotelId,
+        roomTypeId,
         saveSearchValues,
         clearSearchValues,
       }}

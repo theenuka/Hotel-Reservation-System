@@ -21,6 +21,8 @@ import Home from "./pages/Home";
 import ApiDocs from "./pages/ApiDocs";
 import ApiStatus from "./pages/ApiStatus";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import MyHotelRoomInstances from "./pages/MyHotelRoomInstances";
+import MyHotelRooms from "./pages/MyHotelRooms";
 import AuthRedirect from "./pages/AuthRedirect";
 import useAppContext from "./hooks/useAppContext";
 
@@ -122,6 +124,22 @@ const App = () => {
                   element={
                     <Layout>
                       <MyHotels />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/my-hotels/:hotelId/rooms"
+                  element={
+                    <Layout>
+                      <MyHotelRooms />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/my-hotels/:hotelId/room-types/:roomTypeId/rooms"
+                  element={
+                    <Layout>
+                      <MyHotelRoomInstances />
                     </Layout>
                   }
                 />

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Request, Response } from "express";
 import Stripe from "stripe";
 import Booking from "../models/booking";
@@ -7,6 +8,7 @@ import { ensureAvailability, createOrUpdateWaitlistEntry, notifyWaitlistAvailabi
 import { awardLoyaltyPoints } from "../utils/loyalty";
 import { sendNotification } from "../utils/notification";
 
+
 const HotelModel =
   mongoosePkg.models.Hotel ||
   mongoosePkg.model("Hotel", new mongoosePkg.Schema({}, { strict: false }), "hotels");
@@ -14,9 +16,22 @@ const HotelModel =
 const STRIPE_KEY = process.env.STRIPE_API_KEY;
 const stripe = STRIPE_KEY ? new Stripe(STRIPE_KEY) : undefined;
 
+
+
 export const createPaymentIntent = async (req: Request, res: Response) => {
-  const { numberOfNights, roomCount = 1 } = req.body;
-  const pricePerNight = Number(process.env.DEFAULT_PRICE_PER_NIGHT || 100);
+  const { numberOfNights, roomCount = 1, roomTypeId } = req.body;
+
+  if (!roomTypeId) {
+    return res.status(400).json({ message: "roomTypeId is required" });
+  }
+
+  const hotelServiceUrl = process.env.HOTEL_SERVICE_URL || "http://hotel-service:7103";
+  const response = await axios.get(
+    `${hotelServiceUrl}/api/hotels/${req.params.hotelId}/room-types/${roomTypeId}`
+  );
+  const roomType = response.data;
+  const pricePerNight = roomType.pricePerNight;
+
   const totalCost = pricePerNight * Number(numberOfNights || 1) * Number(roomCount);
 
   if (!stripe) {
@@ -26,7 +41,7 @@ export const createPaymentIntent = async (req: Request, res: Response) => {
   const paymentIntent = await stripe.paymentIntents.create({
     amount: totalCost * 100,
     currency: "gbp",
-    metadata: { hotelId: req.params.hotelId, roomCount: String(roomCount) },
+    metadata: { hotelId: req.params.hotelId, roomCount: String(roomCount), roomTypeId },
   });
 
   res.json({ paymentIntentId: paymentIntent.id, clientSecret: paymentIntent.client_secret, totalCost });
@@ -34,34 +49,43 @@ export const createPaymentIntent = async (req: Request, res: Response) => {
 
 export const createBooking = async (req: Request & { userId?: string }, res: Response) => {
   const hotelId = req.params.hotelId;
-  const { checkIn, checkOut, totalCost, autoWaitlist } = req.body || {};
+  const { checkIn, checkOut, totalCost, autoWaitlist, rooms } = req.body || {};
   const ci = new Date(checkIn);
   const co = new Date(checkOut);
   if (!checkIn || !checkOut || isNaN(ci.getTime()) || isNaN(co.getTime()) || ci >= co) {
     return res.status(400).json({ message: "Invalid check-in/check-out" });
   }
 
-  const availability = await ensureAvailability(hotelId, ci, co);
-  if (availability.bookingConflict || availability.maintenanceConflict) {
-    let waitlistEntry;
-    const wantsAutoWaitlist =
-      typeof autoWaitlist === "string" ? autoWaitlist.toLowerCase() === "true" : Boolean(autoWaitlist);
-    if (wantsAutoWaitlist && req.body.email) {
-      waitlistEntry = (
-        await createOrUpdateWaitlistEntry(hotelId, {
-          email: req.body.email,
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          checkIn: ci,
-          checkOut: co,
-        })
-      )?.toObject();
+  if (!rooms || !Array.isArray(rooms) || rooms.length === 0) {
+    return res.status(400).json({ message: "At least one room must be selected" });
+  }
+
+  for (const room of rooms) {
+    const { roomTypeId, numberOfRooms } = room;
+    const availability = await ensureAvailability(hotelId, roomTypeId, numberOfRooms, ci, co);
+    if (availability.bookingConflict || availability.maintenanceConflict) {
+      let waitlistEntry;
+      const wantsAutoWaitlist =
+        typeof autoWaitlist === "string" ? autoWaitlist.toLowerCase() === "true" : Boolean(autoWaitlist);
+      if (wantsAutoWaitlist && req.body.email) {
+        waitlistEntry = (
+          await createOrUpdateWaitlistEntry(hotelId, {
+            email: req.body.email,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            checkIn: ci,
+            checkOut: co,
+          })
+        )?.toObject();
+      }
+      return res.status(409).json({
+        message: availability.maintenanceConflict
+          ? "Hotel is under maintenance"
+          : `Room type ${roomTypeId} is not available for the selected dates`,
+        reason: availability.maintenanceConflict ? "maintenance" : "booked_out",
+        waitlistEntry,
+      });
     }
-    return res.status(409).json({
-      message: availability.maintenanceConflict ? "Hotel is under maintenance" : "Selected dates are no longer available",
-      reason: availability.maintenanceConflict ? "maintenance" : "booked_out",
-      waitlistEntry,
-    });
   }
 
   const total = Number(totalCost ?? req.body.totalCost ?? 0);
@@ -108,21 +132,37 @@ export const updateBooking = async (req: Request & { userId?: string }, res: Res
   const booking = await Booking.findById(bookingId);
   if (!booking) return res.status(404).json({ message: "not found" });
   const previousStatus = booking.status;
-  const { checkIn, checkOut } = req.body || {};
+  const { checkIn, checkOut, rooms } = req.body || {};
   if (checkIn || checkOut) {
     const ci = new Date(checkIn ?? booking.checkIn);
     const co = new Date(checkOut ?? booking.checkOut);
     if (isNaN(ci.getTime()) || isNaN(co.getTime()) || ci >= co) {
       return res.status(400).json({ message: "Invalid check-in/check-out" });
     }
-    const availability = await ensureAvailability(booking.hotelId, ci, co, bookingId);
-    if (availability.bookingConflict || availability.maintenanceConflict) {
-      return res.status(409).json({
-        message: availability.maintenanceConflict ? "Hotel is under maintenance" : "Selected dates not available",
-        reason: availability.maintenanceConflict ? "maintenance" : "booked_out",
-      });
+
+    if (rooms && Array.isArray(rooms) && rooms.length > 0) {
+      for (const room of rooms) {
+        const { roomTypeId, numberOfRooms } = room;
+        const availability = await ensureAvailability(
+          booking.hotelId,
+          roomTypeId,
+          numberOfRooms,
+          ci,
+          co,
+          bookingId
+        );
+        if (availability.bookingConflict || availability.maintenanceConflict) {
+          return res.status(409).json({
+            message: availability.maintenanceConflict
+              ? "Hotel is under maintenance"
+              : `Room type ${roomTypeId} is not available for the selected dates`,
+            reason: availability.maintenanceConflict ? "maintenance" : "booked_out",
+          });
+        }
+      }
     }
-    booking.checkIn = ci; booking.checkOut = co;
+    booking.checkIn = ci;
+    booking.checkOut = co;
   }
   if (typeof req.body?.status === 'string') booking.status = req.body.status;
   await booking.save();

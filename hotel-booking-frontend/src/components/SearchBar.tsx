@@ -154,7 +154,9 @@ const SearchBar = () => {
         checkIn,
         checkOut,
         adultCount,
-        childCount
+        childCount,
+        1,
+        ""
       );
 
       // Close dropdown before navigation
@@ -174,7 +176,9 @@ const SearchBar = () => {
       checkIn,
       checkOut,
       adultCount,
-      childCount
+      childCount,
+      1,
+      ""
     );
 
     // Close dropdown before navigation

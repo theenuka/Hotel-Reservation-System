@@ -43,6 +43,10 @@ export type BookingFormData = {
   paymentIntentId: string;
   totalCost: number;
   specialRequests?: string;
+  rooms: {
+    roomTypeId: string;
+    numberOfRooms: number;
+  }[];
 };
 
 const BookingForm = ({ currentUser, paymentIntent }: Props) => {
@@ -99,6 +103,7 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
       hotelId: hotelId,
       totalCost: paymentIntent.totalCost,
       paymentIntentId: paymentIntent.paymentIntentId,
+      rooms: [{ roomTypeId: search.roomTypeId, numberOfRooms: search.roomCount || 1 }],
     },
     mode: "onChange",
     shouldUnregister: false,

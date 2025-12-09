@@ -1,11 +1,13 @@
+import axios from "axios";
 import Booking from "../models/booking";
 import Maintenance from "../models/maintenance";
 import Waitlist from "../models/waitlist";
 import { sendNotification } from "./notification";
 
-export const hasOverlap = async (hotelId: string, checkIn: Date, checkOut: Date, excludeBookingId?: string) => {
+export const hasOverlap = async (hotelId: string, roomTypeId: string, checkIn: Date, checkOut: Date, excludeBookingId?: string) => {
   const query: Record<string, unknown> = {
     hotelId,
+    "rooms.roomType": roomTypeId,
     status: { $in: ["pending", "confirmed"] },
     checkIn: { $lt: checkOut },
     checkOut: { $gt: checkIn },
@@ -13,19 +15,37 @@ export const hasOverlap = async (hotelId: string, checkIn: Date, checkOut: Date,
   if (excludeBookingId) {
     query._id = { $ne: excludeBookingId };
   }
-  return Booking.exists(query);
+  const bookings = await Booking.find(query);
+  return bookings.reduce((total, booking) => total + (booking.roomCount || 1), 0);
 };
 
 export const hasMaintenanceConflict = async (hotelId: string, checkIn: Date, checkOut: Date) => {
   return Maintenance.exists({ hotelId, startDate: { $lt: checkOut }, endDate: { $gt: checkIn } });
 };
 
-export const ensureAvailability = async (hotelId: string, checkIn: Date, checkOut: Date, excludeBookingId?: string) => {
-  const [bookingConflict, maintenanceConflict] = await Promise.all([
-    hasOverlap(hotelId, checkIn, checkOut, excludeBookingId),
+export const ensureAvailability = async (
+  hotelId: string,
+  roomTypeId: string,
+  numberOfRooms: number,
+  checkIn: Date,
+  checkOut: Date,
+  excludeBookingId?: string
+) => {
+  const hotelServiceUrl = process.env.HOTEL_SERVICE_URL || "http://hotel-service:7103";
+  const response = await axios.get(
+    `${hotelServiceUrl}/api/hotels/${hotelId}/room-types/${roomTypeId}/count`
+  );
+  const totalRooms = response.data.count;
+
+  const [overlappingBookings, maintenanceConflict] = await Promise.all([
+    hasOverlap(hotelId, roomTypeId, checkIn, checkOut, excludeBookingId),
     hasMaintenanceConflict(hotelId, checkIn, checkOut),
   ]);
-  return { bookingConflict: !!bookingConflict, maintenanceConflict: !!maintenanceConflict };
+
+  const availableRooms = totalRooms - overlappingBookings;
+  const bookingConflict = availableRooms < numberOfRooms;
+
+  return { bookingConflict, maintenanceConflict: !!maintenanceConflict };
 };
 
 export const createOrUpdateWaitlistEntry = async (
