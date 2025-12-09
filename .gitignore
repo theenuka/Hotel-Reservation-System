@@ -30,3 +30,4 @@ hotel-booking-frontend/.env.local
 
 node_modules
 .cursorignore
+\n# Test coverage reports\n/hotel-booking-frontend/coverage

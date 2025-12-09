@@ -131,17 +131,22 @@ const Hero = ({ onSearch }: { onSearch: (searchData: any) => void }) => {
               </div>
             </div>
 
-            <div className="absolute -top-8 right-0 bg-white p-4 rounded-2xl w-56 shadow-xl border border-gray-100 animate-float [animation-delay:1s]">
-              <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Member spotlight</p>
-              <p className="text-charcoal text-lg font-semibold mt-1">Maison Cyan</p>
-              <p className="text-gold-dark text-sm">Santorini</p>
-              <p className="text-charcoal-light text-sm mt-2">{floatingDestinations[1].price}</p>
+            <div className="absolute -top-8 right-0 bg-white p-3 rounded-2xl w-64 shadow-xl border border-gray-100 animate-float [animation-delay:1s]">
+              <p className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2">Member spotlight</p>
+              <div className="flex items-center gap-3">
+                <img src={floatingDestinations[1].image} alt="Santorini" className="w-16 h-16 object-cover rounded-xl"/>
+                <div>
+                  <p className="text-charcoal font-semibold">Maison Cyan</p>
+                  <p className="text-gold-dark text-sm">Santorini</p>
+                  <p className="text-charcoal-light text-sm mt-1">{floatingDestinations[1].price}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="mt-20">
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-200">
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-200">
             <AdvancedSearch onSearch={onSearch} />
           </div>
         </div>
