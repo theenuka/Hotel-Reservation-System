@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import Room from "../models/room";
 import Hotel from "../models/hotel";
+import { AuthedRequest } from "../middleware/auth";
 
-export const createRoom = async (req: Request, res: Response) => {
+export const createRoom = async (req: AuthedRequest, res: Response) => {
   try {
     const { hotelId } = req.params;
     const { roomTypeId, roomNumber } = req.body;
@@ -12,7 +13,6 @@ export const createRoom = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Hotel not found" });
     }
 
-    // @ts-ignore
     if (hotel.userId.toString() !== req.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -35,7 +35,12 @@ export const createRoom = async (req: Request, res: Response) => {
 export const getRooms = async (req: Request, res: Response) => {
   try {
     const { hotelId } = req.params;
-    const rooms = await Room.find({ hotelId });
+    const { roomTypeId } = req.query;
+    const query: { hotelId: string; roomTypeId?: any } = { hotelId };
+    if (roomTypeId) {
+      query.roomTypeId = roomTypeId;
+    }
+    const rooms = await Room.find(query);
     res.status(200).json(rooms);
   } catch (error) {
     console.error(error);
@@ -57,7 +62,7 @@ export const getRoom = async (req: Request, res: Response) => {
   }
 };
 
-export const updateRoom = async (req: Request, res: Response) => {
+export const updateRoom = async (req: AuthedRequest, res: Response) => {
   try {
     const { hotelId, roomId } = req.params;
     const { roomNumber, isAvailable, lastMaintainedAt } = req.body;
@@ -67,7 +72,6 @@ export const updateRoom = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Hotel not found" });
     }
 
-    // @ts-ignore
     if (hotel.userId.toString() !== req.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -104,7 +108,7 @@ export const getRoomCount = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteRoom = async (req: Request, res: Response) => {
+export const deleteRoom = async (req: AuthedRequest, res: Response) => {
   try {
     const { hotelId, roomId } = req.params;
 
@@ -113,7 +117,6 @@ export const deleteRoom = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Hotel not found" });
     }
 
-    // @ts-ignore
     if (hotel.userId.toString() !== req.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }

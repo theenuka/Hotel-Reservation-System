@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
-import { RoomType } from "../api-client";
+import { RoomType } from "../../../shared/types";
 import { useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
-import { useAppContext } from "../hooks/useAppContext";
+import useAppContext from "../hooks/useAppContext";
 import { roomAmenities } from "../config/room-amenities-config";
 import { useEffect } from "react";
 
@@ -42,12 +42,12 @@ const EditRoomTypeForm = ({ hotelId, roomType, onSave }: Props) => {
       apiClient.updateRoomType(hotelId, roomType._id, roomTypeData),
     {
       onSuccess: () => {
-        showToast({ message: "Room Type Updated!", type: "SUCCESS" });
+        showToast({ title: "Room Type Updated!", type: "SUCCESS" });
         queryClient.invalidateQueries(["fetchRoomTypes", hotelId]);
         onSave();
       },
       onError: () => {
-        showToast({ message: "Error Saving Room Type", type: "ERROR" });
+        showToast({ title: "Error Saving Room Type", type: "ERROR" });
       },
     }
   );

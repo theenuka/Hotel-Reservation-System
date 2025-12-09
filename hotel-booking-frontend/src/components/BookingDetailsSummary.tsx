@@ -51,6 +51,17 @@ const BookingDetailsSummary = ({
           </div>
         </div>
       </div>
+      <div className="flex flex-col space-y-2">
+        <div className="text-sm text-gray-400">
+          Price per night:{" "}
+          <span className="font-bold text-white">
+            £{hotel.roomTypes?.[0]?.pricePerNight || 0}
+          </span>
+        </div>
+        <div className="text-sm text-gray-400">
+          Total rooms: <span className="font-bold text-white">{roomCount}</span>
+        </div>
+      </div>
 
       {roomCount > 1 && (
         <div className="flex items-center gap-2 bg-brand-900/20 p-3 rounded-lg border border-brand-500/30">

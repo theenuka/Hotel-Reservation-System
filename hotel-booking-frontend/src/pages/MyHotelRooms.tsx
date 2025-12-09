@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
 import { useParams, Link } from "react-router-dom";
 import { AiOutlinePlus } from "react-icons/ai";
-import { RoomType } from "../api-client";
+import { RoomType } from "../../../shared/types";
 import {
   Dialog,
   DialogContent,
@@ -13,8 +13,8 @@ import {
 } from "../components/ui/dialog";
 import AddRoomTypeForm from "../forms/AddRoomTypeForm";
 import EditRoomTypeForm from "../forms/EditRoomTypeForm";
-import { useState } from "react";
-import { useAppContext } from "../hooks/useAppContext";
+import React, { useState } from "react";
+import useAppContext from "../hooks/useAppContext";
 
 const MyHotelRooms = () => {
   const { hotelId } = useParams();
@@ -36,21 +36,20 @@ const MyHotelRooms = () => {
   );
 
   const { mutate: deleteMutate, isLoading: isDeleting } = useMutation(
-    apiClient.deleteRoomType,
+    (roomTypeId: string) => apiClient.deleteRoomType(hotelId || "", roomTypeId),
     {
       onSuccess: () => {
-        showToast({ message: "Room Type Deleted!", type: "SUCCESS" });
+        showToast({ title: "Room Type Deleted!", type: "SUCCESS" });
         queryClient.invalidateQueries(["fetchRoomTypes", hotelId]);
       },
       onError: () => {
-        showToast({ message: "Error Deleting Room Type", type: "ERROR" });
+        showToast({ title: "Error Deleting Room Type", type: "ERROR" });
       },
     }
   );
 
   const handleDelete = (roomTypeId: string) => {
-    // @ts-ignore
-    deleteMutate({ hotelId, roomTypeId });
+    deleteMutate(roomTypeId);
   };
 
   const handleEditClick = (roomType: RoomType) => {
@@ -93,17 +92,19 @@ const MyHotelRooms = () => {
           <div key={roomType._id} className="bg-white rounded-lg shadow-md p-4">
             <h3 className="text-xl font-bold">{roomType.name}</h3>
             <p className="text-gray-600">{roomType.description}</p>
-import { Link } from "react-router-dom";
+
 // ... other imports
 
 // ... inside the component
             <div className="flex justify-end">
-              <Link
-                to={`/my-hotels/${hotelId}/room-types/${roomType._id}/rooms`}
-                className="text-white bg-green-600 font-bold text-xl p-2 rounded-md hover:bg-green-500 mr-2"
-              >
-                Manage Rooms
-              </Link>
+              <React.Fragment>
+                <Link
+                  to={`/my-hotels/${hotelId}/room-types/${roomType._id}/rooms`}
+                  className="text-white bg-green-600 font-bold text-xl p-2 rounded-md hover:bg-green-500 mr-2"
+                >
+                  Manage Rooms
+                </Link>
+              </React.Fragment>
               <button
                 onClick={() => handleEditClick(roomType)}
                 className="text-white bg-blue-600 font-bold text-xl p-2 rounded-md hover:bg-blue-500 mr-2"

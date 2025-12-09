@@ -1,8 +1,10 @@
+import mongoose from "mongoose";
 import { Request, Response } from "express";
 import RoomType from "../models/roomType";
 import Hotel from "../models/hotel";
+import { AuthedRequest } from "../middleware/auth";
 
-export const createRoomType = async (req: Request, res: Response) => {
+export const createRoomType = async (req: AuthedRequest, res: Response) => {
   try {
     const { hotelId } = req.params;
     const { name, description, adultCount, childCount, pricePerNight, amenities, imageUrls } = req.body;
@@ -12,7 +14,6 @@ export const createRoomType = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Hotel not found" });
     }
 
-    // @ts-ignore
     if (hotel.userId.toString() !== req.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -21,16 +22,16 @@ export const createRoomType = async (req: Request, res: Response) => {
       hotelId,
       name,
       description,
-      adultCount,
-      childCount,
-      pricePerNight,
+      adultCount: Number(adultCount),
+      childCount: Number(childCount),
+      pricePerNight: Number(pricePerNight),
       amenities,
       imageUrls,
     });
 
     await newRoomType.save();
 
-    hotel.roomTypes.push(newRoomType._id);
+    hotel.roomTypes.push(new mongoose.Types.ObjectId(newRoomType._id));
     await hotel.save();
 
     res.status(201).json(newRoomType);
@@ -65,7 +66,7 @@ export const getRoomType = async (req: Request, res: Response) => {
   }
 };
 
-export const updateRoomType = async (req: Request, res: Response) => {
+export const updateRoomType = async (req: AuthedRequest, res: Response) => {
   try {
     const { hotelId, roomTypeId } = req.params;
     const { name, description, adultCount, childCount, pricePerNight, amenities, imageUrls } = req.body;
@@ -75,7 +76,6 @@ export const updateRoomType = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Hotel not found" });
     }
 
-    // @ts-ignore
     if (hotel.userId.toString() !== req.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -85,9 +85,9 @@ export const updateRoomType = async (req: Request, res: Response) => {
       {
         name,
         description,
-        adultCount,
-        childCount,
-        pricePerNight,
+        adultCount: Number(adultCount),
+        childCount: Number(childCount),
+        pricePerNight: Number(pricePerNight),
         amenities,
         imageUrls,
       },
@@ -115,7 +115,7 @@ export const getAllRoomTypes = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteRoomType = async (req: Request, res: Response) => {
+export const deleteRoomType = async (req: AuthedRequest, res: Response) => {
   try {
     const { hotelId, roomTypeId } = req.params;
 
@@ -124,7 +124,6 @@ export const deleteRoomType = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Hotel not found" });
     }
 
-    // @ts-ignore
     if (hotel.userId.toString() !== req.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -136,7 +135,7 @@ export const deleteRoomType = async (req: Request, res: Response) => {
     }
 
     hotel.roomTypes = hotel.roomTypes.filter(
-      (id) => id.toString() !== roomTypeId
+      (id: mongoose.Types.ObjectId) => id.toString() !== roomTypeId
     );
     await hotel.save();
 

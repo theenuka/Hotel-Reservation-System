@@ -1,8 +1,9 @@
 import { useForm } from "react-hook-form";
-import { RoomType } from "../api-client";
+import { RoomType } from "../../../shared/types";
 import { useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
-import { useAppContext } from "../hooks/useAppContext";
+import useAppContext from "../hooks/useAppContext";
+import { roomAmenities } from "../config/room-amenities-config";
 
 type Props = {
   hotelId: string;
@@ -19,9 +20,6 @@ export type RoomTypeFormData = {
   imageFiles: FileList;
 };
 
-import { useAppContext } from "../hooks/useAppContext";
-import { roomAmenities } from "../config/room-amenities-config";
-
 const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
   const { showToast } = useAppContext();
   const queryClient = useQueryClient();
@@ -36,12 +34,12 @@ const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
     (roomTypeData: FormData) => apiClient.createRoomType(hotelId, roomTypeData),
     {
       onSuccess: () => {
-        showToast({ message: "Room Type Saved!", type: "SUCCESS" });
+        showToast({ title: "Room Type Saved!", type: "SUCCESS" });
         queryClient.invalidateQueries(["fetchRoomTypes", hotelId]);
         onSave();
       },
       onError: () => {
-        showToast({ message: "Error Saving Room Type", type: "ERROR" });
+        showToast({ title: "Error Saving Room Type", type: "ERROR" });
       },
     }
   );
@@ -53,10 +51,10 @@ const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
     formDataWithImages.append("adultCount", formData.adultCount.toString());
     formDataWithImages.append("childCount", formData.childCount.toString());
     formDataWithImages.append("pricePerNight", formData.pricePerNight.toString());
-    formData.amenities.forEach((amenity, index) => {
+    formData.amenities.forEach((amenity: string, index: number) => {
       formDataWithImages.append(`amenities[${index}]`, amenity);
     });
-    Array.from(formData.imageFiles).forEach((imageFile) => {
+    Array.from(formData.imageFiles).forEach((imageFile: File) => {
       formDataWithImages.append(`imageFiles`, imageFile);
     });
 
@@ -73,7 +71,7 @@ const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
           {...register("name", { required: "This field is required" })}
         ></input>
         {errors.name && (
-          <span className="text-red-500">{errors.name.message}</span>
+          <span className="text-red-500">{String(errors.name.message)}</span>
         )}
       </label>
       <label className="text-gray-700 text-sm font-bold">
@@ -84,7 +82,7 @@ const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
           {...register("description", { required: "This field is required" })}
         ></textarea>
         {errors.description && (
-          <span className="text-red-500">{errors.description.message}</span>
+          <span className="text-red-500">{String(errors.description.message)}</span>
         )}
       </label>
       <div className="grid grid-cols-2 gap-4">
@@ -97,7 +95,7 @@ const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
             {...register("adultCount", { required: "This field is required" })}
           ></input>
           {errors.adultCount && (
-            <span className="text-red-500">{errors.adultCount.message}</span>
+            <span className="text-red-500">{String(errors.adultCount.message)}</span>
           )}
         </label>
         <label className="text-gray-700 text-sm font-bold">
@@ -109,7 +107,7 @@ const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
             {...register("childCount", { required: "This field is required" })}
           ></input>
           {errors.childCount && (
-            <span className="text-red-500">{errors.childCount.message}</span>
+            <span className="text-red-500">{String(errors.childCount.message)}</span>
           )}
         </label>
       </div>
@@ -125,14 +123,14 @@ const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
         ></input>
         {errors.pricePerNight && (
           <span className="text-red-500">
-            {errors.pricePerNight.message}
+            {String(errors.pricePerNight.message)}
           </span>
         )}
       </label>
       <div>
         <h2 className="text-2xl font-bold mb-3">Amenities</h2>
         <div className="grid grid-cols-5 gap-3">
-          {roomAmenities.map((amenity) => (
+          {roomAmenities.map((amenity: string) => (
             <label key={amenity} className="text-sm flex gap-1 text-gray-700">
               <input
                 type="checkbox"
@@ -165,7 +163,7 @@ const AddRoomTypeForm = ({ hotelId, onSave }: Props) => {
           })}
         />
         {errors.imageFiles && (
-          <span className="text-red-500">{errors.imageFiles.message}</span>
+          <span className="text-red-500">{String(errors.imageFiles.message)}</span>
         )}
       </div>
       <span className="flex justify-end">

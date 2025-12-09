@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
-import { useAppContext } from "../hooks/useAppContext";
+import useAppContext from "../hooks/useAppContext";
 
 type Props = {
   hotelId: string;
@@ -25,15 +25,15 @@ const AddRoomForm = ({ hotelId, roomTypeId, onSave }: Props) => {
 
   const { mutate, isLoading } = useMutation(
     (roomData: { roomNumber: string }) =>
-      apiClient.createRoom(hotelId, roomTypeId, roomData),
+      apiClient.createRoom(hotelId, { ...roomData, roomTypeId }),
     {
       onSuccess: () => {
-        showToast({ message: "Room Saved!", type: "SUCCESS" });
+        showToast({ title: "Room Saved!", type: "SUCCESS" });
         queryClient.invalidateQueries(["fetchRooms", hotelId, roomTypeId]);
         onSave();
       },
       onError: () => {
-        showToast({ message: "Error Saving Room", type: "ERROR" });
+        showToast({ title: "Error Saving Room", type: "ERROR" });
       },
     }
   );

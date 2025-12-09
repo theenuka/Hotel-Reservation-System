@@ -110,12 +110,14 @@ services:
     ports:
       - "7101:7101"
 
-  frontend:
+  api-gateway:
     build:
       context: .
-      dockerfile: hotel-booking-frontend/Dockerfile
-      args:
-        VITE_API_BASE_URL: /api
+      dockerfile: backend/services/api-gateway/Dockerfile
+    env_file:
+      - backend/.env.docker
+    environment:
+      PORT: 7008
     depends_on:
       identity-service:
         condition: service_started
@@ -125,7 +127,22 @@ services:
         condition: service_started
       search-service:
         condition: service_started
-      notification-service:
+    restart: unless-stopped
+    ports:
+      - "7008:7008"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: hotel-booking-frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:7008
+        VITE_ASGARDEO_CLIENT_ID: dummy-client-id-for-dev
+        VITE_ASGARDEO_BASE_URL: https://api.asgardeo.io/t/gemini-dev
+        VITE_ASGARDEO_SIGN_IN_REDIRECT: http://localhost:4173
+        VITE_ASGARDEO_SIGN_OUT_REDIRECT: http://localhost:4173
+    depends_on:
+      api-gateway:
         condition: service_started
     restart: unless-stopped
     ports:

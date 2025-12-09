@@ -131,24 +131,23 @@ const MyBookings = () => {
   const uniqueHotelIds = new Set(hotels.map((hotel) => hotel._id));
   const differentHotels = uniqueHotelIds.size;
 
-  const totalSpent = hotels.reduce((total, hotel) => {
-    return (
-      total +
-      hotel.bookings.reduce((hotelTotal, booking) => {
-        const checkInDate = new Date(booking.checkIn);
-        const checkOutDate = new Date(booking.checkOut);
-        const nights = Math.max(
-          1,
-          Math.ceil(
-            (checkOutDate.getTime() - checkInDate.getTime()) /
-              (1000 * 60 * 60 * 24)
-          )
-        );
-        return hotelTotal + hotel.pricePerNight * nights;
-      }, 0)
-    );
-  }, 0);
-
+      const totalSpent = hotels.reduce((total, hotel) => {
+      return (
+        total +
+        hotel.bookings.reduce((hotelTotal, booking) => {
+          const checkInDate = new Date(booking.checkIn);
+          const checkOutDate = new Date(booking.checkOut);
+          const nights = Math.max(
+            1,
+            Math.ceil(
+              (checkOutDate.getTime() - checkInDate.getTime()) /
+                (1000 * 60 * 60 * 24)
+            )
+          );
+          return hotelTotal + (hotel.roomTypes?.[0]?.pricePerNight || 0) * nights;
+        }, 0)
+      );
+    }, 0);
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed":
@@ -262,7 +261,7 @@ const MyBookings = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <Building className="w-4 h-4" />
-                        <span>£{hotel.pricePerNight}/night</span>
+                        <span>£{hotel.roomTypes?.[0]?.pricePerNight || 0}/night</span>
                       </div>
                     </div>
                   </div>
@@ -285,7 +284,7 @@ const MyBookings = () => {
                           (1000 * 60 * 60 * 24)
                       )
                     );
-                    const totalPrice = hotel.pricePerNight * nights;
+                    const totalPrice = (hotel.roomTypes?.[0]?.pricePerNight || 0) * nights;
                     const canCancel = canCancelBooking(booking);
 
                     return (

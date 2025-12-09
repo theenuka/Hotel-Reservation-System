@@ -184,7 +184,7 @@ const MyHotels = () => {
                 {/* Badges */}
                 <div className="absolute top-4 left-4 flex flex-col space-y-2">
                   <Badge className="bg-brand-600 text-white border-none">
-                    £{hotel.pricePerNight}/night
+                    £{hotel.roomTypes?.[0]?.pricePerNight || 0}/night
                   </Badge>
                   {hotel.isFeatured && (
                     <Badge className="bg-yellow-500 text-white border-none">Featured</Badge>
@@ -242,12 +242,12 @@ const MyHotels = () => {
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-400">
                     <BiMoney className="w-4 h-4 text-brand-400" />
-                    <span>£{hotel.pricePerNight} per night</span>
+                    <span>£{hotel.roomTypes?.[0]?.pricePerNight || 0} per night</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-400">
                     <BiHotel className="w-4 h-4 text-brand-400" />
                     <span>
-                      {hotel.adultCount} adults, {hotel.childCount} children
+                      {hotel.roomTypes?.[0]?.adultCount || 0} adults, {hotel.roomTypes?.[0]?.childCount || 0} children
                     </span>
                   </div>
                 </div>

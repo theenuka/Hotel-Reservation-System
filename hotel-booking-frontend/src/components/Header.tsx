@@ -105,20 +105,20 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b bg-night-900/85 backdrop-blur-xl border-white/10">
-        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
+      <header className="sticky top-0 z-50 py-3 border-b bg-ivory/95 backdrop-blur-lg border-gray-200/80">
+        <div className="px-4 mx-auto max-w-8xl sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
             {/* Logo */}
             <BrandLogo onClick={handleLogoClick} className="shrink-0" />
 
             {/* Navigation */}
-            <nav className="items-center hidden space-x-1 md:flex text-white/80">
+            <nav className="items-center hidden space-x-2 md:flex text-charcoal">
               {navItems.map((item) =>
                 item.type === "route" ? (
                   <Link
                     key={item.label}
                     to={item.href}
-                    className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
+                    className="px-4 py-2 transition-colors rounded-full hover:bg-gray-200/60"
                   >
                     {item.label}
                   </Link>
@@ -127,7 +127,7 @@ const Header = () => {
                     key={item.label}
                     type="button"
                     onClick={() => scrollToSection(item.target)}
-                    className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
+                    className="px-4 py-2 transition-colors rounded-full hover:bg-gray-200/60"
                   >
                     {item.label}
                   </button>
@@ -136,13 +136,13 @@ const Header = () => {
               {isLoggedIn && canManage && (
                 <>
                   <Link
-                    className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
+                    className="px-4 py-2 transition-colors rounded-full hover:bg-gray-200/60"
                     to="/analytics"
                   >
                     Insights
                   </Link>
                   <Link
-                    className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
+                    className="px-4 py-2 transition-colors rounded-full hover:bg-gray-200/60"
                     to="/my-hotels"
                   >
                     Host Hub
@@ -151,7 +151,7 @@ const Header = () => {
               )}
               {isLoggedIn && isStaff && (
                 <Link
-                  className="px-4 py-2 transition-colors rounded-full hover:bg-white/10 hover:text-white"
+                  className="px-4 py-2 transition-colors rounded-full hover:bg-gray-200/60"
                   to="/staff-dashboard"
                 >
                   Staff
@@ -167,7 +167,7 @@ const Header = () => {
                   <div className="relative" ref={notificationDropdownRef}>
                     <button
                       onClick={() => setNotificationDropdownOpen(!notificationDropdownOpen)}
-                      className="relative p-2 transition-colors rounded-full hover:bg-white/10 text-white/80 hover:text-white"
+                      className="relative p-2 transition-colors rounded-full hover:bg-gray-200/60 text-charcoal-light"
                     >
                       <Bell className="w-5 h-5" />
                       {unreadCount > 0 && (
@@ -178,13 +178,13 @@ const Header = () => {
                     </button>
 
                     {notificationDropdownOpen && (
-                      <div className="absolute right-0 z-50 mt-2 overflow-hidden border shadow-2xl w-80 bg-night-800 border-white/10 rounded-xl">
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                          <h3 className="font-semibold text-white">Notifications</h3>
+                      <div className="absolute right-0 z-50 mt-2 overflow-hidden bg-ivory border border-gray-200 shadow-xl w-80 rounded-xl">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                          <h3 className="font-semibold text-charcoal">Notifications</h3>
                           {unreadCount > 0 && (
                             <button
                               onClick={handleMarkAllRead}
-                              className="text-xs text-brand-400 hover:text-brand-300"
+                              className="text-xs text-navy hover:text-navy-light"
                             >
                               Mark all read
                             </button>
@@ -200,8 +200,8 @@ const Header = () => {
                             notifications.slice(0, 5).map((notification) => (
                               <div
                                 key={notification._id}
-                                className={`px-4 py-3 border-b border-white/5 hover:bg-white/5 cursor-pointer ${
-                                  !notification.read ? "bg-brand-500/10" : ""
+                                className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-100 cursor-pointer ${
+                                  !notification.read ? "bg-navy/5" : ""
                                 }`}
                                 onClick={() => {
                                   if (notification.link) {
@@ -210,8 +210,8 @@ const Header = () => {
                                   setNotificationDropdownOpen(false);
                                 }}
                               >
-                                <p className="text-sm font-medium text-white">{notification.title}</p>
-                                <p className="mt-1 text-xs text-gray-400">{notification.message}</p>
+                                <p className="text-sm font-medium text-charcoal">{notification.title}</p>
+                                <p className="mt-1 text-xs text-charcoal-light">{notification.message}</p>
                                 <p className="mt-1 text-xs text-gray-500">
                                   {new Date(notification.createdAt).toLocaleDateString()}
                                 </p>
@@ -222,7 +222,7 @@ const Header = () => {
                         {notifications.length > 5 && (
                           <Link
                             to="/profile?tab=notifications"
-                            className="block px-4 py-3 text-sm text-center border-t text-brand-400 hover:bg-white/5 border-white/10"
+                            className="block px-4 py-3 text-sm text-center border-t text-navy hover:bg-gray-100 border-gray-200"
                             onClick={() => setNotificationDropdownOpen(false)}
                           >
                             View all notifications
@@ -234,7 +234,7 @@ const Header = () => {
 
                   <Link
                     to="/my-bookings"
-                    className="items-center hidden px-4 py-2 text-sm border rounded-full sm:inline-flex border-white/20 text-white/80 hover:border-white/60"
+                    className="items-center hidden px-4 py-2 text-sm border rounded-full sm:inline-flex border-charcoal/20 text-charcoal hover:border-charcoal/60"
                   >
                     <Calendar className="w-4 h-4 mr-2" />
                     Trips
@@ -244,9 +244,9 @@ const Header = () => {
                   <div className="relative" ref={profileDropdownRef}>
                     <button
                       onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/15 bg-[#0B1424] text-white font-medium hover:border-white/35 transition"
+                      className="inline-flex items-center gap-2 px-3 py-2 transition-colors border rounded-full border-gray-200/80 bg-ivory-dark text-charcoal font-medium hover:border-gray-300"
                     >
-                      <div className="flex items-center justify-center text-sm font-bold rounded-full w-7 h-7 bg-brand-500">
+                      <div className="flex items-center justify-center text-sm font-bold text-white rounded-full w-7 h-7 bg-navy">
                         {userName.charAt(0).toUpperCase()}
                       </div>
                       <span className="hidden truncate sm:inline max-w-24">{userName}</span>
@@ -254,15 +254,15 @@ const Header = () => {
                     </button>
 
                     {profileDropdownOpen && (
-                      <div className="absolute right-0 z-50 w-56 mt-2 overflow-hidden border shadow-2xl bg-night-800 border-white/10 rounded-xl">
-                        <div className="px-4 py-3 border-b border-white/10">
-                          <p className="font-semibold text-white truncate">{userName}</p>
-                          <p className="text-xs text-gray-400 truncate">{state?.email}</p>
+                      <div className="absolute right-0 z-50 w-56 mt-2 overflow-hidden bg-ivory border border-gray-200 shadow-xl rounded-xl">
+                        <div className="px-4 py-3 border-b border-gray-200">
+                          <p className="font-semibold truncate text-charcoal">{userName}</p>
+                          <p className="text-xs text-charcoal-light truncate">{state?.email}</p>
                         </div>
                         <div className="py-2">
                           <Link
                             to="/profile"
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-light hover:bg-gray-100 hover:text-charcoal"
                             onClick={() => setProfileDropdownOpen(false)}
                           >
                             <User className="w-4 h-4" />
@@ -270,7 +270,7 @@ const Header = () => {
                           </Link>
                           <Link
                             to="/my-bookings"
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-light hover:bg-gray-100 hover:text-charcoal"
                             onClick={() => setProfileDropdownOpen(false)}
                           >
                             <Calendar className="w-4 h-4" />
@@ -278,7 +278,7 @@ const Header = () => {
                           </Link>
                           <Link
                             to="/my-facility-bookings"
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-light hover:bg-gray-100 hover:text-charcoal"
                             onClick={() => setProfileDropdownOpen(false)}
                           >
                             <Sparkles className="w-4 h-4" />
@@ -286,7 +286,7 @@ const Header = () => {
                           </Link>
                           <Link
                             to="/profile?tab=loyalty"
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-light hover:bg-gray-100 hover:text-charcoal"
                             onClick={() => setProfileDropdownOpen(false)}
                           >
                             <Award className="w-4 h-4" />
@@ -295,7 +295,7 @@ const Header = () => {
                           {isStaff && (
                             <Link
                               to="/staff-dashboard"
-                              className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
+                              className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-light hover:bg-gray-100 hover:text-charcoal"
                               onClick={() => setProfileDropdownOpen(false)}
                             >
                               <ClipboardList className="w-4 h-4" />
@@ -304,20 +304,20 @@ const Header = () => {
                           )}
                           <Link
                             to="/profile?tab=notifications"
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-light hover:bg-gray-100 hover:text-charcoal"
                             onClick={() => setProfileDropdownOpen(false)}
                           >
                             <Settings className="w-4 h-4" />
                             Settings
                           </Link>
                         </div>
-                        <div className="py-2 border-t border-white/10">
+                        <div className="py-2 border-t border-gray-200">
                           <button
                             onClick={() => {
                               setProfileDropdownOpen(false);
                               signOut();
                             }}
-                            className="flex items-center w-full gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10"
+                            className="flex items-center w-full gap-3 px-4 py-2 text-sm text-red-500 hover:bg-red-500/10"
                           >
                             <LogOut className="w-4 h-4" />
                             Sign Out
@@ -331,7 +331,7 @@ const Header = () => {
                 <>
                   <button
                     onClick={handleHostClick}
-                    className="items-center hidden gap-2 px-4 py-2 text-sm border rounded-full sm:inline-flex border-white/20 text-white/80 hover:border-white/60"
+                    className="items-center hidden gap-2 px-4 py-2 text-sm transition-colors border rounded-full sm:inline-flex border-charcoal/30 text-charcoal hover:border-charcoal/80 hover:bg-gray-100"
                   >
                     {hostCtaLabel}
                   </button>
@@ -339,7 +339,7 @@ const Header = () => {
                   {/* Sign In Button (Asgardeo) */}
                   <button
                     onClick={() => signIn()}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/15 bg-[#0B1424] text-white font-semibold shadow-[0_18px_30px_rgba(1,3,10,0.65)] hover:border-white/35 hover:-translate-y-0.5 transition"
+                    className="inline-flex items-center gap-2 px-5 py-2 font-semibold text-ivory transition-transform bg-navy rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                   >
                     <LogIn className="w-4 h-4" />
                     Sign In
@@ -350,7 +350,7 @@ const Header = () => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
-              <button aria-label="Open menu" className="p-2 text-white border rounded-2xl border-white/15">
+              <button aria-label="Open menu" className="p-2 border rounded-md border-charcoal/30 text-charcoal">
                 <svg
                   className="w-6 h-6"
                   fill="none"
