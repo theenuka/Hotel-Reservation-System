@@ -42,7 +42,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
   const heroImage = hotel.imageUrls.find((url) => url && url.trim().length > 0) ?? fallbackImage;
 
   return (
-    <div className="group rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-md transition-shadow hover:shadow-xl">
+    <div className="group rounded-2xl border border-white/10 bg-dark/50 overflow-hidden shadow-lg transition-shadow hover:shadow-neon-pink/20 hover:border-white/20">
       <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_1.5fr]">
         {/* Image Section */}
         <div className="relative h-64 overflow-hidden xl:h-full">
@@ -52,10 +52,10 @@ const SearchResultsCard = ({ hotel }: Props) => {
             loading="lazy"
             className="object-cover object-center w-full h-full transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-dark/10 to-transparent" />
 
           <div className="absolute flex flex-col gap-2 text-white top-4 left-4">
-            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-black/30 backdrop-blur-md">
+            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-black/40 backdrop-blur-md">
               {hotel.isFeatured ? "Spotlight" : "Collection"}
             </span>
             <div className="flex items-center gap-2 text-sm">
@@ -65,21 +65,21 @@ const SearchResultsCard = ({ hotel }: Props) => {
           </div>
 
           <div className="absolute text-white bottom-4 left-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-gray-200">
+            <p className="text-xs uppercase tracking-[0.4em] text-gray-300">
               From
             </p>
             <p className="text-3xl font-semibold">
-              ${hotel.roomTypes?.[0]?.pricePerNight || 0}
+              ${hotel.minPricePerNight || 0}
               <span className="text-sm text-gray-300"> / night</span>
             </p>
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="flex flex-col gap-6 p-6 text-charcoal sm:p-8">
+        <div className="flex flex-col gap-6 p-6 text-light-gray sm:p-8">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1 text-gold">
+              <div className="flex items-center gap-1 text-yellow-400">
                 {Array.from({ length: hotel.starRating }).map((_, i) => (
                   <AiFillStar key={i} className="w-4 h-4" />
                 ))}
@@ -90,7 +90,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
                       <Badge
                         key={type}
                         variant="outline"
-                        className="text-charcoal-light border-gray-200 bg-gray-100"
+                        className="text-medium-gray border-white/20 bg-white/5"
                       >
                         {type}
                       </Badge>
@@ -98,7 +98,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
                   : (
                       <Badge
                         variant="outline"
-                        className="text-charcoal-light border-gray-200 bg-gray-100"
+                        className="text-medium-gray border-white/20 bg-white/5"
                       >
                         {hotel.type}
                       </Badge>
@@ -108,21 +108,21 @@ const SearchResultsCard = ({ hotel }: Props) => {
 
             <Link
               to={`/detail/${hotel._id}`}
-              className="text-3xl font-semibold transition-colors font-display hover:text-navy"
+              className="text-3xl font-semibold transition-colors font-display text-white hover:text-neon-pink"
             >
               {hotel.name}
             </Link>
 
-            <div className="flex items-center text-sm text-charcoal-light">
+            <div className="flex items-center text-sm text-medium-gray">
               <MapPin className="w-4 h-4 mr-2" />
               {hotel.city}, {hotel.country}
             </div>
-            <p className="leading-relaxed text-charcoal-light line-clamp-3">
+            <p className="leading-relaxed text-medium-gray line-clamp-3">
               {hotel.description}
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-6 text-sm text-charcoal-light">
+          <div className="flex flex-wrap gap-6 text-sm text-medium-gray">
             {hotel.totalBookings && (
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
@@ -140,7 +140,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
           </div>
 
           <div>
-            <h4 className="text-xs uppercase tracking-[0.35em] text-gray-400 mb-3">
+            <h4 className="text-xs uppercase tracking-[0.35em] text-gray-500 mb-3">
               Key amenities
             </h4>
             <div className="flex flex-wrap gap-2">
@@ -150,9 +150,9 @@ const SearchResultsCard = ({ hotel }: Props) => {
                   <Badge
                     key={facility}
                     variant="outline"
-                    className="flex items-center gap-2 border-gray-200 bg-gray-50 text-charcoal-light px-3 py-1.5"
+                    className="flex items-center gap-2 border-white/10 bg-dark/50 text-light-gray px-3 py-1.5"
                   >
-                    <IconComponent className="w-3.5 h-3.5 text-navy" />
+                    <IconComponent className="w-3.5 h-3.5 text-neon-teal" />
                     <span>{facility}</span>
                   </Badge>
                 );
@@ -160,13 +160,13 @@ const SearchResultsCard = ({ hotel }: Props) => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 pt-6 border-t sm:flex-row sm:items-center sm:justify-between border-gray-200">
-            <div className="text-sm text-gray-500">
+          <div className="flex flex-col gap-4 pt-6 border-t sm:flex-row sm:items-center sm:justify-between border-white/10">
+            <div className="text-sm text-gray-400">
               Instant confirmation • Secure checkout
             </div>
             <Link
               to={`/detail/${hotel._id}`}
-              className="inline-flex items-center justify-center px-6 py-3 font-semibold transition-transform bg-navy text-ivory rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center px-6 py-3 font-semibold transition-transform bg-neon-pink text-white rounded-xl shadow-lg shadow-neon-pink/20 hover:shadow-xl hover:shadow-neon-pink/40 hover:-translate-y-0.5"
             >
               View details & book
             </Link>

@@ -3,44 +3,44 @@
 @tailwind utilities;
 
 :root {
-  /* Classic & Professional Theme */
-  --background: 60 83% 98%; /* Ivory */
-  --foreground: 0 0% 20%; /* Charcoal */
-  --card: 60 83% 99%; /* Slightly off-ivory for cards */
-  --card-foreground: 0 0% 20%;
-  --popover: 60 83% 98%;
-  --popover-foreground: 0 0% 20%;
-  --primary: 240 100% 25%; /* Navy */
-  --primary-foreground: 60 83% 98%;
-  --secondary: 45 100% 50%; /* Gold */
-  --secondary-foreground: 0 0% 20%;
-  --muted: 60 20% 90%; /* Light grey */
-  --muted-foreground: 0 0% 40%;
-  --accent: 60 20% 95%; /* Lighter grey for accents */
-  --accent-foreground: 0 0% 10%;
+  /* Neon Aurora Theme */
+  --background: 220 23% 8%; /* #0D1117 */
+  --foreground: 210 20% 98%; /* #FAFAFB */
+  --card: 220 23% 11%;
+  --card-foreground: 210 20% 98%;
+  --popover: 220 23% 8%;
+  --popover-foreground: 210 20% 98%;
+  --primary: 336 91% 55%; /* #F92672 - Neon Pink */
+  --primary-foreground: 210 20% 98%;
+  --secondary: 193 95% 64%; /* #66D9EF - Neon Teal */
+  --secondary-foreground: 220 23% 8%;
+  --muted: 220 23% 15%;
+  --muted-foreground: 220 15% 65%;
+  --accent: 220 23% 15%;
+  --accent-foreground: 210 20% 98%;
   --destructive: 0 84% 60%;
-  --border: 60 10% 88%;
-  --input: 60 10% 92%;
-  --ring: 240 100% 30%;
+  --border: 220 23% 15%;
+  --input: 220 23% 15%;
+  --ring: 336 91% 65%;
 }
 
 body {
 	font-family: "Helvetica", "Arial", sans-serif;
-	background-color: hsl(var(--background));
-	color: hsl(var(--foreground));
+	background-color: #0D1117;
+	color: #E6E6E6;
 	min-height: 100vh;
 }
 
-.aurora-veil {
-	background: radial-gradient(circle at 20% 20%, hsla(240, 100%, 25%, 0.05), transparent 45%),
-		radial-gradient(circle at 80% 0%, hsla(45, 100%, 50%, 0.08), transparent 50%),
-		radial-gradient(circle at 0% 80%, hsla(240, 100%, 25%, 0.07), transparent 45%);
+@keyframes aurora {
+  0% { transform: translate3d(-10%, -10%, 0) scale(1) rotate(0deg); opacity: 0.2; }
+  50% { transform: translate3d(10%, 10%, 0) scale(1.2) rotate(5deg); opacity: 0.3; }
+  100% { transform: translate3d(-10%, -10%, 0) scale(1) rotate(0deg); opacity: 0.2; }
 }
 
-@keyframes aurora {
-  0%: { transform: "translate3d(-10%, -10%, 0) scale(1)" },
-  50%: { transform: "translate3d(10%, 10%, 0) scale(1.1)" },
-  100%: { transform: "translate3d(-10%, -10%, 0) scale(1)" }
+.aurora-veil {
+	background: radial-gradient(circle at 20% 20%, hsla(var(--primary), 0.3), transparent 40%),
+		radial-gradient(circle at 80% 0%, hsla(var(--secondary), 0.3), transparent 45%),
+		radial-gradient(circle at 50% 80%, hsla(var(--primary), 0.2), transparent 50%);
 }
 
 

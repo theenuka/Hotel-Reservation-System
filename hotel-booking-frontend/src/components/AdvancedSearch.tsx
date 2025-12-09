@@ -369,30 +369,27 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   ];
 
   const baseLabel =
-    "flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-charcoal-light";
+    "flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-medium-gray";
   const baseField =
-    "w-full h-[52px] rounded-lg border border-gray-300 bg-white text-charcoal placeholder:text-gray-400 focus:ring-1 focus:ring-navy focus:border-navy transition";
+    "w-full h-12 rounded-lg border border-white/10 bg-dark/50 text-light-gray placeholder:text-gray-500 focus:ring-1 focus:ring-neon-pink focus:border-neon-pink transition";
   
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-ivory-dark/60 text-charcoal p-6 sm:p-8 max-w-6xl mx-auto border border-gray-200/80">
-      <div className="relative space-y-8">
+    <div className="text-white">
+      <div className="relative space-y-6">
         <div className="text-center">
-          <h3 className="text-3xl sm:text-4xl font-display leading-tight text-navy">
+          <h3 className="text-3xl sm:text-4xl font-display leading-tight text-white">
             Search curated stays across the globe
           </h3>
-          <p className="text-charcoal-light mt-2 text-base max-w-2xl mx-auto">
-            Dial in destinations, flexible dates, and all the finishing touches—then launch into search with one expressive action.
+          <p className="text-medium-gray mt-2 text-base max-w-2xl mx-auto">
+            Dial in destinations, dates, and all the finishing touches—then launch into search with one expressive action.
           </p>
         </div>
       {/* Basic Search */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Destination */}
         <div className="space-y-2">
-          <label
-            htmlFor={inputIds.destination}
-            className={baseLabel}
-          >
-            <MapPin className="w-4 h-4 text-navy" />
+          <label htmlFor={inputIds.destination} className={baseLabel}>
+            <MapPin className="w-4 h-4 text-neon-pink" />
             Destination
           </label>
           <div className="relative">
@@ -406,13 +403,13 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               onFocus={() => setShowDropdown(filteredPlaces.length > 0)}
               onBlur={() => setShowDropdown(false)}
             />
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             {showDropdown && (
-              <ul className="absolute left-0 z-10 w-full overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg top-full max-h-48">
+              <ul className="absolute left-0 z-10 w-full overflow-y-auto bg-dark border border-white/20 rounded-lg shadow-lg top-full max-h-48">
                 {filteredPlaces.map((place) => (
                   <li
                     key={place}
-                    className="px-4 py-2 text-sm border-b border-gray-100 cursor-pointer hover:bg-gray-100 last:border-b-0"
+                    className="px-4 py-2 text-sm border-b border-white/10 cursor-pointer hover:bg-white/5 last:border-b-0"
                     onMouseDown={() => {
                       handleInputChange("destination", place);
                       setShowDropdown(false);
@@ -426,274 +423,121 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
           </div>
         </div>
 
-        {/* Check-in Date */}
+        {/* Check-in / Check-out */}
         <div className="space-y-2">
-          <label
-            htmlFor={inputIds.checkIn}
-            className={baseLabel}
-          >
-            <Calendar className="w-4 h-4 text-navy" />
-            Check-in
+          <label htmlFor={inputIds.checkIn} className={baseLabel}>
+            <Calendar className="w-4 h-4 text-neon-pink" />
+            Dates
           </label>
-          <div className="relative">
+          <div className="grid grid-cols-2 gap-2">
             <input
               type="date"
-              className={`${baseField} pl-11 pr-4`}
+              className={`${baseField} px-3`}
               id={inputIds.checkIn}
               value={formatDateInput(searchData.checkIn)}
-              onChange={(e) =>
-                handleInputChange("checkIn", new Date(e.target.value))
-              }
+              onChange={(e) => handleInputChange("checkIn", new Date(e.target.value))}
             />
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          </div>
-        </div>
-
-        {/* Check-out Date */}
-        <div className="space-y-2">
-          <label
-            htmlFor={inputIds.checkOut}
-            className={baseLabel}
-          >
-            <Calendar className="w-4 h-4 text-navy" />
-            Check-out
-          </label>
-          <div className="relative">
             <input
               type="date"
-              className={`${baseField} pl-11 pr-4`}
+              className={`${baseField} px-3`}
               id={inputIds.checkOut}
               value={formatDateInput(searchData.checkOut)}
-              onChange={(e) =>
-                handleInputChange("checkOut", new Date(e.target.value))
-              }
+              onChange={(e) => handleInputChange("checkOut", new Date(e.target.value))}
             />
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>
         </div>
 
         {/* Guests */}
-        <div className="space-y-2">
-          <label
-            htmlFor={inputIds.guests}
-            className={baseLabel}
-          >
-            <Users className="w-4 h-4 text-navy" />
+        <div className="space-y-2 col-span-1 md:col-span-2 lg:col-span-1">
+          <label htmlFor={inputIds.guests} className={baseLabel}>
+            <Users className="w-4 h-4 text-neon-pink" />
             Guests
           </label>
-          <div className="relative">
-            <select
-              className={`${baseField} pl-11 pr-10 appearance-none`}
-              id={inputIds.guests}
-              value={`${searchData.adultCount} adults, ${searchData.childCount} children`}
-              onChange={(e) => {
-                const [adults, children] = e.target.value.split(", ");
-                handleInputChange("adultCount", parseInt(adults));
-                handleInputChange("childCount", parseInt(children));
-              }}
+          <select
+            className={`${baseField} pl-11 pr-10 appearance-none`}
+            id={inputIds.guests}
+            value={`${searchData.adultCount} adults, ${searchData.childCount} children`}
+            onChange={(e) => {
+              const [adults, children] = e.target.value.split(", ");
+              handleInputChange("adultCount", parseInt(adults));
+              handleInputChange("childCount", parseInt(children));
+            }}
+          >
+            {[1, 2, 3, 4, 5, 6].map(a => (
+              [0, 1, 2, 3, 4].map(c => (
+                <option key={`${a}-${c}`} value={`${a} adults, ${c} children`}>
+                  {a} adult{a > 1 ? 's' : ''}{c > 0 ? `, ${c} child${c > 1 ? 'ren' : ''}`: ''}
+                </option>
+              ))
+            ))}
+          </select>
+        </div>
+        
+        {/* Search Button */}
+        <div className="flex items-end">
+            <button
+              onClick={handleSearch}
+              className="flex items-center justify-center w-full gap-3 h-12 px-8 font-semibold text-dark transition-transform duration-200 rounded-lg bg-neon-teal shadow-lg shadow-neon-teal/20 hover:shadow-xl hover:shadow-neon-teal/40 hover:-translate-y-0.5"
             >
-              <option value="1 adults, 0 children">1 adult</option>
-              <option value="2 adults, 0 children">2 adults</option>
-              <option value="1 adults, 1 children">1 adult, 1 child</option>
-              <option value="2 adults, 1 children">2 adults, 1 child</option>
-              <option value="2 adults, 2 children">2 adults, 2 children</option>
-              <option value="3 adults, 0 children">3 adults</option>
-              <option value="4 adults, 0 children">4 adults</option>
-            </select>
-            <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          </div>
+              <SearchIcon className="w-5 h-5" />
+              Search
+            </button>
         </div>
       </div>
 
-      {/* Advanced Search Toggle */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+      <div className="flex justify-start mt-4">
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors border-b-2 border-transparent text-charcoal-light hover:text-navy"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors rounded-full text-medium-gray hover:text-white"
         >
           <Filter className="w-4 h-4" />
-          {showAdvanced ? "Hide" : "Show"} advanced filters
-        </button>
-
-        <button
-          onClick={handleSearch}
-          className="flex items-center gap-3 px-8 py-4 font-semibold text-ivory transition-transform duration-200 rounded-lg bg-navy shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-        >
-          <SearchIcon className="w-5 h-5" />
-          Search Hotels
+          {showAdvanced ? "Hide" : "Show"} Advanced Filters
         </button>
       </div>
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="pt-6 mt-6 space-y-6 border-t border-gray-200">
-          {/* Price Range */}
+        <div className="pt-6 mt-6 space-y-6 border-t border-white/10">
+          {/* Price Range, Star Rating, Hotel Type */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="block mb-2 text-xs font-semibold tracking-wide uppercase text-charcoal-light">
-                Price Range
-              </label>
+              <label className={baseLabel}>Price Range</label>
               <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="Min"
-                  className={`${baseField} px-4`}
-                  aria-label="Minimum price"
-                  value={searchData.minPrice}
-                  onChange={(e) =>
-                    handleInputChange("minPrice", e.target.value)
-                  }
-                />
-                <span className="flex items-center text-gray-400">-</span>
-                <input
-                  type="number"
-                  placeholder="Max"
-                  className={`${baseField} px-4`}
-                  aria-label="Maximum price"
-                  value={searchData.maxPrice}
-                  onChange={(e) =>
-                    handleInputChange("maxPrice", e.target.value)
-                  }
-                />
+                <input type="number" placeholder="Min" className={`${baseField} px-4`} aria-label="Minimum price" value={searchData.minPrice} onChange={(e) => handleInputChange("minPrice", e.target.value)} />
+                <span className="flex items-center text-gray-500">-</span>
+                <input type="number" placeholder="Max" className={`${baseField} px-4`} aria-label="Maximum price" value={searchData.maxPrice} onChange={(e) => handleInputChange("maxPrice", e.target.value)} />
               </div>
             </div>
-
-            {/* Star Rating */}
             <div>
-              <label
-                htmlFor={inputIds.starRating}
-                className="block mb-2 text-xs font-semibold tracking-wide uppercase text-charcoal-light"
-              >
-                Star Rating
-              </label>
-              <select
-                className={`${baseField} px-4`}
-                id={inputIds.starRating}
-                value={searchData.starRating}
-                onChange={(e) =>
-                  handleInputChange("starRating", e.target.value)
-                }
-              >
+              <label htmlFor={inputIds.starRating} className={baseLabel}>Star Rating</label>
+              <select className={`${baseField} px-4`} id={inputIds.starRating} value={searchData.starRating} onChange={(e) => handleInputChange("starRating", e.target.value)}>
                 <option value="">Any Rating</option>
-                <option value="5">5 Stars</option>
-                <option value="4">4+ Stars</option>
-                <option value="3">3+ Stars</option>
-                <option value="2">2+ Stars</option>
+                {[5, 4, 3, 2].map(s => <option key={s} value={s.toString()}>{s}+ Stars</option>)}
               </select>
             </div>
-
-            {/* Hotel Type */}
             <div>
-              <label
-                htmlFor={inputIds.hotelType}
-                className="block mb-2 text-xs font-semibold tracking-wide uppercase text-charcoal-light"
-              >
-                Hotel Type
-              </label>
-              <select
-                className={`${baseField} px-4`}
-                id={inputIds.hotelType}
-                value={searchData.hotelType}
-                onChange={(e) => handleInputChange("hotelType", e.target.value)}
-              >
+              <label htmlFor={inputIds.hotelType} className={baseLabel}>Hotel Type</label>
+              <select className={`${baseField} px-4`} id={inputIds.hotelType} value={searchData.hotelType} onChange={(e) => handleInputChange("hotelType", e.target.value)}>
                 <option value="">Any Type</option>
-                {hotelTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
+                {hotelTypes.map((type) => <option key={type} value={type}>{type}</option>)}
               </select>
             </div>
           </div>
 
           {/* Facilities */}
           <div>
-            <label className="block mb-3 text-xs font-semibold tracking-wide uppercase text-charcoal-light">
-              Facilities
-            </label>
+            <label className={`${baseLabel} mb-3`}>Facilities</label>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {facilityOptions.map((facility) => (
-                <label
-                  key={facility.id}
-                  className="flex items-center gap-2 p-3 transition-colors border border-gray-200 rounded-lg cursor-pointer bg-ivory hover:bg-white hover:border-gray-300"
-                >
-                  <input
-                    type="checkbox"
-                    className="text-navy border-gray-300 rounded focus:ring-navy/60"
-                    checked={searchData.facilities.includes(facility.id)}
-                    onChange={() => handleFacilityToggle(facility.id)}
-                  />
-                  <span className="text-sm">
-                    {facility.icon} {facility.label}
-                  </span>
+                <label key={facility.id} className="flex items-center gap-2 p-3 text-sm rounded-lg cursor-pointer border border-white/10 bg-dark/50 hover:bg-white/5">
+                  <input type="checkbox" className="w-4 h-4 rounded bg-dark/50 border-white/20 text-neon-pink focus:ring-neon-pink/50" checked={searchData.facilities.includes(facility.id)} onChange={() => handleFacilityToggle(facility.id)} />
+                  <span>{facility.label}</span>
                 </label>
               ))}
             </div>
           </div>
-
-          {/* Sort Options */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label
-                htmlFor={inputIds.sortBy}
-                className="block mb-2 text-xs font-semibold tracking-wide uppercase text-charcoal-light"
-              >
-                Sort By
-              </label>
-              <select
-                className={`${baseField} px-4`}
-                id={inputIds.sortBy}
-                value={searchData.sortBy}
-                onChange={(e) => handleInputChange("sortBy", e.target.value)}
-              >
-                <option value="relevance">Relevance</option>
-                <option value="priceLow">Price: Low to High</option>
-                <option value="priceHigh">Price: High to Low</option>
-                <option value="rating">Rating</option>
-                <option value="distance">Distance</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor={inputIds.radius}
-                className="block mb-2 text-xs font-semibold tracking-wide uppercase text-charcoal-light"
-              >
-                Search Radius (km)
-              </label>
-              <select
-                className={`${baseField} px-4`}
-                id={inputIds.radius}
-                value={searchData.radius}
-                onChange={(e) => handleInputChange("radius", e.target.value)}
-              >
-                <option value="10">10 km</option>
-                <option value="25">25 km</option>
-                <option value="50">50 km</option>
-                <option value="100">100 km</option>
-              </select>
-            </div>
-          </div>
         </div>
       )}
-
-      {/* Quick Search Destinations */}
-      <div className="pt-6 mt-6 border-t border-gray-200">
-        <h3 className="mb-3 text-xs font-semibold tracking-wide uppercase text-charcoal-light">
-          Popular Destinations
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {popularDestinations.map((destination) => (
-            <button
-              key={destination}
-              onClick={() => handleQuickSearch(destination)}
-              className="px-4 py-1.5 text-sm transition-all border rounded-full border-charcoal/20 bg-ivory text-charcoal-light hover:border-navy hover:text-navy hover:-translate-y-0.5"
-            >
-              {destination}
-            </button>
-          ))}
-        </div>
-      </div>
       </div>
     </div>
   );
