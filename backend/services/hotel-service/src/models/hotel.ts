@@ -92,6 +92,7 @@ export interface IHotel extends Document {
     totalReviews?: number;
   };
   starRating: number;
+  roomTypes: mongoose.Types.ObjectId[];
   imageUrls: string[];
   lastUpdated: Date;
   totalBookings?: number;

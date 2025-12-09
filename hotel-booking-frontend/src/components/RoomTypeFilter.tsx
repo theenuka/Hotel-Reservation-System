@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import * as apiClient from "../api-client";
-import { RoomType } from "../api-client";
+import { RoomType } from "../../../shared/types";
 
 type Props = {
   selectedRoomTypes: string[];

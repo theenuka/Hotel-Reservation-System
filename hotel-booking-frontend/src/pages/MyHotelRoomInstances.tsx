@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
 import { useParams } from "react-router-dom";
 import { AiOutlinePlus } from "react-icons/ai";
-import { Room } from "../api-client";
+import { Room } from "../../../shared/types";
 import {
   Dialog,
   DialogContent,
@@ -14,8 +14,7 @@ import {
 import AddRoomForm from "../forms/AddRoomForm";
 import EditRoomForm from "../forms/EditRoomForm";
 import { useState } from "react";
-import { useAppContext } from "../hooks/useAppContext";
-import { useAppContext } from "../hooks/useAppContext";
+import useAppContext from "../hooks/useAppContext";
 
 const MyHotelRoomInstances = () => {
   const { hotelId, roomTypeId } = useParams();
@@ -38,11 +37,11 @@ const MyHotelRoomInstances = () => {
     (roomId: string) => apiClient.deleteRoom(hotelId || "", roomId),
     {
       onSuccess: () => {
-        showToast({ message: "Room Deleted!", type: "SUCCESS" });
+        showToast({ title: "Room Deleted!", type: "SUCCESS" });
         queryClient.invalidateQueries(["fetchRooms", hotelId, roomTypeId]);
       },
       onError: () => {
-        showToast({ message: "Error Deleting Room", type: "ERROR" });
+        showToast({ title: "Error Deleting Room", type: "ERROR" });
       },
     }
   );

@@ -244,7 +244,7 @@ const Detail = () => {
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Price starts from</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">£{hotel.pricePerNight}</span>
+                    <span className="text-3xl font-bold text-white">£{hotel.roomTypes?.[0]?.pricePerNight || 0}</span>
                     <span className="text-gray-400">/ night</span>
                   </div>
                 </div>
@@ -261,7 +261,7 @@ const Detail = () => {
               </div>
               
               <GuestInfoForm
-                pricePerNight={hotel.pricePerNight}
+                pricePerNight={hotel.roomTypes?.[0]?.pricePerNight || 0}
                 hotelId={hotel._id}
               />
             </div>

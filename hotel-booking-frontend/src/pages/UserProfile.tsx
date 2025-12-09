@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs.
 import { Switch } from "../components/ui/switch.tsx";
 import useAppContext from "../hooks/useAppContext";
 import usePushNotifications from "../hooks/usePushNotifications";
+import MyBookings from "./MyBookings"; // Added this line
 import {
   User,
   Mail,

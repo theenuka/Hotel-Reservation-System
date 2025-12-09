@@ -39,49 +39,46 @@ const Hero = ({ onSearch }: { onSearch: (searchData: any) => void }) => {
   const handleSecondaryCta = () => navigate("/search?hotelType=Resort");
 
   return (
-    <section id="hero" className="relative overflow-hidden bg-night-900 text-white">
-      <div className="absolute inset-0 aurora-veil opacity-60 animate-aurora" />
-      <div className="absolute inset-0 bg-gradient-to-br from-night-900/70 via-night-800/40 to-night-900" />
-
+    <section id="hero" className="relative overflow-hidden bg-ivory text-charcoal">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-28">
-        <div className="grid gap-12 lg:grid-cols-[1.05fr_minmax(0,0.95fr)] items-center">
+        <div className="grid gap-12 lg:grid-cols-2 items-center">
           {/* Copy */}
           <div className="space-y-8">
-            <div className="inline-flex items-center border border-white/10 rounded-full px-4 py-1.5 text-sm uppercase tracking-wide text-white/80">
-              <Sparkles className="w-4 h-4 mr-2 text-accentGlow" />
+            <div className="inline-flex items-center border border-charcoal/20 rounded-full px-4 py-1.5 text-sm uppercase tracking-wide text-charcoal-light">
+              <Sparkles className="w-4 h-4 mr-2 text-gold" />
               Bespoke stays crafted for dreamers
             </div>
 
             <div className="space-y-4">
-              <p className="text-white/70 text-lg font-semibold">Phoenix Booking</p>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display leading-tight">
+              <p className="text-charcoal-light text-lg font-semibold font-sans">Phoenix Booking</p>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display leading-tight text-navy">
                 Design-led hotels curated
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-accentGlow via-brand-400 to-white">
+                <span className="block">
                   for the way you wander
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-white/80 max-w-2xl">
+              <p className="text-lg sm:text-xl text-charcoal-light max-w-2xl">
                 Glide through inspired stays, chef-led tasting menus, and skyline spas. We pair refined aesthetics with seamless technology so every booking feels like a concierge upgrade.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3 text-sm text-white/80">
-              <span className="glass-panel px-4 py-2 rounded-full flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-brand-300" />
+            <div className="flex flex-wrap gap-3 text-sm text-charcoal-light">
+              <span className="bg-ivory-dark/50 px-4 py-2 rounded-full flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-navy" />
                 Flexible cancellation on 90% of homes
               </span>
-              <span className="glass-panel px-4 py-2 rounded-full flex items-center gap-2">
-                <Plane className="w-4 h-4 text-brand-300" />
+              <span className="bg-ivory-dark/50 px-4 py-2 rounded-full flex items-center gap-2">
+                <Plane className="w-4 h-4 text-navy" />
                 Jetsetter perks unlocked instantly
               </span>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               {heroStats.map((stat) => (
-                <div key={stat.label} className="glass-panel rounded-2xl p-4">
-                  <p className="text-2xl font-semibold text-white">{stat.value}</p>
-                  <p className="text-sm text-white/70">{stat.label}</p>
-                  <p className="text-xs text-white/50 mt-1">{stat.detail}</p>
+                <div key={stat.label} className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
+                  <p className="text-2xl font-semibold text-navy">{stat.value}</p>
+                  <p className="text-sm text-charcoal-light">{stat.label}</p>
+                  <p className="text-xs text-gray-400 mt-1">{stat.detail}</p>
                 </div>
               ))}
             </div>
@@ -89,14 +86,14 @@ const Hero = ({ onSearch }: { onSearch: (searchData: any) => void }) => {
             <div className="flex flex-wrap items-center gap-4">
               <button
                 onClick={handlePrimaryCta}
-                className="inline-flex items-center px-6 py-3 rounded-full bg-white text-night-900 font-semibold shadow-glow hover:-translate-y-0.5 transition-transform"
+                className="inline-flex items-center px-6 py-3 rounded-full bg-navy text-ivory font-semibold shadow-lg hover:-translate-y-0.5 transition-transform"
               >
                 Plan a curated escape
                 <ArrowRight className="w-4 h-4 ml-2" />
               </button>
               <button
                 onClick={handleSecondaryCta}
-                className="inline-flex items-center px-5 py-3 rounded-full border border-white/20 text-white/90 hover:border-white/50 transition-colors"
+                className="inline-flex items-center px-5 py-3 rounded-full border border-navy/50 text-navy hover:border-navy/80 hover:bg-navy/5 transition-colors"
               >
                 <Waves className="w-4 h-4 mr-2" />
                 Explore coastal villas
@@ -106,45 +103,45 @@ const Hero = ({ onSearch }: { onSearch: (searchData: any) => void }) => {
 
           {/* Visual */}
           <div className="relative h-full">
-            <div className="relative h-[420px] rounded-[36px] overflow-hidden shadow-glow">
+            <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
               <img
                 src={floatingDestinations[0].image}
                 alt={`${floatingDestinations[0].city} skyline`}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-night-900/70 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6">
                 <p className="text-white font-semibold text-xl">
                   {floatingDestinations[0].city}, {floatingDestinations[0].country}
                 </p>
-                <p className="text-white/80 text-sm">Private riad with desert rituals</p>
-                <p className="text-accentGlow font-semibold mt-2">
+                <p className="text-gray-200 text-sm">Private riad with desert rituals</p>
+                <p className="text-gold font-semibold mt-2">
                   {floatingDestinations[0].price}
                 </p>
               </div>
             </div>
 
-            <div className="absolute -bottom-10 -left-6 glass-panel p-4 rounded-3xl w-64 shadow-large animate-float">
-              <Compass className="w-5 h-5 text-brand-300" />
-              <p className="mt-3 text-white font-semibold">Sunset tasting flight</p>
-              <p className="text-white/70 text-sm">Four-course pairing over the Medina</p>
-              <div className="mt-4 flex items-center justify-between text-sm text-white/80">
+            <div className="absolute -bottom-10 -left-6 bg-white p-4 rounded-2xl w-64 shadow-xl border border-gray-100 animate-float">
+              <Compass className="w-5 h-5 text-navy" />
+              <p className="mt-3 text-charcoal font-semibold">Sunset tasting flight</p>
+              <p className="text-charcoal-light text-sm">Four-course pairing over the Medina</p>
+              <div className="mt-4 flex items-center justify-between text-sm text-charcoal-light">
                 <span>Tonight</span>
                 <span>7:45 PM</span>
               </div>
             </div>
 
-            <div className="absolute -top-8 right-0 glass-panel p-4 rounded-3xl w-56 shadow-large animate-float [animation-delay:1s]">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/60">Member spotlight</p>
-              <p className="text-white text-lg font-semibold mt-1">Maison Cyan</p>
-              <p className="text-accentGlow text-sm">Santorini</p>
-              <p className="text-white/80 text-sm mt-2">{floatingDestinations[1].price}</p>
+            <div className="absolute -top-8 right-0 bg-white p-4 rounded-2xl w-56 shadow-xl border border-gray-100 animate-float [animation-delay:1s]">
+              <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Member spotlight</p>
+              <p className="text-charcoal text-lg font-semibold mt-1">Maison Cyan</p>
+              <p className="text-gold-dark text-sm">Santorini</p>
+              <p className="text-charcoal-light text-sm mt-2">{floatingDestinations[1].price}</p>
             </div>
           </div>
         </div>
 
-        <div className="mt-14">
-          <div className="glass-panel rounded-[32px] p-4 sm:p-6">
+        <div className="mt-20">
+          <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-200">
             <AdvancedSearch onSearch={onSearch} />
           </div>
         </div>

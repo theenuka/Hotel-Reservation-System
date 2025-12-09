@@ -42,7 +42,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
   const heroImage = hotel.imageUrls.find((url) => url && url.trim().length > 0) ?? fallbackImage;
 
   return (
-    <div className="group rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden shadow-[0_25px_80px_rgba(2,6,23,0.45)] transition hover:border-white/30">
+    <div className="group rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-md transition-shadow hover:shadow-xl">
       <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_1.5fr]">
         {/* Image Section */}
         <div className="relative h-64 overflow-hidden xl:h-full">
@@ -52,34 +52,34 @@ const SearchResultsCard = ({ hotel }: Props) => {
             loading="lazy"
             className="object-cover object-center w-full h-full transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-night-900/80 via-night-900/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
           <div className="absolute flex flex-col gap-2 text-white top-4 left-4">
-            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-white/20">
+            <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-black/30 backdrop-blur-md">
               {hotel.isFeatured ? "Spotlight" : "Collection"}
             </span>
             <div className="flex items-center gap-2 text-sm">
-              <AiFillStar className="text-yellow-300" />
+              <AiFillStar className="text-yellow-400" />
               <span>{hotel.starRating}.0 rating</span>
             </div>
           </div>
 
           <div className="absolute text-white bottom-4 left-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-white/60">
+            <p className="text-xs uppercase tracking-[0.4em] text-gray-200">
               From
             </p>
             <p className="text-3xl font-semibold">
-              ${hotel.pricePerNight}
-              <span className="text-sm text-white/70"> / night</span>
+              ${hotel.roomTypes?.[0]?.pricePerNight || 0}
+              <span className="text-sm text-gray-300"> / night</span>
             </p>
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="flex flex-col gap-6 p-6 text-white sm:p-8">
+        <div className="flex flex-col gap-6 p-6 text-charcoal sm:p-8">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1 text-accentGlow">
+              <div className="flex items-center gap-1 text-gold">
                 {Array.from({ length: hotel.starRating }).map((_, i) => (
                   <AiFillStar key={i} className="w-4 h-4" />
                 ))}
@@ -90,7 +90,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
                       <Badge
                         key={type}
                         variant="outline"
-                        className="text-white border-white/20 bg-white/5"
+                        className="text-charcoal-light border-gray-200 bg-gray-100"
                       >
                         {type}
                       </Badge>
@@ -98,7 +98,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
                   : (
                       <Badge
                         variant="outline"
-                        className="text-white border-white/20 bg-white/5"
+                        className="text-charcoal-light border-gray-200 bg-gray-100"
                       >
                         {hotel.type}
                       </Badge>
@@ -108,21 +108,21 @@ const SearchResultsCard = ({ hotel }: Props) => {
 
             <Link
               to={`/detail/${hotel._id}`}
-              className="text-3xl font-semibold transition-colors font-display hover:text-brand-300"
+              className="text-3xl font-semibold transition-colors font-display hover:text-navy"
             >
               {hotel.name}
             </Link>
 
-            <div className="flex items-center text-sm text-white/70">
+            <div className="flex items-center text-sm text-charcoal-light">
               <MapPin className="w-4 h-4 mr-2" />
               {hotel.city}, {hotel.country}
             </div>
-            <p className="leading-relaxed text-white/70 line-clamp-3">
+            <p className="leading-relaxed text-charcoal-light line-clamp-3">
               {hotel.description}
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-6 text-sm text-white/70">
+          <div className="flex flex-wrap gap-6 text-sm text-charcoal-light">
             {hotel.totalBookings && (
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
@@ -130,7 +130,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
               </div>
             )}
             <div className="flex items-center gap-2">
-              <AiFillStar className="text-yellow-300" />
+              <AiFillStar className="text-yellow-400" />
               <span>
                 {hotel.averageRating && hotel.averageRating > 0
                   ? `${hotel.averageRating.toFixed(1)} guest score`
@@ -140,7 +140,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
           </div>
 
           <div>
-            <h4 className="text-xs uppercase tracking-[0.35em] text-white/50 mb-3">
+            <h4 className="text-xs uppercase tracking-[0.35em] text-gray-400 mb-3">
               Key amenities
             </h4>
             <div className="flex flex-wrap gap-2">
@@ -150,9 +150,9 @@ const SearchResultsCard = ({ hotel }: Props) => {
                   <Badge
                     key={facility}
                     variant="outline"
-                    className="flex items-center gap-2 border-white/15 bg-white/5 text-white/80 px-3 py-1.5"
+                    className="flex items-center gap-2 border-gray-200 bg-gray-50 text-charcoal-light px-3 py-1.5"
                   >
-                    <IconComponent className="w-3.5 h-3.5 text-accentGlow" />
+                    <IconComponent className="w-3.5 h-3.5 text-navy" />
                     <span>{facility}</span>
                   </Badge>
                 );
@@ -160,13 +160,13 @@ const SearchResultsCard = ({ hotel }: Props) => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 pt-6 border-t sm:flex-row sm:items-center sm:justify-between border-white/10">
-            <div className="text-sm text-white/70">
+          <div className="flex flex-col gap-4 pt-6 border-t sm:flex-row sm:items-center sm:justify-between border-gray-200">
+            <div className="text-sm text-gray-500">
               Instant confirmation • Secure checkout
             </div>
             <Link
               to={`/detail/${hotel._id}`}
-              className="inline-flex items-center justify-center px-6 py-3 rounded-2xl border border-white/10 bg-[#0B1424] font-semibold text-white shadow-[0_20px_35px_rgba(1,3,10,0.6)] hover:border-white/30 hover:-translate-y-0.5 transition"
+              className="inline-flex items-center justify-center px-6 py-3 font-semibold transition-transform bg-navy text-ivory rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5"
             >
               View details & book
             </Link>
@@ -174,7 +174,6 @@ const SearchResultsCard = ({ hotel }: Props) => {
         </div>
       </div>
     </div>
-  );
 };
 
 export default SearchResultsCard;

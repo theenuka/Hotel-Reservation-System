@@ -36,7 +36,7 @@ const LatestDestinationCard = ({ hotel }: Props) => {
         {/* Price Badge */}
         <div className="absolute top-4 left-4">
           <div className="bg-primary-600 text-white rounded-full px-3 py-1">
-            <span className="text-sm font-bold">£{hotel.pricePerNight}</span>
+            <span className="text-sm font-bold">£{hotel.roomTypes?.[0]?.pricePerNight || 0}</span>
           </div>
         </div>
       </div>
@@ -84,12 +84,12 @@ const LatestDestinationCard = ({ hotel }: Props) => {
               <div className="flex items-center space-x-3 text-white/80">
                 <div className="flex items-center space-x-1">
                   <Users className="w-3 h-3" />
-                  <span className="text-xs">{hotel.adultCount} adults</span>
+                  <span className="text-xs">{hotel.roomTypes?.[0]?.adultCount || 0} adults</span>
                 </div>
-                {hotel.childCount > 0 && (
+                {(hotel.roomTypes?.[0]?.childCount || 0) > 0 && (
                   <div className="flex items-center space-x-1">
                     <Users className="w-3 h-3" />
-                    <span className="text-xs">{hotel.childCount} children</span>
+                    <span className="text-xs">{hotel.roomTypes?.[0]?.childCount || 0} children</span>
                   </div>
                 )}
               </div>
