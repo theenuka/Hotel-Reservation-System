@@ -25,6 +25,7 @@ import MyHotelRoomInstances from "./pages/MyHotelRoomInstances";
 import MyHotelRooms from "./pages/MyHotelRooms";
 import AuthRedirect from "./pages/AuthRedirect";
 import useAppContext from "./hooks/useAppContext";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const App = () => {
   const { isLoggedIn, userRoles } = useAppContext();
@@ -175,6 +176,16 @@ const App = () => {
                 element={
                   <Layout>
                     <StaffDashboard />
+                  </Layout>
+                }
+              />
+            )}
+            {roleSet.has("admin") && (
+              <Route
+                path="/admin"
+                element={
+                  <Layout>
+                    <AdminDashboard />
                   </Layout>
                 }
               />

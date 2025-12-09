@@ -97,6 +97,7 @@ export interface IHotel extends Document {
   lastUpdated: Date;
   totalBookings?: number;
   totalRevenue?: number;
+  minPricePerNight?: number;
 }
 
 const nestedOptions = { _id: false, id: false } as const;
@@ -226,6 +227,7 @@ const hotelSchema = new mongoose.Schema(
     lastUpdated: { type: Date, default: Date.now, index: true },
     totalBookings: { type: Number, default: 0 },
     totalRevenue: { type: Number, default: 0 },
+    minPricePerNight: { type: Number, index: true },
   },
   { timestamps: true }
 );

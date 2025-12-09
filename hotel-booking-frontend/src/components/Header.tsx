@@ -1,7 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import useSearchContext from "../hooks/useSearchContext";
-import { Calendar, LogIn, LogOut, Bell, User, Settings, Award, ChevronDown, Sparkles, ClipboardList } from "lucide-react";
+import {
+  Calendar, LogIn, LogOut, Bell, User, Settings, Award, ChevronDown, Sparkles, ClipboardList, ShieldCheck
+} from "lucide-react";
 import BrandLogo from "./BrandLogo";
 import { useAuthContext } from "@asgardeo/auth-react";
 import useAppContext from "../hooks/useAppContext";
@@ -10,6 +12,7 @@ import * as apiClient from "../api-client";
 const Header = () => {
   const { signIn, signOut, state } = useAuthContext();
   const { isLoggedIn, userRoles } = useAppContext();
+  const roleSet = new Set(userRoles);
   const canManage = userRoles.some((role) => role === "hotel_owner" || role === "admin");
   const isStaff = userRoles.some((role) => role === "staff" || role === "admin" || role === "hotel_owner");
 
@@ -17,7 +20,7 @@ const Header = () => {
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState<apiClient.Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  
+
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const notificationDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +28,6 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch notifications when logged in
   useEffect(() => {
     if (isLoggedIn) {
       apiClient.getNotifications()
@@ -37,7 +39,6 @@ const Header = () => {
     }
   }, [isLoggedIn]);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
@@ -239,7 +240,7 @@ const Header = () => {
                     <Calendar className="w-4 h-4 mr-2" />
                     Trips
                   </Link>
-                  
+
                   {/* Profile Dropdown */}
                   <div className="relative" ref={profileDropdownRef}>
                     <button
@@ -292,6 +293,16 @@ const Header = () => {
                             <Award className="w-4 h-4" />
                             Loyalty Program
                           </Link>
+                          {roleSet.has("admin") && (
+                            <Link
+                              to="/admin"
+                              className="flex items-center gap-3 px-4 py-2 text-sm text-charcoal-light hover:bg-gray-100 hover:text-charcoal"
+                              onClick={() => setProfileDropdownOpen(false)}
+                            >
+                              <ShieldCheck className="w-4 h-4" />
+                              Admin Dashboard
+                            </Link>
+                          )}
                           {isStaff && (
                             <Link
                               to="/staff-dashboard"
@@ -335,7 +346,7 @@ const Header = () => {
                   >
                     {hostCtaLabel}
                   </button>
-                  
+
                   {/* Sign In Button (Asgardeo) */}
                   <button
                     onClick={() => signIn()}
