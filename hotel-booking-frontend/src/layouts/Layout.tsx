@@ -15,7 +15,8 @@ const Layout = ({ children }: Props) => {
   const isHomePage = location.pathname === "/";
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="relative flex flex-col min-h-screen">
+      <div className="absolute inset-0 aurora-veil animate-aurora -z-10" />
       <Header />
       {/* <Hero /> */}
       {/* <div className="px-4 mx-auto max-w-8xl sm:px-6 lg:px-8">

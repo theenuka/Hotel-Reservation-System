@@ -32,20 +32,30 @@ describe('Search Page', () => {
       data: [
         {
           _id: '1',
+          userId: 'user1',
           name: 'Test Hotel Dublin',
           city: 'Dublin',
           country: 'Ireland',
           description: 'A fantastic test hotel',
-          type: 'Budget',
-          adultCount: 2,
-          childCount: 1,
+          type: ['Budget'],
           facilities: ['WiFi', 'Parking'],
-          pricePerNight: 100,
           starRating: 4,
           imageUrls: ['url1.jpg', 'url2.jpg'],
           lastUpdated: new Date(),
           isFeatured: false,
-          roomTypes: [],
+          roomTypes: [
+            {
+              _id: 'rt1',
+              hotelId: '1',
+              name: 'Standard Room',
+              description: 'A standard room',
+              adultCount: 2,
+              childCount: 1,
+              pricePerNight: 100,
+              amenities: ['WiFi'],
+              imageUrls: [],
+            }
+          ],
         },
       ],
       pagination: {

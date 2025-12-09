@@ -125,6 +125,7 @@ export type HotelType = {
   occupancyRate?: number;
   isActive?: boolean;
   isFeatured?: boolean;
+  minPricePerNight?: number;
   createdAt?: Date;
   updatedAt?: Date;
 };
