@@ -13,22 +13,6 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        charcoal: {
-          DEFAULT: "#333333",
-          light: "#555555"
-        },
-        ivory: {
-          DEFAULT: "#FDFDF6",
-          dark: "#F5F5DC"
-        },
-        navy: {
-          DEFAULT: "#000080",
-          light: "#191970"
-        },
-        gold: {
-          DEFAULT: "#FFD700",
-          dark: "#B8860B"
-        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -57,6 +41,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        dark: "#0D1117",
+        "neon-pink": "#F92672",
+        "neon-teal": "#66D9EF",
+        "light-gray": "#E6E6E6",
+        "medium-gray": "#CCCCCC",
       },
       fontFamily: {
         sans: ["Helvetica", "Arial", "sans-serif"],

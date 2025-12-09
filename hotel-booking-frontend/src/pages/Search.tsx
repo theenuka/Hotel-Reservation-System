@@ -78,16 +78,16 @@ const Search = () => {
   };
 
   return (
-    <div className="bg-ivory">
+    <div className="bg-dark text-light-gray">
       <div className="container mx-auto py-10">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-          <aside className="rounded-xl border border-gray-200 bg-white p-5 h-fit lg:sticky lg:top-24 shadow-sm">
-            <div className="flex items-center gap-3 pb-4 border-b border-gray-200 mb-4">
-              <div className="p-2 rounded-lg bg-navy/10">
-                <SlidersHorizontal className="w-5 h-5 text-navy" />
+          <aside className="rounded-xl border border-white/10 bg-dark/50 p-5 h-fit lg:sticky lg:top-24 backdrop-blur-sm">
+            <div className="flex items-center gap-3 pb-4 border-b border-white/10 mb-4">
+              <div className="p-2 rounded-lg bg-neon-pink/10">
+                <SlidersHorizontal className="w-5 h-5 text-neon-pink" />
               </div>
               <div>
-                <p className="text-lg font-display font-semibold text-charcoal">Filter Results</p>
+                <p className="text-lg font-display font-semibold text-white">Filter Results</p>
               </div>
             </div>
             <div className="space-y-5">
@@ -112,16 +112,16 @@ const Search = () => {
 
           <main className="flex flex-col gap-5">
             <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-display text-charcoal">
+              <h1 className="text-3xl font-display text-white">
                 {destination ? `${destination}` : "All Stays"}
-                <span className="block text-sm font-normal text-charcoal-light mt-1">
+                <span className="block text-sm font-normal text-medium-gray mt-1">
                   {hotelData?.pagination.total} Hotels found
                 </span>
               </h1>
               <select
                 value={sortOption}
                 onChange={(event) => setSortOption(event.target.value)}
-                className="p-2 border rounded-md"
+                className="p-2 border rounded-md bg-dark/50 border-white/20"
               >
                 <option value="">Sort By</option>
                 <option value="starRating">Star Rating</option>
@@ -130,7 +130,7 @@ const Search = () => {
               </select>
             </div>
             {hotelData?.data.map((hotel) => (
-              <SearchResultsCard hotel={hotel} />
+              <SearchResultsCard key={hotel._id} hotel={hotel} />
             ))}
             <div>
               <Pagination
