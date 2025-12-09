@@ -57,7 +57,13 @@ export const searchHotels = async (req: Request, res: Response) => {
   if (Object.keys(priceConditions).length) query.minPricePerNight = priceConditions;
   if ((featured as string)?.toLowerCase() === "true") query.isFeatured = true;
   if (tagFilters.length) query.tags = { $all: tagFilters };
-...
+  if (amenityFilters.length) {
+    const clauses = buildAmenitiesFilter(amenityFilters);
+    query.$and = [...((query.$and as any[]) || []), ...clauses];
+  }
+
+  let sort: Record<string, 1 | -1> = {};
+  switch (sortOption) {
     case "starRating":
       sort = { starRating: -1 };
       break;
@@ -67,7 +73,81 @@ export const searchHotels = async (req: Request, res: Response) => {
     case "pricePerNightDesc":
       sort = { minPricePerNight: -1 };
       break;
-...
+    case "updated":
+      sort = { lastUpdated: -1 };
+      break;
+    case "popular":
+      sort = { totalBookings: -1 };
+      break;
+    default:
+      sort = { starRating: -1, minPricePerNight: 1 };
+  }
+
+  const cacheKeyPayload = {
+    destination: typeof destination === "string" ? destination.trim().toLowerCase() : undefined,
+    adultCount: query.adultCount,
+    childCount: query.childCount,
+    facilityFilters,
+    typeFilters,
+    starFilters,
+    tagFilters,
+    amenityFilters,
+    priceConditions,
+    sort,
+    pageNumber,
+    pageSize,
+    checkIn,
+    checkOut,
+    featured: query.isFeatured,
+  };
+
+  const cacheEligible = !(checkIn && checkOut);
+  const cacheKey = cacheEligible ? stableKey(cacheKeyPayload as Record<string, unknown>) : undefined;
+  const cached = cacheEligible && cacheKey ? getCached(cacheKey) : undefined;
+  if (cached) {
+    res.setHeader("x-cache", "HIT");
+    return res.json({ ...cached, meta: { ...(cached.meta || {}), servedFromCache: true } });
+  }
+
+  let unavailableHotelIds: string[] = [];
+  let maintenanceBlocked: string[] = [];
+  let bookingBlocked: string[] = [];
+  if (checkIn && checkOut) {
+    const ci = new Date(String(checkIn));
+    const co = new Date(String(checkOut));
+    if (!isNaN(ci.getTime()) && !isNaN(co.getTime()) && ci < co) {
+      const bookingQuery: Record<string, unknown> = {
+        status: { $in: ["pending", "confirmed"] },
+        checkIn: { $lt: co },
+        checkOut: { $gt: ci },
+      };
+      if (roomTypeId) {
+        bookingQuery["rooms.roomType"] = roomTypeId;
+      }
+      [bookingBlocked, maintenanceBlocked] = await Promise.all([
+        Booking.distinct("hotelId", bookingQuery) as Promise<string[]>,
+        Maintenance.distinct("hotelId", {
+          startDate: { $lt: co },
+          endDate: { $gt: ci },
+        }) as Promise<string[]>,
+      ]);
+      unavailableHotelIds = [...new Set([...(bookingBlocked || []), ...(maintenanceBlocked || [])])];
+      if (unavailableHotelIds.length) {
+        query._id = { $nin: unavailableHotelIds.map((id) => new mongoosePkg.Types.ObjectId(id)) };
+      }
+    }
+  }
+
+  const facetsPromise = Hotel.aggregate([
+    { $match: query },
+    {
+      $facet: {
+        starBuckets: [{ $group: { _id: "$starRating", count: { $sum: 1 } } }, { $sort: { _id: 1 } }],
+        typeBuckets: [
+          { $unwind: { path: "$type", preserveNullAndEmptyArrays: false } },
+          { $group: { _id: "$type", count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ],
         priceRange: [{ $group: { _id: null, min: { $min: "$minPricePerNight" }, max: { $max: "$minPricePerNight" } } }],
       },
     },
