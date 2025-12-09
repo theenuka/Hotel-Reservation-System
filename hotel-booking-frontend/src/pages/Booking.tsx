@@ -206,6 +206,7 @@ const Booking = () => {
                     <BookingForm
                       currentUser={currentUser}
                       paymentIntent={paymentIntentData}
+                      hotelName={hotel.name}
                     />
                   </Elements>
                 </CardContent>

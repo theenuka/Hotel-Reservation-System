@@ -30,3 +30,4 @@ hotel-booking-frontend/.env.local
 
 node_modules
 .cursorignore
+.claude/

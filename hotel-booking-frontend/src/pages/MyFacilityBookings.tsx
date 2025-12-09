@@ -14,7 +14,10 @@ import {
 } from "../components/ui/dialog";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
+import { Input } from "../components/ui/input";
 import useAppContext from "../hooks/useAppContext";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   Calendar,
   Users,
@@ -30,6 +33,7 @@ import {
   Package,
   DollarSign,
   Building,
+  Edit2,
 } from "lucide-react";
 
 const facilityIcons: Record<string, React.ReactNode> = {
@@ -46,8 +50,13 @@ const MyFacilityBookings = () => {
   const queryClient = useQueryClient();
 
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<FacilityBooking | null>(null);
   const [cancellationReason, setCancellationReason] = useState("");
+  const [rescheduleDate, setRescheduleDate] = useState<Date | null>(null);
+  const [rescheduleStartTime, setRescheduleStartTime] = useState<string>("");
+  const [rescheduleEndTime, setRescheduleEndTime] = useState<string>("");
+  const [rescheduleDuration, setRescheduleDuration] = useState<number>(1);
 
   const { data: bookings, isLoading } = useQuery(
     "myFacilityBookings",
@@ -79,6 +88,45 @@ const MyFacilityBookings = () => {
     }
   );
 
+  const rescheduleBookingMutation = useMutation(
+    ({ bookingId, bookingDate, startTime, endTime, duration }: { 
+      bookingId: string; 
+      bookingDate: Date;
+      startTime: string;
+      endTime: string;
+      duration: number;
+    }) =>
+      apiClient.updateFacilityBooking(bookingId, {
+        bookingDate: bookingDate.toISOString().split('T')[0],
+        startTime,
+        endTime,
+        duration,
+      }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("myFacilityBookings");
+        showToast({
+          title: "Booking Rescheduled",
+          description: "Your facility booking has been successfully rescheduled.",
+          type: "SUCCESS",
+        });
+        setRescheduleDialogOpen(false);
+        setSelectedBooking(null);
+        setRescheduleDate(null);
+        setRescheduleStartTime("");
+        setRescheduleEndTime("");
+        setRescheduleDuration(1);
+      },
+      onError: (error: any) => {
+        showToast({
+          title: "Reschedule Failed",
+          description: error?.response?.data?.message || "Failed to reschedule booking. Please try again.",
+          type: "ERROR",
+        });
+      },
+    }
+  );
+
   const handleCancelClick = (booking: FacilityBooking) => {
     setSelectedBooking(booking);
     setCancelDialogOpen(true);
@@ -89,6 +137,27 @@ const MyFacilityBookings = () => {
       cancelBookingMutation.mutate({
         bookingId: selectedBooking._id,
         reason: cancellationReason,
+      });
+    }
+  };
+
+  const handleRescheduleClick = (booking: FacilityBooking) => {
+    setSelectedBooking(booking);
+    setRescheduleDate(new Date(booking.bookingDate));
+    setRescheduleStartTime(booking.startTime);
+    setRescheduleEndTime(booking.endTime);
+    setRescheduleDuration(booking.duration || 1);
+    setRescheduleDialogOpen(true);
+  };
+
+  const handleConfirmReschedule = () => {
+    if (selectedBooking && rescheduleDate && rescheduleStartTime && rescheduleEndTime) {
+      rescheduleBookingMutation.mutate({
+        bookingId: selectedBooking._id,
+        bookingDate: rescheduleDate,
+        startTime: rescheduleStartTime,
+        endTime: rescheduleEndTime,
+        duration: rescheduleDuration,
       });
     }
   };
@@ -307,17 +376,30 @@ const MyFacilityBookings = () => {
                   </p>
 
                   {/* Actions */}
-                  {canCancel && (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleCancelClick(booking)}
-                      className="w-full"
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Cancel Booking
-                    </Button>
-                  )}
+                  <div className="flex gap-2 pt-2">
+                    {canCancel && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRescheduleClick(booking)}
+                          className="flex-1 border-white/20 text-white hover:bg-white/10"
+                        >
+                          <Edit2 className="w-4 h-4 mr-2" />
+                          Reschedule
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleCancelClick(booking)}
+                          className="flex-1"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Cancel
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -393,6 +475,144 @@ const MyFacilityBookings = () => {
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={rescheduleDialogOpen} onOpenChange={setRescheduleDialogOpen}>
+        <DialogContent className="bg-night-800 border-white/10 text-white max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-blue-400">
+              <Edit2 className="h-5 w-5" />
+              Reschedule Booking
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Change the date and time for your{" "}
+              <span className="text-white font-medium capitalize">
+                {selectedBooking?.facilityName}
+              </span>
+              {" "}booking
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+              <p className="text-blue-400 text-sm">
+                <strong>Reschedule Policy:</strong> You can reschedule your booking
+                to any available date and time. Subject to availability.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-gray-300">Booking Date</Label>
+              <div className="datepicker-wrapper">
+                <DatePicker
+                  selected={rescheduleDate}
+                  onChange={(date) => setRescheduleDate(date)}
+                  minDate={new Date()}
+                  maxDate={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)}
+                  dateFormat="MMM d, yyyy"
+                  className="w-full bg-night-900 border border-white/10 text-white px-4 py-2 rounded-lg placeholder:text-gray-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <Label className="text-gray-300">Start Time</Label>
+                <Input
+                  type="time"
+                  value={rescheduleStartTime}
+                  onChange={(e) => setRescheduleStartTime(e.target.value)}
+                  className="bg-night-900 border-white/10 text-white"
+                />
+              </div>
+              <div className="space-y-3">
+                <Label className="text-gray-300">End Time</Label>
+                <Input
+                  type="time"
+                  value={rescheduleEndTime}
+                  onChange={(e) => setRescheduleEndTime(e.target.value)}
+                  className="bg-night-900 border-white/10 text-white"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-gray-300">Duration (hours)</Label>
+              <Input
+                type="number"
+                min="1"
+                max="8"
+                value={rescheduleDuration}
+                onChange={(e) => setRescheduleDuration(Math.max(1, parseInt(e.target.value) || 1))}
+                className="bg-night-900 border-white/10 text-white"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRescheduleDialogOpen(false);
+                setSelectedBooking(null);
+                setRescheduleDate(null);
+                setRescheduleStartTime("");
+                setRescheduleEndTime("");
+                setRescheduleDuration(1);
+              }}
+              className="border-white/20 text-gray-300 hover:bg-white/10"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmReschedule}
+              disabled={rescheduleBookingMutation.isLoading || !rescheduleDate || !rescheduleStartTime || !rescheduleEndTime}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {rescheduleBookingMutation.isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Rescheduling...
+                </>
+              ) : (
+                <>
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  Reschedule Booking
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+
+          <style>{`
+            .datepicker-wrapper :global(.react-datepicker) {
+              background-color: #0B1424;
+              border-color: rgba(255, 255, 255, 0.1);
+              color: white;
+            }
+            .datepicker-wrapper :global(.react-datepicker__header) {
+              background-color: #1a2847;
+              border-color: rgba(255, 255, 255, 0.1);
+              color: white;
+            }
+            .datepicker-wrapper :global(.react-datepicker__current-month) {
+              color: white;
+            }
+            .datepicker-wrapper :global(.react-datepicker__day-names) {
+              color: rgba(255, 255, 255, 0.7);
+            }
+            .datepicker-wrapper :global(.react-datepicker__day) {
+              color: rgba(255, 255, 255, 0.8);
+            }
+            .datepicker-wrapper :global(.react-datepicker__day:hover) {
+              background-color: rgba(59, 130, 246, 0.3);
+            }
+            .datepicker-wrapper :global(.react-datepicker__day--selected) {
+              background-color: #3b82f6;
+              color: white;
+            }
+          `}</style>
         </DialogContent>
       </Dialog>
     </div>

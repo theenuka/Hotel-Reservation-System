@@ -21,6 +21,9 @@ import {
 } from "../components/ui/dialog";
 import { Textarea } from "../components/ui/textarea";
 import useAppContext from "../hooks/useAppContext";
+import * as apiClient from "../api-client";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   Users,
   Calendar,
@@ -60,7 +63,7 @@ interface Booking {
 const StaffDashboard = () => {
   const { showToast } = useAppContext();
   const queryClient = useQueryClient();
-  
+
   const [selectedTab, setSelectedTab] = useState("today");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -76,21 +79,47 @@ const StaffDashboard = () => {
     priority: "medium",
   });
 
-  // Fetch all bookings (for staff view)
+  // Advanced filters
+  const [dateRangeStart, setDateRangeStart] = useState<Date | null>(null);
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
+  const [hotelFilter, setHotelFilter] = useState<string>("");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Fetch all bookings with filters (for staff view)
   const { data: allBookings, isLoading: loadingBookings, refetch: refetchBookings } = useQuery(
-    "staffBookings",
+    ["staffBookings", statusFilter !== "all" ? statusFilter : undefined, hotelFilter, dateRangeStart, dateRangeEnd],
     async () => {
-      // This would need a staff-specific endpoint that returns all bookings
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bookings/all`, {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to fetch bookings");
-      return response.json();
+      const filters: apiClient.AllBookingsFilters = {
+        limit: 500,
+      };
+
+      if (statusFilter !== "all") {
+        filters.status = statusFilter as apiClient.AllBookingsFilters["status"];
+      }
+
+      if (hotelFilter && hotelFilter.trim()) {
+        filters.hotelId = hotelFilter.trim();
+      }
+
+      if (dateRangeStart) {
+        filters.startDate = dateRangeStart.toISOString().split("T")[0];
+      }
+
+      if (dateRangeEnd) {
+        filters.endDate = dateRangeEnd.toISOString().split("T")[0];
+      }
+
+      return await apiClient.fetchAllBookings(filters);
     },
     {
       retry: 1,
-      onError: () => {
-        // Fallback to my-bookings if all endpoint doesn't exist
+      onError: (error) => {
+        showToast({
+          title: "Error",
+          description: "Failed to fetch bookings. Please check your permissions.",
+          type: "ERROR",
+        });
+        console.error("Failed to fetch bookings:", error);
       },
     }
   );
@@ -392,12 +421,87 @@ const StaffDashboard = () => {
                   <option value="all">All Status</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="pending">Pending</option>
-                  <option value="checked-in">Checked In</option>
-                  <option value="checked-out">Checked Out</option>
+                  <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
+                  <option value="refunded">Refunded</option>
                 </select>
+                {/* Advanced Filters Toggle */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="border-white/20 text-gray-300 hover:bg-white/10"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  {showAdvancedFilters ? "Hide" : "Advanced"} Filters
+                </Button>
               </div>
             </div>
+
+            {/* Advanced Filters Panel */}
+            {showAdvancedFilters && (
+              <div className="mt-4 p-4 bg-night-900/50 border border-white/10 rounded-lg space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Hotel ID Filter */}
+                  <div>
+                    <Label className="text-gray-300 text-sm mb-2">Filter by Hotel ID</Label>
+                    <Input
+                      placeholder="Enter hotel ID..."
+                      value={hotelFilter}
+                      onChange={(e) => setHotelFilter(e.target.value)}
+                      className="bg-night-900 border-white/10 text-white"
+                    />
+                  </div>
+
+                  {/* Date Range Start */}
+                  <div>
+                    <Label className="text-gray-300 text-sm mb-2">Check-in From</Label>
+                    <div className="datepicker-wrapper">
+                      <DatePicker
+                        selected={dateRangeStart}
+                        onChange={(date) => setDateRangeStart(date)}
+                        dateFormat="MMM d, yyyy"
+                        placeholderText="Select start date..."
+                        className="w-full bg-night-900 border border-white/10 text-white px-3 py-2 rounded-md placeholder:text-gray-500"
+                        isClearable
+                      />
+                    </div>
+                  </div>
+
+                  {/* Date Range End */}
+                  <div>
+                    <Label className="text-gray-300 text-sm mb-2">Check-in Until</Label>
+                    <div className="datepicker-wrapper">
+                      <DatePicker
+                        selected={dateRangeEnd}
+                        onChange={(date) => setDateRangeEnd(date)}
+                        dateFormat="MMM d, yyyy"
+                        placeholderText="Select end date..."
+                        minDate={dateRangeStart || undefined}
+                        className="w-full bg-night-900 border border-white/10 text-white px-3 py-2 rounded-md placeholder:text-gray-500"
+                        isClearable
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clear Filters */}
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setHotelFilter("");
+                      setDateRangeStart(null);
+                      setDateRangeEnd(null);
+                    }}
+                    className="border-white/20 text-gray-300 hover:bg-white/10"
+                  >
+                    Clear Advanced Filters
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
@@ -725,6 +829,39 @@ const StaffDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Datepicker Custom Styles */}
+      <style>{`
+        .datepicker-wrapper :global(.react-datepicker) {
+          background-color: #0B1424;
+          border-color: rgba(255, 255, 255, 0.1);
+          color: white;
+        }
+        .datepicker-wrapper :global(.react-datepicker__header) {
+          background-color: #1a2847;
+          border-color: rgba(255, 255, 255, 0.1);
+          color: white;
+        }
+        .datepicker-wrapper :global(.react-datepicker__current-month) {
+          color: white;
+        }
+        .datepicker-wrapper :global(.react-datepicker__day-names) {
+          color: rgba(255, 255, 255, 0.7);
+        }
+        .datepicker-wrapper :global(.react-datepicker__day) {
+          color: rgba(255, 255, 255, 0.8);
+        }
+        .datepicker-wrapper :global(.react-datepicker__day:hover) {
+          background-color: rgba(59, 130, 246, 0.3);
+        }
+        .datepicker-wrapper :global(.react-datepicker__day--selected) {
+          background-color: #3b82f6;
+          color: white;
+        }
+        .datepicker-wrapper :global(.react-datepicker__day--keyboard-selected) {
+          background-color: #3b82f6;
+        }
+      `}</style>
     </div>
   );
 };

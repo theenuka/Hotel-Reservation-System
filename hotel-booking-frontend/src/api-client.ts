@@ -235,6 +235,43 @@ export const cancelBooking = async (
   return response.data;
 };
 
+// Update a room booking
+export const updateBooking = async (
+  bookingId: string,
+  updates: Partial<{
+    checkIn: Date | string;
+    checkOut: Date | string;
+    adultCount: number;
+    childCount: number;
+  }>
+): Promise<BookingType> => {
+  const formattedUpdates = {
+    ...updates,
+    checkIn: updates.checkIn instanceof Date ? updates.checkIn.toISOString() : updates.checkIn,
+    checkOut: updates.checkOut instanceof Date ? updates.checkOut.toISOString() : updates.checkOut,
+  };
+  const response = await axiosInstance.patch(`/api/bookings/${bookingId}`, formattedUpdates);
+  return response.data;
+};
+
+// Join a hotel waitlist
+export const joinWaitlist = async (
+  hotelId: string,
+  data: {
+    checkIn: string;
+    checkOut: string;
+    roomCount: number;
+    email: string;
+    phone?: string;
+  }
+): Promise<{ success: boolean; message: string }> => {
+  const response = await axiosInstance.post(
+    `/api/hotels/${hotelId}/waitlist`,
+    data
+  );
+  return response.data;
+};
+
 // Notifications API
 export interface Notification {
   _id: string;
@@ -391,5 +428,35 @@ export const updateFacilityBooking = async (
     `/api/facility-bookings/${bookingId}`,
     updates
   );
+  return response.data;
+};
+
+// ============================================================================
+// ALL BOOKINGS API (ADMIN/STAFF)
+// ============================================================================
+
+export interface AllBookingsFilters {
+  status?: "pending" | "confirmed" | "cancelled" | "completed" | "refunded";
+  hotelId?: string;
+  startDate?: string;
+  endDate?: string;
+  limit?: number;
+}
+
+export const fetchAllBookings = async (
+  filters?: AllBookingsFilters
+): Promise<BookingType[]> => {
+  const queryParams = new URLSearchParams();
+
+  if (filters?.status) queryParams.append("status", filters.status);
+  if (filters?.hotelId) queryParams.append("hotelId", filters.hotelId);
+  if (filters?.startDate) queryParams.append("startDate", filters.startDate);
+  if (filters?.endDate) queryParams.append("endDate", filters.endDate);
+  if (filters?.limit) queryParams.append("limit", filters.limit.toString());
+
+  const queryString = queryParams.toString();
+  const url = queryString ? `/api/bookings/all?${queryString}` : "/api/bookings/all";
+
+  const response = await axiosInstance.get(url);
   return response.data;
 };

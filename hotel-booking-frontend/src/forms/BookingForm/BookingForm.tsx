@@ -23,10 +23,21 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog";
+import WaitlistModal from "../../components/WaitlistModal";
+import { Calendar, Users, DollarSign, Loader2 } from "lucide-react";
 
 type Props = {
   currentUser: UserType;
   paymentIntent: PaymentIntentResponse;
+  hotelName?: string;
 };
 
 export type BookingFormData = {
@@ -45,7 +56,7 @@ export type BookingFormData = {
   specialRequests?: string;
 };
 
-const BookingForm = ({ currentUser, paymentIntent }: Props) => {
+const BookingForm = ({ currentUser, paymentIntent, hotelName = "Hotel" }: Props) => {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -59,6 +70,10 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
   const [phone, setPhone] = useState<string>("");
   const [specialRequests, setSpecialRequests] = useState<string>("");
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
+  const [bookingError, setBookingError] = useState<{ reason?: string; waitlistEntry?: any } | null>(null);
+  const [pendingFormData, setPendingFormData] = useState<BookingFormData | null>(null);
 
   const { mutate: bookRoom, isLoading } = useMutation(
     apiClient.createRoomBooking,
@@ -69,19 +84,41 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
           description: "Your hotel booking has been confirmed successfully!",
           type: "SUCCESS",
         });
+        setConfirmDialogOpen(false);
+        setPendingFormData(null);
 
         // Navigate to My Bookings page after a short delay
         setTimeout(() => {
           navigate("/my-bookings");
         }, 1500);
       },
-      onError: () => {
-        showToast({
-          title: "Booking Failed",
-          description:
-            "There was an error processing your booking. Please try again.",
-          type: "ERROR",
-        });
+      onError: (error: any) => {
+        const errorData = error?.response?.data;
+        const reason = errorData?.reason;
+        
+        // Check if it's an availability error with waitlist option
+        if (reason === "booked_out" && errorData?.waitlistEntry) {
+          setBookingError({
+            reason: "booked_out",
+            waitlistEntry: errorData.waitlistEntry,
+          });
+          // Show waitlist modal automatically
+          setWaitlistModalOpen(true);
+        } else if (reason === "maintenance") {
+          showToast({
+            title: "Hotel Under Maintenance",
+            description: "This hotel is under maintenance during your selected dates. Please choose different dates.",
+            type: "ERROR",
+          });
+          setConfirmDialogOpen(false);
+        } else {
+          showToast({
+            title: "Booking Failed",
+            description: errorData?.message || "There was an error processing your booking. Please try again.",
+            type: "ERROR",
+          });
+        }
+        setConfirmDialogOpen(false);
       },
     }
   );
@@ -118,16 +155,22 @@ MM/YY: 12/35 CVC: 123`;
   };
 
   const onSubmit = async (formData: BookingFormData) => {
-    if (!stripe || !elements) {
-      return;
-    }
-
-    // Add the local state values to the form data
-    const completeFormData = {
+    // Show confirmation dialog before processing payment
+    setPendingFormData({
       ...formData,
       phone,
       specialRequests,
-    };
+    });
+    setConfirmDialogOpen(true);
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!stripe || !elements || !pendingFormData) {
+      return;
+    }
+
+    setConfirmDialogOpen(false);
+    const completeFormData = pendingFormData;
 
     const result = await stripe.confirmCardPayment(paymentIntent.clientSecret, {
       payment_method: {
@@ -140,11 +183,18 @@ MM/YY: 12/35 CVC: 123`;
         ...completeFormData,
         paymentIntentId: result.paymentIntent.id,
       });
+    } else {
+      showToast({
+        title: "Payment Failed",
+        description: "Your payment could not be processed. Please try again.",
+        type: "ERROR",
+      });
     }
   };
 
   return (
-    <div className="p-6">
+    <>
+      <div className="p-6">
       <CardHeader className="pb-6">
         <CardTitle className="flex items-center gap-2 text-2xl font-bold text-white">
           <User className="h-6 w-6 text-brand-400" />
@@ -356,7 +406,7 @@ MM/YY: 12/35 CVC: 123`;
               ) : (
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />
-                  Confirm Booking
+                  Review & Book
                 </div>
               )}
             </Button>
@@ -392,6 +442,131 @@ MM/YY: 12/35 CVC: 123`;
 
       </CardContent>
     </div>
+
+    {/* Booking Confirmation Dialog */}
+    <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+      <DialogContent className="bg-night-800 border-white/10 text-white max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-brand-400">
+            <CheckCircle className="h-5 w-5" />
+            Confirm Your Booking
+          </DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Please review the booking details before proceeding
+          </DialogDescription>
+        </DialogHeader>
+
+        {pendingFormData && (
+          <div className="space-y-4 py-4">
+            {/* Booking Summary */}
+            <div className="space-y-3 p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Hotel</span>
+                <span className="text-white font-medium">{hotelName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Check-in
+                </span>
+                <span className="text-white font-medium">
+                  {new Date(pendingFormData.checkIn).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Check-out
+                </span>
+                <span className="text-white font-medium">
+                  {new Date(pendingFormData.checkOut).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                <span className="text-gray-400">Rooms</span>
+                <span className="text-white font-medium">{pendingFormData.roomCount}</span>
+              </div>
+            </div>
+
+            {/* Guest Details */}
+            <div className="space-y-3 p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Guests
+                </span>
+                <span className="text-white font-medium">
+                  {pendingFormData.adultCount} adult{pendingFormData.adultCount !== 1 ? 's' : ''}
+                  {pendingFormData.childCount > 0 && `, ${pendingFormData.childCount} child${pendingFormData.childCount !== 1 ? 'ren' : ''}`}
+                </span>
+              </div>
+            </div>
+
+            {/* Price Summary */}
+            <div className="space-y-3 p-4 rounded-xl bg-brand-900/30 border border-brand-500/30">
+              <div className="flex items-center justify-between pt-3 border-t border-white/10 text-lg">
+                <span className="text-white font-bold flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-brand-400" />
+                  Total Amount
+                </span>
+                <span className="text-brand-400 font-bold text-lg">£{pendingFormData.totalCost.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Cancellation Policy */}
+            <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-yellow-400">
+                  <p className="font-medium">Cancellation Policy</p>
+                  <p className="text-yellow-300/80 mt-1">Free cancellation up to 48 hours before check-in.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <DialogFooter className="gap-2 pt-4">
+          <Button
+            variant="outline"
+            onClick={() => setConfirmDialogOpen(false)}
+            className="border-white/20 text-white hover:bg-white/10"
+            disabled={isLoading}
+          >
+            Edit Details
+          </Button>
+          <Button
+            onClick={handleConfirmBooking}
+            disabled={isLoading}
+            className="bg-brand-500 hover:bg-brand-600 text-white"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Confirm & Pay
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    {/* Waitlist Modal for Unavailable Dates */}
+    <WaitlistModal
+      open={waitlistModalOpen}
+      onOpenChange={setWaitlistModalOpen}
+      hotelId={hotelId || ""}
+      hotelName={hotelName}
+      checkInDate={search.checkIn}
+      checkOutDate={search.checkOut}
+      roomCount={pendingFormData?.roomCount || 1}
+    />
+    </>
   );
 };
 
