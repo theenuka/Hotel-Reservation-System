@@ -91,9 +91,6 @@ export interface IHotel extends Document {
     average?: number;
     totalReviews?: number;
   };
-  adultCount: number;
-  childCount: number;
-  pricePerNight: number;
   starRating: number;
   imageUrls: string[];
   lastUpdated: Date;
@@ -222,10 +219,8 @@ const hotelSchema = new mongoose.Schema(
     heroImage: { type: String },
     isFeatured: { type: Boolean, default: false, index: true },
     ratingSummary: { type: ratingSummarySchema, default: undefined },
-    adultCount: { type: Number, required: true },
-    childCount: { type: Number, required: true },
-    pricePerNight: { type: Number, required: true, index: true },
     starRating: { type: Number, required: true, index: true },
+    roomTypes: [{ type: mongoose.Schema.Types.ObjectId, ref: "RoomType" }],
     imageUrls: [{ type: String }],
     lastUpdated: { type: Date, default: Date.now, index: true },
     totalBookings: { type: Number, default: 0 },

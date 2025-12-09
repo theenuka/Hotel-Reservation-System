@@ -292,6 +292,13 @@ const UserProfile = () => {
               <User className="w-4 h-4 mr-2" />
               Profile
             </TabsTrigger>
+            <TabsTrigger
+              value="bookings"
+              className="flex-1 min-w-[120px] data-[state=active]:bg-brand-600 data-[state=active]:text-white text-gray-400 hover:text-white transition-all duration-300"
+            >
+              <History className="w-4 h-4 mr-2" />
+              Booking History
+            </TabsTrigger>
             <TabsTrigger 
               value="loyalty" 
               className="flex-1 min-w-[120px] data-[state=active]:bg-brand-600 data-[state=active]:text-white text-gray-400 hover:text-white transition-all duration-300"
@@ -464,6 +471,11 @@ const UserProfile = () => {
                 </div>
               </div>
             </div>
+          </TabsContent>
+
+          {/* Booking History Tab */}
+          <TabsContent value="bookings" className="focus-visible:outline-none">
+            <MyBookings />
           </TabsContent>
 
           {/* Loyalty Tab */}

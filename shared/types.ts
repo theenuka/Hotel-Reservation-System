@@ -54,6 +54,18 @@ export type FacilitySpaceType = {
   images?: string[];
 };
 
+export type RoomType = {
+  _id: string;
+  hotelId: string;
+  name: string;
+  description: string;
+  adultCount: number;
+  childCount: number;
+  pricePerNight: number;
+  amenities: string[];
+  imageUrls: string[];
+};
+
 export type HotelType = {
   _id: string;
   userId: string;
@@ -62,11 +74,9 @@ export type HotelType = {
   country: string;
   description: string;
   type: string[];
-  adultCount: number;
-  childCount: number;
   facilities: string[];
   facilitySpaces?: FacilitySpaceType[];
-  pricePerNight: number;
+  roomTypes: RoomType[];
   starRating: number;
   imageUrls: string[];
   lastUpdated: Date;
@@ -152,6 +162,15 @@ export type BookingType = {
   refundAmount?: number;
   createdAt?: Date;
   updatedAt?: Date;
+};
+
+export type Room = {
+  _id: string;
+  hotelId: string;
+  roomTypeId: string;
+  roomNumber: string;
+  isAvailable: boolean;
+  lastMaintainedAt?: Date;
 };
 
 export type HotelWithBookingsType = HotelType & {

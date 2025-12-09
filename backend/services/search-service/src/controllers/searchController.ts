@@ -22,6 +22,7 @@ export const searchHotels = async (req: Request, res: Response) => {
     tags,
     featured,
     amenities,
+    roomTypeId,
   } = req.query as Record<string, unknown>;
 
   const facilityFilters = normalizeArrayParam(facilities);
@@ -115,12 +116,16 @@ export const searchHotels = async (req: Request, res: Response) => {
     const ci = new Date(String(checkIn));
     const co = new Date(String(checkOut));
     if (!isNaN(ci.getTime()) && !isNaN(co.getTime()) && ci < co) {
+      const bookingQuery: Record<string, unknown> = {
+        status: { $in: ["pending", "confirmed"] },
+        checkIn: { $lt: co },
+        checkOut: { $gt: ci },
+      };
+      if (roomTypeId) {
+        bookingQuery["rooms.roomType"] = roomTypeId;
+      }
       [bookingBlocked, maintenanceBlocked] = await Promise.all([
-        Booking.distinct("hotelId", {
-          status: { $in: ["pending", "confirmed"] },
-          checkIn: { $lt: co },
-          checkOut: { $gt: ci },
-        }) as Promise<string[]>,
+        Booking.distinct("hotelId", bookingQuery) as Promise<string[]>,
         Maintenance.distinct("hotelId", {
           startDate: { $lt: co },
           endDate: { $gt: ci },
@@ -161,8 +166,24 @@ export const searchHotels = async (req: Request, res: Response) => {
     facetsPromise,
   ]);
 
+  // TODO: Make room capacity configurable
+  const adultsPerRoom = 2;
+  const childrenPerRoom = 1;
+  const numAdults = Number(adultCount) || 0;
+  const numChildren = Number(childCount) || 0;
+  const requiredRooms = Math.ceil(numAdults / adultsPerRoom) + Math.ceil(numChildren / childrenPerRoom);
+
+  const filteredData = data.filter((hotel) => {
+    // @ts-ignore
+    const totalRooms = hotel.roomTypes.reduce((acc, roomType) => {
+      // @ts-ignore
+      return acc + roomType.rooms.length;
+    }, 0);
+    return totalRooms >= requiredRooms;
+  });
+
   const response = {
-    data,
+    data: filteredData,
     pagination: { total, page: pageNumber, pages: Math.ceil(total / pageSize), pageSize },
     facets,
     availability: {
