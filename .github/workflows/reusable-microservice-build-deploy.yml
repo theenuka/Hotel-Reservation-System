@@ -35,6 +35,10 @@ on:
         description: 'Target environment for deployment (staging or production)'
         required: true
         type: string
+      docker-build-args:
+        description: 'Multi-line string of build arguments to pass to Docker (e.g., KEY=VALUE)'
+        required: false
+        type: string
     secrets:
       GH_PAT:
         required: true
@@ -44,10 +48,6 @@ on:
         required: true
       HARBOR_PASSWORD:
         required: true
-    docker-build-args:
-      description: 'Multi-line string of build arguments to pass to Docker (e.g., KEY=VALUE)'
-      required: false
-      type: string
 
 jobs:
   quality:
