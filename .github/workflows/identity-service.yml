@@ -12,14 +12,18 @@ permissions:
   contents: read
 
 jobs:
-  build-and-push:
+  call-reusable-workflow:
     uses: ./.github/workflows/reusable-microservice-build-deploy.yml
     with:
       service-name: identity-service
       working-directory: backend/services/identity-service
       dockerfile-path: backend/services/identity-service/Dockerfile
+      config-repo-config-file: environments/staging/staging-identity-service.yaml
+      helm-value-path: identity-service.image.tag
       repo-image-name: phoenix-identity-service
+      target-env: staging
     secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

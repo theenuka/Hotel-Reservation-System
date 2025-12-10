@@ -12,14 +12,18 @@ permissions:
   contents: read
 
 jobs:
-  build-and-push:
+  call-reusable-workflow:
     uses: ./.github/workflows/reusable-microservice-build-deploy.yml
     with:
       service-name: api-gateway
       working-directory: backend/services/api-gateway
       dockerfile-path: backend/services/api-gateway/Dockerfile
+      config-repo-config-file: environments/staging/staging-api-gateway.yaml
+      helm-value-path: api-gateway.image.tag
       repo-image-name: phoenix-api-gateway-service
+      target-env: staging
     secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
