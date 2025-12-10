@@ -175,9 +175,9 @@ export const searchHotels = async (req: Request, res: Response) => {
 
   const filteredData = data.filter((hotel) => {
     // @ts-ignore
-    const totalRooms = hotel.roomTypes.reduce((acc, roomType) => {
+    const totalRooms = (hotel.roomTypes || []).reduce((acc, roomType) => {
       // @ts-ignore
-      return acc + roomType.rooms.length;
+      return acc + (roomType?.rooms?.length || 0);
     }, 0);
     return totalRooms >= requiredRooms;
   });

@@ -1,8 +1,7 @@
 import { FC } from "react";
 
 const spotlightCard = {
-  heroImage:
-    "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1600&q=80",
+  heroImage: "/marrakech.jpg",
   locationLabel: "Marrakech skyline",
   location: "Marrakech, Morocco",
   description: "Private riad with desert rituals",
@@ -11,23 +10,22 @@ const spotlightCard = {
     title: "Maison Cyan",
     destination: "Santorini",
     rate: "$520 / night",
+    image: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=400&q=80",
   },
 };
 
 const MemberSpotlightCard: FC = () => {
   return (
-    <article className="relative flex min-h-[320px] w-full flex-col justify-end overflow-hidden rounded-[42px] border border-white/10 p-8 text-white shadow-2xl">
-      {/* Background Image - z-0 */}
-      <img
-        src={spotlightCard.heroImage}
-        alt={spotlightCard.locationLabel}
-        className="absolute inset-0 z-0 h-full w-full object-cover object-center brightness-[1.1] contrast-[1.1]"
-      />
-      
+    <article 
+      className="relative flex min-h-[320px] w-full flex-col justify-end overflow-hidden rounded-[42px] border border-white/10 p-8 text-white shadow-2xl"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(4,6,25,0.9)), url(${spotlightCard.heroImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
       {/* Gradient Overlays - z-10 */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/40 via-transparent to-transparent" />
       <div className="absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,_rgba(140,161,255,0.2),_transparent_65%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-10 h-1/2 bg-gradient-to-t from-[#040619]/90 via-[#040619]/40 to-transparent" />
 
       {/* Content - z-20 */}
       <div className="relative z-20 space-y-3">
