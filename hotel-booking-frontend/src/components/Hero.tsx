@@ -20,15 +20,13 @@ const floatingDestinations = [
     city: "Marrakech",
     country: "Morocco",
     price: "$340 / night",
-    image:
-      "https://images.unsplash.com/photo-1501117716987-c8e1ecb210cc?auto=format&fit=crop&w=1200&q=80",
+    image: "/marrakech.jpg",
   },
   {
     city: "Santorini",
     country: "Greece",
     price: "$520 / night",
-    image:
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+    image: "/santorini.jpg",
   },
 ];
 
