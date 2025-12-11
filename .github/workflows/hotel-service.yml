@@ -10,10 +10,16 @@ on:
 permissions:
   id-token: write
   contents: read
+  packages: write
+  security-events: write
 
 jobs:
   build-and-push:
     uses: ./.github/workflows/reusable-microservice-build-deploy.yml
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     with:
       service-name: hotel-service
       working-directory: backend/services/hotel-service
