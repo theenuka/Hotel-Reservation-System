@@ -46,8 +46,6 @@ on:
         required: true
       HARBOR_USERNAME:
         required: true
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   quality:
@@ -119,7 +117,7 @@ jobs:
         with:
           registry: ${{ secrets.HARBOR_URL }}
           username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
 
       - name: 🐳 Build & Push
         uses: docker/build-push-action@v5
