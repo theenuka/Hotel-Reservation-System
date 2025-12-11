@@ -37,11 +37,7 @@ jobs:
       working-directory: backend/services/hotel-service
       dockerfile-path: backend/services/hotel-service/Dockerfile
       repo-image-name: phoenix-hotel-service
-      config-repo-config-file: environments/${{ github.event.inputs.environment || 'staging' }}/staging-hotel-service.yaml
-      helm-value-path: hotel-service.image.tag
-      target-env: ${{ github.event.inputs.environment || 'staging' }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

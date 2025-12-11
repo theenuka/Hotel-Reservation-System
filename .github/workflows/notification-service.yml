@@ -37,11 +37,7 @@ jobs:
       working-directory: backend/services/notification-service
       dockerfile-path: backend/services/notification-service/Dockerfile
       repo-image-name: phoenix-notification-service
-      config-repo-config-file: environments/${{ github.event.inputs.environment || 'staging' }}/staging-notification-service.yaml
-      helm-value-path: notification-service.image.tag
-      target-env: ${{ github.event.inputs.environment || 'staging' }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

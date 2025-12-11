@@ -37,11 +37,7 @@ jobs:
       working-directory: backend/services/search-service
       dockerfile-path: backend/services/search-service/Dockerfile
       repo-image-name: phoenix-search-service
-      config-repo-config-file: environments/${{ github.event.inputs.environment || 'staging' }}/staging-search-service.yaml
-      helm-value-path: search-service.image.tag
-      target-env: ${{ github.event.inputs.environment || 'staging' }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

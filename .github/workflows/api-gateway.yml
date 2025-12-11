@@ -37,11 +37,7 @@ jobs:
       working-directory: backend/services/api-gateway
       dockerfile-path: backend/services/api-gateway/Dockerfile
       repo-image-name: phoenix-api-gateway-service
-      config-repo-config-file: environments/${{ github.event.inputs.environment || 'staging' }}/staging-api-gateway.yaml
-      helm-value-path: api-gateway.image.tag
-      target-env: ${{ github.event.inputs.environment || 'staging' }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
