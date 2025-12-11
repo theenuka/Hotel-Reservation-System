@@ -119,7 +119,24 @@ jobs:
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ github.token }}
 
+<<<<<<< HEAD
       - name: 🐳 Build & Push
+=======
+      - name: 🏷️ Generate Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.HARBOR_URL }}/${{ secrets.HARBOR_USERNAME }}/${{ inputs.repo-image-name }}
+          tags: |
+            type=sha,prefix=,format=long
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: 🐳 Build & Push Multi-Arch Image
+        id: build-and-push
+>>>>>>> c4b53be (fix: use username instead of phoenix-project in registry path)
         uses: docker/build-push-action@v5
         with:
           context: .
