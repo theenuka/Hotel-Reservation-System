@@ -12,33 +12,14 @@ permissions:
   contents: read
 
 jobs:
-  call-reusable-workflow:
+  build-and-push:
     uses: ./.github/workflows/reusable-microservice-build-deploy.yml
     with:
       service-name: frontend
       working-directory: hotel-booking-frontend
       dockerfile-path: hotel-booking-frontend/Dockerfile
-      config-repo-config-file: environments/staging/staging-frontend.yaml
-      helm-value-path: frontend.image.tag
       repo-image-name: phoenix-frontend-service
-      docker-build-args: |
-        VITE_API_BASE_URL=${{ env.VITE_API_BASE_URL }}
-        VITE_ASGARDEO_CLIENT_ID=${{ env.VITE_ASGARDEO_CLIENT_ID }}
-        VITE_ASGARDEO_BASE_URL=${{ env.VITE_ASGARDEO_BASE_URL }}
-        VITE_ASGARDEO_SIGN_IN_REDIRECT=${{ env.VITE_ASGARDEO_SIGN_IN_REDIRECT }}
-        VITE_ASGARDEO_SIGN_OUT_REDIRECT=${{ env.VITE_ASGARDEO_SIGN_OUT_REDIRECT }}
-        VITE_ASGARDEO_SCOPES=${{ env.VITE_ASGARDEO_SCOPES }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-    env: # These env vars are used to construct the build-args
-      PHOENIX_PUBLIC_URL: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com
-      VITE_API_BASE_URL: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com
-      VITE_ASGARDEO_CLIENT_ID: iYcA_MO8LwTND_hvunAg8VvBHDua
-      VITE_ASGARDEO_BASE_URL: https://api.asgardeo.io/t/theenukagranex
-      VITE_ASGARDEO_SIGN_IN_REDIRECT: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com/sign-in
-      VITE_ASGARDEO_SIGN_OUT_REDIRECT: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com/
-      VITE_ASGARDEO_SCOPES: "openid profile email"
-      target-env: staging

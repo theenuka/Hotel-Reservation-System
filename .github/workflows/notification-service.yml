@@ -36,8 +36,6 @@ jobs:
       service-name: notification-service
       working-directory: backend/services/notification-service
       dockerfile-path: backend/services/notification-service/Dockerfile
-      config-repo-config-file: environments/staging/staging-notification-service.yaml
-      helm-value-path: notification-service.image.tag
       repo-image-name: phoenix-notification-service
     secrets:
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
