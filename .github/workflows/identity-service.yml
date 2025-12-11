@@ -39,11 +39,7 @@ jobs:
       config-repo-config-file: environments/staging/staging-identity-service.yaml
       helm-value-path: identity-service.image.tag
       repo-image-name: phoenix-identity-service
-      config-repo-config-file: environments/${{ github.event.inputs.environment || 'staging' }}/staging-identity-service.yaml
-      helm-value-path: identity-service.image.tag
-      target-env: ${{ github.event.inputs.environment || 'staging' }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
