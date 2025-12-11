@@ -68,6 +68,9 @@ jobs:
         run: npm ci
         working-directory: ${{ inputs.working-directory }}
 
+      - name: 🔗 Create node_modules symlink for shared code
+        run: ln -s ${{ github.workspace }}/${{ inputs.working-directory }}/node_modules ${{ github.workspace }}/node_modules
+
       - name: 🎨 Lint Code
         run: npm run lint --if-present
         working-directory: ${{ inputs.working-directory }}
