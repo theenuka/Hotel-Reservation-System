@@ -23,4 +23,3 @@ jobs:
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

@@ -92,7 +92,7 @@ jobs:
           severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: 📤 Upload Trivy Results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
@@ -131,6 +131,16 @@ jobs:
             image=moby/buildkit:latest
             network=host
 
+      - name: 🌐 Check Harbor Connectivity
+        run: |
+          echo "Attempting to connect to https://${{ secrets.HARBOR_URL }}/v2/"
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.HARBOR_URL }}/v2/")
+          if [[ "$STATUS_CODE" -eq 200 || "$STATUS_CODE" -eq 401 ]]; then
+            echo "Successfully connected to Harbor registry. (Status code: $STATUS_CODE)"
+          else
+            echo "Error: Failed to connect to Harbor registry. Received status code: $STATUS_CODE"
+            exit 1
+          fi
       - name: 🚪 Login to Container Registry
         uses: docker/login-action@v3
         with:
@@ -175,7 +185,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: 📤 Upload Image Scan Results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-image-results.sarif'
