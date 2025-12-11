@@ -136,7 +136,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.HARBOR_URL }}/phoenix-project/${{ inputs.repo-image-name }}
+          images: ${{ secrets.HARBOR_URL }}/${{ secrets.HARBOR_USERNAME }}/${{ inputs.repo-image-name }}
           tags: |
             type=sha,prefix=,format=long
             type=ref,event=branch
