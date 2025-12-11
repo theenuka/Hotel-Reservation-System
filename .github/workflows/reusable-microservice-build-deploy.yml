@@ -46,7 +46,7 @@ on:
         required: true
       HARBOR_USERNAME:
         required: true
-      HARBOR_PASSWORD:
+      GITHUB_TOKEN:
         required: true
 
 jobs:
@@ -113,20 +113,13 @@ jobs:
 
       - name: ⚙️ Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            network=host
-          config-inline: |
-            [registry."${{ secrets.HARBOR_URL }}"]
-              http = true
-              insecure = true
 
-      - name: 🚪 Login to Harbor
+      - name: 🚪 Login to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.HARBOR_URL }}
           username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🐳 Build & Push
         uses: docker/build-push-action@v5
