@@ -1,4 +1,3 @@
-
 # Logs
 logs
 *.log
@@ -15,6 +14,7 @@ dist-ssr
 .archive/
 backend/services/**/.env
 backend/.env.local
+backend/.env.docker
 hotel-booking-frontend/.env.local
 
 # Editor directories and files
@@ -28,6 +28,7 @@ hotel-booking-frontend/.env.local
 *.sln
 *.sw?
 
-node_modules
 .cursorignore
-\n# Test coverage reports\n/hotel-booking-frontend/coverage
+
+# Test coverage reports
+/hotel-booking-frontend/coverage

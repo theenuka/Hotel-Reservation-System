@@ -24,13 +24,6 @@ const Search = () => {
 
   const queryParams = new URLSearchParams(location.search);
   const destination = queryParams.get("destination") || search.destination || "";
-
-  // Effect to update context if destination from URL is different
-  useEffect(() => {
-    if (destination && destination !== search.destination) {
-      search.saveSearchValues(destination, search.checkIn, search.checkOut, search.adultCount, search.childCount);
-    }
-  }, [destination, search]);
   
   const searchParams: apiClient.SearchParams = {
     destination: queryParams.get("destination") || "",
@@ -46,9 +39,10 @@ const Search = () => {
     sortOption,
   };
 
-  const { data: hotelData } = useQuery(["searchHotels", searchParams], () =>
-    apiClient.searchHotels(searchParams)
-  );
+  const { data: hotelData, error, isLoading } = useQuery([
+    "searchHotels",
+    searchParams,
+  ], () => apiClient.searchHotels(searchParams));
 
   const handleStarsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const starRating = event.target.value;
@@ -79,49 +73,39 @@ const Search = () => {
 
   return (
     <div className="bg-dark text-light-gray">
-      <div className="container mx-auto py-10">
+      <div className="container py-10 mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-          <aside className="rounded-xl border border-white/10 bg-dark/50 p-5 h-fit lg:sticky lg:top-24 backdrop-blur-sm">
-            <div className="flex items-center gap-3 pb-4 border-b border-white/10 mb-4">
+          <aside className="p-5 border rounded-xl border-white/10 bg-dark/50 h-fit lg:sticky lg:top-24 backdrop-blur-sm">
+            <div className="flex items-center gap-3 pb-4 mb-4 border-b border-white/10">
               <div className="p-2 rounded-lg bg-neon-pink/10">
                 <SlidersHorizontal className="w-5 h-5 text-neon-pink" />
               </div>
               <div>
-                <p className="text-lg font-display font-semibold text-white">Filter Results</p>
+                <p className="text-lg font-semibold text-white font-display">Filter Results</p>
               </div>
             </div>
             <div className="space-y-5">
-              <StarRatingFilter
-                selectedStars={selectedStars}
-                onChange={handleStarsChange}
-              />
-              <HotelTypesFilter
-                selectedHotelTypes={selectedHotelTypes}
-                onChange={handleHotelTypeChange}
-              />
-              <FacilitiesFilter
-                selectedFacilities={selectedFacilities}
-                onChange={handleFacilityChange}
-              />
-              <PriceFilter
-                selectedPrice={selectedPrice}
-                onChange={(value?: number) => setSelectedPrice(value)}
-              />
+              <StarRatingFilter selectedStars={selectedStars} onChange={handleStarsChange} />
+              <HotelTypesFilter selectedHotelTypes={selectedHotelTypes} onChange={handleHotelTypeChange} />
+              <FacilitiesFilter selectedFacilities={selectedFacilities} onChange={handleFacilityChange} />
+              <PriceFilter selectedPrice={selectedPrice} onChange={(value?: number) => setSelectedPrice(value)} />
             </div>
           </aside>
 
           <main className="flex flex-col gap-5">
-            <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-display text-white">
+            <div className="flex items-center justify-between">
+              <h1 className="text-3xl text-white font-display">
                 {destination ? `${destination}` : "All Stays"}
-                <span className="block text-sm font-normal text-medium-gray mt-1">
-                  {hotelData?.pagination.total} Hotels found
+                <span className="block mt-1 text-sm font-normal text-medium-gray">
+                  {hotelData?.pagination?.total ?? 0} Hotels found
                 </span>
               </h1>
               <select
                 value={sortOption}
                 onChange={(event) => setSortOption(event.target.value)}
                 className="p-2 border rounded-md bg-dark/50 border-white/20"
+                aria-label="Sort hotels"
+                title="Sort hotels"
               >
                 <option value="">Sort By</option>
                 <option value="starRating">Star Rating</option>
@@ -129,13 +113,23 @@ const Search = () => {
                 <option value="pricePerNightDesc">Price (high to low)</option>
               </select>
             </div>
-            {hotelData?.data.map((hotel) => (
-              <SearchResultsCard key={hotel._id} hotel={hotel} />
-            ))}
+            {isLoading && <div>Loading hotels...</div>}
+            {error && (
+              <div className="text-red-500">
+                Error loading hotels. Please try again later. {typeof error === 'string' ? error : ''}
+              </div>
+            )}
+            {Array.isArray(hotelData?.data) && hotelData.data.length > 0 ? (
+              hotelData.data.map((hotel) => (
+                <SearchResultsCard key={hotel._id} hotel={hotel} />
+              ))
+            ) : !isLoading && !error ? (
+              <div>No hotels found.</div>
+            ) : null}
             <div>
               <Pagination
-                page={hotelData?.pagination.page || 1}
-                pages={hotelData?.pagination.pages || 1}
+                page={hotelData?.pagination?.page || 1}
+                pages={hotelData?.pagination?.pages || 1}
                 onPageChange={(page) => setPage(page)}
               />
             </div>

@@ -8,30 +8,21 @@ A modern hotel booking platform with a React + Vite frontend and Node/Express mi
   - identity-service (auth/users, 7102)
   - hotel-service (hotels & owner ops, 7103)
   - search-service (search queries, 7105)
-  - booking-service (7104) and notification-service (7101) are optional for local quick start
+  - booking-service (7104)
+  - notification-service (7101)
 
 ## Building release images (linux/amd64)
 
-The kubeadm cluster runs on x86_64 EC2 nodes, so every image we push to ECR must include a `linux/amd64` variant. GitHub Actions now enforces this via `docker buildx build --platform linux/amd64`, but you can produce the same artifacts locally with the helper script:
+The kubeadm cluster runs on x86_64 EC2 nodes, so every image we push to Harbor must include a `linux/amd64` variant. GitHub Actions now enforces this via `docker buildx build --platform linux/amd64`, but you can produce the same artifacts locally with the helper script:
 
 ```bash
 scripts/build-linux-amd64.sh frontend asgardeo-fix-amd64
 ```
 
-The script wraps `docker buildx` for all services (pass `all` to rebuild everything) and pushes to ECR by default. Set `PUSH=false` if you only need to load the resulting image into your local Docker daemon. Override `ECR_REGISTRY` or `PLATFORM` as needed.
+The script wraps `docker buildx` for all services (pass `all` to rebuild everything) and pushes to Harbor by default. Set `PUSH=false` if you only need to load the resulting image into your local Docker daemon. Override `HARBOR_REGISTRY` or `PLATFORM` as needed.
 
-- Frontend builds now inject the production Asgardeo + API URLs automatically. Override `FRONTEND_PUBLIC_URL`, `FRONTEND_API_BASE_URL`, or any `VITE_ASGARDEO_*` env var before running the helper if you are targeting a different host/tenant.
-- GitHub Actions (`.github/workflows/build-and-deploy.yml`) passes the same build args so every pushed image contains the right client ID and redirect URLs.
-
-### Kubernetes auth config
-
-Apply `phoenix-booking-infra/k8s-manifests/09-asgardeo-config.yaml` to share the SPA client info with every microservice:
-
-```bash
-kubectl apply -f phoenix-booking-infra/k8s-manifests/09-asgardeo-config.yaml
-```
-
-The identity, hotel, booking, and API gateway deployments consume that ConfigMap via `envFrom`. After you update credentials, re-apply the file and roll your deployments to pick up the new values.
+- Frontend builds now use a runtime configuration. Environment variables are injected at runtime, not build time.
+- GitHub Actions (`.github/workflows/build-and-deploy.yml`) builds a single image, and environment-specific variables are handled at runtime via Kubernetes deployments.
 
 ## Lint/build health checks
 
@@ -154,12 +145,13 @@ TWILIO_MESSAGING_SERVICE_SID=
 ```
 
 - Frontend:
+  The frontend environment variables (VITE_*) are now configured at runtime. You do not need to create a `hotel-booking-frontend/.env.local` file for these variables when using Docker Compose. They are set directly in the `docker-compose.yml` file. If you are running the frontend directly (outside of Docker Compose), you can still use a `.env.local` file.
 
 ```bash
 cp hotel-booking-frontend/.env.example hotel-booking-frontend/.env.local
 ```
 
-`hotel-booking-frontend/.env.local`:
+`hotel-booking-frontend/.env.local` (for direct local frontend development, outside of Docker Compose):
 
 ```
 VITE_API_BASE_URL=http://localhost:7008
@@ -202,7 +194,7 @@ Open http://localhost:5174
 
 ## Docker (full stack)
 
-Prefer an end-to-end containerized workflow? Every microservice now ships with a multi-stage Dockerfile and the root `docker-compose.yml` wires them together. This spins up MongoDB, Redis, all backend services, the API gateway, and the Vite/NGINX frontend with a single command.
+Prefer an end-to-end containerized workflow? Every microservice now ships with a multi-stage Dockerfile and the root `docker-compose.yml` wires them together. This spins up MongoDB, Redis, RabbitMQ, all backend services, the API gateway, and the Vite/NGINX frontend with a single command.
 
 1. Review/update `backend/.env.docker` (at minimum change `JWT_SECRET_KEY` and any third-party API keys).
 2. Build the images (run from the repo root):
@@ -226,7 +218,7 @@ docker compose down        # keep volumes
 docker compose down -v     # blow away Mongo/Redis data
 ```
 
-Need to rebuild just one service? Swap the target name (e.g. `docker compose build hotel-service`). Want the frontend to hit a different gateway URL? Override the build arg: `docker compose build --build-arg VITE_API_BASE_URL=https://api.example.com frontend`.
+Need to rebuild just one service? Swap the target name (e.g. `docker compose build hotel-service`). Want the frontend to hit a different gateway URL? You can override the environment variable for `VITE_API_BASE_URL` in your `docker-compose.override.yml`.
 
 | Service | Container name | Exposed port | Dockerfile |
 | --- | --- | --- | --- |
@@ -239,6 +231,7 @@ Need to rebuild just one service? Swap the target name (e.g. `docker compose bui
 | Frontend | frontend | 4173 | `hotel-booking-frontend/Dockerfile` |
 | MongoDB | hotel-booking-mongo | 27018 | official `mongo:7` image |
 | Redis | hotel-booking-redis | 6379 | official `redis:7-alpine` image |
+| RabbitMQ | hotel-booking-rabbitmq | 5672, 15672 | official `rabbitmq:3-management-alpine` image |
 
 ## Service map and routes
 

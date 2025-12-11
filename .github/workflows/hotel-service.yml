@@ -2,17 +2,9 @@ name: 🚀 Hotel Service CI/CD
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - 'backend/services/hotel-service/**'
-      - 'shared/**'
-      - '.github/workflows/hotel-service.yml'
+    branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'backend/services/hotel-service/**'
-      - 'shared/**'
-      - '.github/workflows/hotel-service.yml'
   workflow_dispatch:
 
 permissions:
@@ -20,121 +12,14 @@ permissions:
   contents: read
 
 jobs:
-  quality:
-    name: 🔍 Lint & Build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend/services/hotel-service
-    steps:
-      - name: ⬇️ Checkout Code
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: backend/services/hotel-service/package-lock.json
-
-      - name: 📦 Install Dependencies
-        run: npm ci
-
-      - name: 🏗️ Build
-        run: npm run build
-
-      - name: 🧪 Test
-        run: npm test --if-present
-
-  security:
-    name: 🛡️ Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout Code
-        uses: actions/checkout@v4
-
-      - name: 🛡️ Run Trivy FS Scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: 'backend/services/hotel-service'
-          ignore-unfixed: true
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
-
-  deploy:
-    name: 🐳 Build & Push
-    needs: [quality, security]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout Code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Configure Insecure Registry
-        env:
-          HARBOR_URL: ${{ secrets.HARBOR_URL }}
-        run: |
-          echo "{ \"insecure-registries\": [\"$HARBOR_URL\"] }" | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-
-      - name: ⚙️ Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          config-inline: |
-            [registry."${{ secrets.HARBOR_URL }}"]
-              http = true
-              insecure = true
-
-      - name: 🚪 Login to Harbor
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.HARBOR_URL }}
-          username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
-
-      - name: 🐳 Build & Push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: backend/services/hotel-service/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.HARBOR_URL }}/phoenix-project/phoenix-hotel-service:${{ github.sha }}
-            ${{ secrets.HARBOR_URL }}/phoenix-project/phoenix-hotel-service:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: 🏗️ Update Config Repo (GitOps)
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-          REGISTRY: ${{ secrets.HARBOR_URL }}
-          PROJECT: phoenix-project
-          REPO: phoenix-hotel-service
-          IMAGE_TAG: ${{ github.sha }}
-          CONFIG_FILE: apps/hotel-reservation/03-hotel.yaml
-          CONTAINER_NAME: hotel-service
-        run: |
-          # Install yq
-          sudo wget https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
-
-          # Configure Git
-          git config --global user.email "ci-bot@pheonix.live"
-          git config --global user.name "CI Bot"
-
-          # Clone Config Repo
-          git clone https://$GH_PAT@github.com/theenuka/pheonix-booking-config-repo.git config-repo
-          cd config-repo
-
-          if [ -f "$CONFIG_FILE" ]; then
-            echo "📝 Updating $CONFIG_FILE..."
-            NEW_IMAGE="$REGISTRY/$PROJECT/$REPO:$IMAGE_TAG"
-            yq -i "(.spec.template.spec.containers[] | select(.name == \"$CONTAINER_NAME\").image) = \"$NEW_IMAGE\"" "$CONFIG_FILE"
-            
-            git add "$CONFIG_FILE"
-            git commit -m "🚀 Deploy $CONTAINER_NAME: $IMAGE_TAG"
-            git push origin master
-          else
-            echo "⚠️ Target file $CONFIG_FILE not found. Skipping GitOps update."
-          fi
+  build-and-push:
+    uses: ./.github/workflows/reusable-microservice-build-deploy.yml
+    with:
+      service-name: hotel-service
+      working-directory: backend/services/hotel-service
+      dockerfile-path: backend/services/hotel-service/Dockerfile
+      repo-image-name: phoenix-hotel-service
+    secrets:
+      HARBOR_URL: ${{ secrets.HARBOR_URL }}
+      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

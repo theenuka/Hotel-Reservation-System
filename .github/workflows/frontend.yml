@@ -2,17 +2,9 @@ name: 🚀 Frontend CI/CD
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - 'hotel-booking-frontend/**'
-      - 'shared/**'
-      - '.github/workflows/frontend.yml'
+    branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'hotel-booking-frontend/**'
-      - 'shared/**'
-      - '.github/workflows/frontend.yml'
   workflow_dispatch:
 
 permissions:
@@ -20,136 +12,14 @@ permissions:
   contents: read
 
 jobs:
-  quality:
-    name: 🔍 Lint & Build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: hotel-booking-frontend
-    steps:
-      - name: ⬇️ Checkout Code
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: hotel-booking-frontend/package-lock.json
-
-      - name: 📦 Install Dependencies
-        run: npm ci
-
-      - name: 🏗️ Build
-        run: npm run build
-
-      - name: 🧪 Test
-        run: npm test --if-present
-
-  security:
-    name: 🛡️ Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout Code
-        uses: actions/checkout@v4
-
-      - name: 🛡️ Run Trivy FS Scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: 'hotel-booking-frontend'
-          ignore-unfixed: true
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
-
-  deploy:
-    name: 🐳 Build & Push
-    needs: [quality, security]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    env:
-      PHOENIX_PUBLIC_URL: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com
-      VITE_API_BASE_URL: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com
-      VITE_ASGARDEO_CLIENT_ID: iYcA_MO8LwTND_hvunAg8VvBHDua
-      VITE_ASGARDEO_BASE_URL: https://api.asgardeo.io/t/theenukagranex
-      VITE_ASGARDEO_SIGN_IN_REDIRECT: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com/sign-in
-      VITE_ASGARDEO_SIGN_OUT_REDIRECT: http://k8s-istioing-phoenixa-873394dda6-1071176334.us-east-1.elb.amazonaws.com/
-      VITE_ASGARDEO_SCOPES: "openid profile email"
-    steps:
-      - name: ⬇️ Checkout Code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Configure Insecure Registry
-        env:
-          HARBOR_URL: ${{ secrets.HARBOR_URL }}
-        run: |
-          echo "{ \"insecure-registries\": [\"$HARBOR_URL\"] }" | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-
-      - name: ⚙️ Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          config-inline: |
-            [registry."${{ secrets.HARBOR_URL }}"]
-              http = true
-              insecure = true
-
-      - name: 🚪 Login to Harbor
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.HARBOR_URL }}
-          username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
-
-      - name: 🐳 Build & Push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: hotel-booking-frontend/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.HARBOR_URL }}/phoenix-project/phoenix-frontend-service:${{ github.sha }}
-            ${{ secrets.HARBOR_URL }}/phoenix-project/phoenix-frontend-service:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            VITE_API_BASE_URL=${{ env.VITE_API_BASE_URL }}
-            VITE_ASGARDEO_CLIENT_ID=${{ env.VITE_ASGARDEO_CLIENT_ID }}
-            VITE_ASGARDEO_BASE_URL=${{ env.VITE_ASGARDEO_BASE_URL }}
-            VITE_ASGARDEO_SIGN_IN_REDIRECT=${{ env.VITE_ASGARDEO_SIGN_IN_REDIRECT }}
-            VITE_ASGARDEO_SIGN_OUT_REDIRECT=${{ env.VITE_ASGARDEO_SIGN_OUT_REDIRECT }}
-            VITE_ASGARDEO_SCOPES=${{ env.VITE_ASGARDEO_SCOPES }}
-
-      - name: 🏗️ Update Config Repo (GitOps)
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-          REGISTRY: ${{ secrets.HARBOR_URL }}
-          PROJECT: phoenix-project
-          REPO: phoenix-frontend-service
-          IMAGE_TAG: ${{ github.sha }}
-          CONFIG_FILE: apps/hotel-reservation/08-frontend.yaml
-          CONTAINER_NAME: frontend
-        run: |
-          # Install yq
-          sudo wget https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
-
-          # Configure Git
-          git config --global user.email "ci-bot@pheonix.live"
-          git config --global user.name "CI Bot"
-
-          # Clone Config Repo
-          git clone https://$GH_PAT@github.com/theenuka/pheonix-booking-config-repo.git config-repo
-          cd config-repo
-
-          if [ -f "$CONFIG_FILE" ]; then
-            echo "📝 Updating $CONFIG_FILE..."
-            NEW_IMAGE="$REGISTRY/$PROJECT/$REPO:$IMAGE_TAG"
-            yq -i "(.spec.template.spec.containers[] | select(.name == \"$CONTAINER_NAME\").image) = \"$NEW_IMAGE\"" "$CONFIG_FILE"
-            
-            git add "$CONFIG_FILE"
-            git commit -m "🚀 Deploy $CONTAINER_NAME: $IMAGE_TAG"
-            git push origin master
-          else
-            echo "⚠️ Target file $CONFIG_FILE not found. Skipping GitOps update."
-          fi
+  build-and-push:
+    uses: ./.github/workflows/reusable-microservice-build-deploy.yml
+    with:
+      service-name: frontend
+      working-directory: hotel-booking-frontend
+      dockerfile-path: hotel-booking-frontend/Dockerfile
+      repo-image-name: phoenix-frontend-service
+    secrets:
+      HARBOR_URL: ${{ secrets.HARBOR_URL }}
+      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
