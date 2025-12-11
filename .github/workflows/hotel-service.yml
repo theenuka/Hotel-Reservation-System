@@ -40,4 +40,3 @@ jobs:
     secrets:
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
