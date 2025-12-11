@@ -2,24 +2,46 @@ name: 🚀 Booking Service CI/CD
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: ["main", "staging", "production"]
+    paths:
+      - 'backend/services/booking-service/**'
+      - '.github/workflows/booking-service.yml'
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
 
 permissions:
   id-token: write
   contents: read
+  packages: write
+  security-events: write
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     uses: ./.github/workflows/reusable-microservice-build-deploy.yml
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     with:
       service-name: booking-service
       working-directory: backend/services/booking-service
       dockerfile-path: backend/services/booking-service/Dockerfile
       repo-image-name: phoenix-booking-service
+      config-repo-config-file: environments/${{ github.event.inputs.environment || 'staging' }}/staging-booking-service.yaml
+      helm-value-path: booking-service.image.tag
+      target-env: ${{ github.event.inputs.environment || 'staging' }}
     secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

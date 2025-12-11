@@ -2,24 +2,46 @@ name: 🚀 Notification Service CI/CD
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: ["main", "staging", "production"]
+    paths:
+      - 'backend/services/notification-service/**'
+      - '.github/workflows/notification-service.yml'
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
 
 permissions:
   id-token: write
   contents: read
+  packages: write
+  security-events: write
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     uses: ./.github/workflows/reusable-microservice-build-deploy.yml
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     with:
       service-name: notification-service
       working-directory: backend/services/notification-service
       dockerfile-path: backend/services/notification-service/Dockerfile
       repo-image-name: phoenix-notification-service
+      config-repo-config-file: environments/${{ github.event.inputs.environment || 'staging' }}/staging-notification-service.yaml
+      helm-value-path: notification-service.image.tag
+      target-env: ${{ github.event.inputs.environment || 'staging' }}
     secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
