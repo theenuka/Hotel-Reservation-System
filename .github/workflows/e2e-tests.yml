@@ -1,0 +1,222 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test against'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  e2e-tests:
+    name: 🧪 E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        include:
+          - browser: chromium
+            project: chromium
+          - browser: firefox
+            project: firefox
+          - browser: webkit
+            project: webkit
+
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: 📦 Install Dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: 🎭 Install Playwright Browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: 🧪 Run E2E Tests
+        working-directory: e2e
+        run: npm test -- --project=${{ matrix.project }}
+        env:
+          BASE_URL: ${{ github.event.inputs.environment == 'production' && secrets.PRODUCTION_URL || secrets.STAGING_URL }}
+          CI: true
+
+      - name: 📤 Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: e2e/playwright-report/
+          retention-days: 30
+
+      - name: 📤 Upload Test Videos
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-videos-${{ matrix.browser }}
+          path: e2e/test-results/
+          retention-days: 7
+
+  e2e-smoke-production:
+    name: 🔥 Smoke Tests (Production)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'production'
+    timeout-minutes: 15
+
+    steps:
+      - name: ⬇️ Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: 📦 Install Dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: 🎭 Install Playwright
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: 🔥 Run Smoke Tests Only
+        working-directory: e2e
+        run: npm run test:smoke
+        env:
+          BASE_URL: ${{ secrets.PRODUCTION_URL }}
+          CI: true
+
+      - name: 📤 Upload Smoke Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: smoke-test-results
+          path: e2e/playwright-report/
+          retention-days: 30
+
+      - name: 🚨 Notify on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "🚨 Production Smoke Tests Failed!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Smoke Tests Failed* :fire:\n*Workflow:* ${{ github.workflow }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Logs"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+
+  publish-results:
+    name: 📊 Publish Test Results
+    runs-on: ubuntu-latest
+    needs: [e2e-tests]
+    if: always()
+
+    steps:
+      - name: ⬇️ Download All Artifacts
+        uses: actions/download-artifact@v3
+
+      - name: 📊 Publish Test Report
+        uses: dorny/test-reporter@v1
+        with:
+          name: E2E Test Results
+          path: '*/test-results/results.xml'
+          reporter: java-junit
+          fail-on-error: false
+
+  comment-pr:
+    name: 💬 Comment on PR
+    runs-on: ubuntu-latest
+    needs: [e2e-tests]
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: 💬 Add PR Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('E2E Test Results');
+            });
+
+            const output = `## 🧪 E2E Test Results
+
+            ✅ E2E tests completed!
+
+            - **Chromium**: ${{ needs.e2e-tests.result }}
+            - **Firefox**: ${{ needs.e2e-tests.result }}
+            - **WebKit**: ${{ needs.e2e-tests.result }}
+
+            📊 [View detailed reports in the workflow artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            <sub>Last updated: ${new Date().toUTCString()}</sub>
+            `;
+
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+            }

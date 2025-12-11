@@ -32,7 +32,11 @@ RUN npm run build
 
 FROM nginx:1.27-alpine AS runner
 WORKDIR /usr/share/nginx/html
+RUN apk add --no-cache gettext
 COPY --from=builder /app/dist ./
 COPY --from=builder /app/nginx.conf /etc/nginx/conf.d/default.conf
+COPY hotel-booking-frontend/public/runtime-config.template.js /usr/share/nginx/html/runtime-config.template.js
+COPY hotel-booking-frontend/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 EXPOSE 4173
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/entrypoint.sh"]
