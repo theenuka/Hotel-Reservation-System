@@ -13,7 +13,9 @@ A modern hotel booking platform with a React + Vite frontend and Node/Express mi
 
 ## Building release images (linux/amd64)
 
-The kubeadm cluster runs on x86_64 EC2 nodes, so every image we push to Harbor must include a `linux/amd64` variant. GitHub Actions now enforces this via `docker buildx build --platform linux/amd64`, but you can produce the same artifacts locally with the helper script:
+The kubeadm cluster runs on x86_64 EC2 nodes, so every image we push to Harbor must include a `linux/amd64` variant. GitHub Actions now enforces this via `docker buildx build --platform linux/amd64`. The CI/CD pipeline has been secured by removing insecure Docker Buildx configurations for Harbor, ensuring that all communications with the registry are performed over HTTPS with proper certificate validation.
+
+You can produce the same artifacts locally with the helper script:
 
 ```bash
 scripts/build-linux-amd64.sh frontend asgardeo-fix-amd64
@@ -63,12 +65,6 @@ Set `RUN_INSTALL=false` if you already installed dependencies and just want to r
 From the repo root:
 
 ```
-# Start MongoDB container
-npm run compose:up
-
-# Stop and remove MongoDB container and volume
-npm run compose:down
-
 # Start core services (gateway, identity, hotel, search)
 npm run dev:core
 
@@ -84,15 +80,9 @@ npm run seed:local
 
 ## Quick start
 
-Prereqs: Node 18+, Docker Desktop
+Prereqs: Node 18+, Docker Desktop (for Redis and RabbitMQ if needed)
 
-1) Start MongoDB (and Redis if you want queue processing)
-
-```bash
-docker compose up -d mongo redis
-```
-
-2) Create env files
+1) Create env files
 
 - Backend (shared):
 
@@ -103,46 +93,12 @@ cp backend/.env.example backend/.env.local
 Key fields in `backend/.env.local`:
 
 ```
-MONGODB_CONNECTION_STRING=mongodb://localhost:27018/hotel-booking
+MONGODB_CONNECTION_STRING=mongodb+srv://<USER>:<PASSWORD>@<HOST>/<DATABASE>?retryWrites=true&w=majority
 FRONTEND_URL=http://localhost:5174
 JWT_SECRET_KEY=dev_secret
-ALLOW_ROLE_FROM_REGISTER=true
-ACCESS_TOKEN_TTL=15m
-REFRESH_TOKEN_TTL_DAYS=30
-PASSWORD_RESET_TOKEN_TTL_MINUTES=60
-VERIFICATION_CODE_TTL_MINUTES=15
-REQUIRE_VERIFIED_EMAIL_FOR_LOGIN=false
-LOYALTY_POINTS_PER_CURRENCY=0.1
-
-# Service-to-service auth
-INTERNAL_SERVICE_API_KEY=local-internal-key
-NOTIFICATION_SERVICE_KEY=local-internal-key
-
-# Asgardeo (OIDC) – replace with your tenant + SPA client
-ASGARDEO_TENANT_DOMAIN=your-tenant
-ASGARDEO_ORG_URL=https://api.asgardeo.io/t/your-tenant
-ASGARDEO_CLIENT_ID=your-spa-client-id
-ASGARDEO_AUDIENCE=
-ASGARDEO_ISSUER=https://api.asgardeo.io/t/your-tenant/oauth2/token
-ASGARDEO_JWKS_URL=https://api.asgardeo.io/t/your-tenant/oauth2/jwks
-
-# Notification + third-party services
-SENDGRID_API_KEY=
-NOTIFICATION_FROM_EMAIL=no-reply@phoenix-booking.local
-NOTIFICATION_FROM_NAME=Phoenix Booking
-REDIS_URL=redis://localhost:6379/0
-NOTIFICATION_QUEUE_MODE=inline
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-TWILIO_FROM_NUMBER=
-TWILIO_MESSAGING_SERVICE_SID=
-
-# Optional (pick one style):
-# CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>?secure=true
-# CLOUDINARY_CLOUD_NAME=your_cloud
-# CLOUDINARY_API_KEY=your_key
-# CLOUDINARY_API_SECRET=your_secret
+...
 ```
+**Note:** The in-cluster MongoDB has been removed in favor of an external, managed MongoDB service (like MongoDB Atlas or Amazon DocumentDB). You must provide a valid MongoDB connection string in the `MONGODB_CONNECTION_STRING` environment variable.
 
 - Frontend:
   The frontend environment variables (VITE_*) are now configured at runtime. You do not need to create a `hotel-booking-frontend/.env.local` file for these variables when using Docker Compose. They are set directly in the `docker-compose.yml` file. If you are running the frontend directly (outside of Docker Compose), you can still use a `.env.local` file.
@@ -194,7 +150,7 @@ Open http://localhost:5174
 
 ## Docker (full stack)
 
-Prefer an end-to-end containerized workflow? Every microservice now ships with a multi-stage Dockerfile and the root `docker-compose.yml` wires them together. This spins up MongoDB, Redis, RabbitMQ, all backend services, the API gateway, and the Vite/NGINX frontend with a single command.
+Prefer an end-to-end containerized workflow? Every microservice now ships with a multi-stage Dockerfile and the root `docker-compose.yml` wires them together. This spins up Redis, RabbitMQ, all backend services, the API gateway, and the Vite/NGINX frontend with a single command. Note that MongoDB is now an external dependency and is not managed by Docker Compose.
 
 1. Review/update `backend/.env.docker` (at minimum change `JWT_SECRET_KEY` and any third-party API keys).
 2. Build the images (run from the repo root):
@@ -229,7 +185,6 @@ Need to rebuild just one service? Swap the target name (e.g. `docker compose bui
 | Search Service | search-service | 7105 | `backend/services/search-service/Dockerfile` |
 | Notification Service | notification-service | 7101 | `backend/services/notification-service/Dockerfile` |
 | Frontend | frontend | 4173 | `hotel-booking-frontend/Dockerfile` |
-| MongoDB | hotel-booking-mongo | 27018 | official `mongo:7` image |
 | Redis | hotel-booking-redis | 6379 | official `redis:7-alpine` image |
 | RabbitMQ | hotel-booking-rabbitmq | 5672, 15672 | official `rabbitmq:3-management-alpine` image |
 

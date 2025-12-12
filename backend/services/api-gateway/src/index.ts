@@ -34,6 +34,11 @@ app.use('/api/users', createProxyMiddleware({
 }));
 
 // Search Service
+app.use('/api/facilities/search', createProxyMiddleware({
+    target: process.env.SEARCH_SERVICE_URL || 'http://search-service:7105',
+    changeOrigin: true,
+}));
+
 app.use('/api/hotels/search', createProxyMiddleware({
     target: process.env.SEARCH_SERVICE_URL || 'http://search-service:7105',
     changeOrigin: true,

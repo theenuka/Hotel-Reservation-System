@@ -15,45 +15,20 @@ on:
         description: 'Path to the Dockerfile relative to repo root'
         required: true
         type: string
-<<<<<<< HEAD
-      config-repo-config-file:
-        description: 'Path to the config file in the config repository to update'
-        required: true
-        type: string
-      helm-value-path:
-        description: 'YQ path to the image tag in Helm values file (e.g., frontend.image.tag)'
-        required: false
-        type: string
-      kustomize-image-name:
-        description: 'Full image name (without tag) as defined in Kustomize images section'
-        required: false
-        type: string
-=======
->>>>>>> main
       repo-image-name:
         description: 'Image name for Harbor, e.g., phoenix-frontend-service'
         required: true
         type: string
-<<<<<<< HEAD
-      target-env:
-        description: 'Target environment for deployment (staging or production)'
-        required: true
-        type: string
-=======
->>>>>>> main
       docker-build-args:
         description: 'Multi-line string of build arguments to pass to Docker (e.g., KEY=VALUE)'
         required: false
         type: string
     secrets:
-<<<<<<< HEAD
-      GH_PAT:
-        required: true
-=======
->>>>>>> main
       HARBOR_URL:
         required: true
       HARBOR_USERNAME:
+        required: true
+      HARBOR_PASSWORD:
         required: true
 
 jobs:
@@ -81,18 +56,11 @@ jobs:
       - name: 🎨 Lint Code
         run: npm run lint --if-present
         working-directory: ${{ inputs.working-directory }}
-        continue-on-error: true
 
       - name: 🏗️ Build
         run: npm run build
         working-directory: ${{ inputs.working-directory }}
 
-<<<<<<< HEAD
-      - name: 🧪 Test
-        run: npm test --if-present
-        working-directory: ${{ inputs.working-directory }}
-
-=======
       - name: 🧪 Run Tests
         run: npm test --if-present
         working-directory: ${{ inputs.working-directory }}
@@ -106,7 +74,6 @@ jobs:
           name: ${{ inputs.service-name }}-coverage
           fail_ci_if_error: false
 
->>>>>>> main
   security:
     name: 🛡️ Security Scan
     runs-on: ubuntu-latest
@@ -114,9 +81,6 @@ jobs:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v4
 
-<<<<<<< HEAD
-      - name: 🛡️ Run Trivy FS Scan
-=======
       - name: 🔍 Dependency Vulnerability Scan
         uses: aquasecurity/trivy-action@master
         with:
@@ -128,14 +92,13 @@ jobs:
           severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: 📤 Upload Trivy Results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
           category: dependency-scan-${{ inputs.service-name }}
 
       - name: 🛡️ Run Trivy FS Scan (Blocking on CRITICAL/HIGH)
->>>>>>> main
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
@@ -145,14 +108,6 @@ jobs:
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
 
-<<<<<<< HEAD
-  deploy:
-    name: 🐳 Build & Push
-    needs: [quality, security]
-    runs-on: ubuntu-latest
-    environment:
-      name: ${{ inputs.target-env }}
-=======
   build:
     name: 🐳 Build & Push
     needs: [quality, security]
@@ -164,20 +119,33 @@ jobs:
     outputs:
       image_tag: ${{ steps.image_tag.outputs.tag }}
       image_digest: ${{ steps.build-and-push.outputs.digest }}
->>>>>>> main
     steps:
       - name: ⬇️ Checkout Code
         uses: actions/checkout@v4
 
       - name: ⚙️ Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --allow-insecure-entitlement network.host
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
 
+      - name: 🌐 Check Harbor Connectivity
+        run: |
+          echo "Attempting to connect to http://${{ secrets.HARBOR_URL }}/v2/"
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://${{ secrets.HARBOR_URL }}/v2/" || echo "000")
+          if [[ "$STATUS_CODE" -eq 200 || "$STATUS_CODE" -eq 401 ]]; then
+            echo "Successfully connected to Harbor registry. (Status code: $STATUS_CODE)"
+          else
+            echo "Warning: Harbor connectivity check returned status code: $STATUS_CODE (continuing anyway)"
+          fi
       - name: 🚪 Login to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.HARBOR_URL }}
           username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ github.token }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -189,7 +157,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.HARBOR_URL }}/${{ secrets.HARBOR_USERNAME }}/${{ inputs.repo-image-name }}
+          images: ${{ secrets.HARBOR_URL }}/phoenix-project/${{ inputs.repo-image-name }}
           tags: |
             type=sha,prefix=,format=long
             type=ref,event=branch
@@ -207,6 +175,7 @@ jobs:
         with:
           context: .
           file: ${{ inputs.dockerfile-path }}
+<<<<<<< HEAD
 <<<<<<< HEAD
           push: true
           tags: |
@@ -258,14 +227,15 @@ jobs:
           fi
 =======
           platforms: linux/amd64,linux/arm64
+=======
+          platforms: linux/amd64
+>>>>>>> main
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: ${{ inputs.docker-build-args }}
-          sbom: true
-          provenance: true
 
       - name: 🔍 Scan Image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -276,7 +246,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: 📤 Upload Image Scan Results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-image-results.sarif'

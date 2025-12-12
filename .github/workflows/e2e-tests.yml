@@ -65,7 +65,7 @@ jobs:
 
       - name: 📤 Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.browser }}
           path: e2e/playwright-report/
@@ -73,7 +73,7 @@ jobs:
 
       - name: 📤 Upload Test Videos
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-videos-${{ matrix.browser }}
           path: e2e/test-results/
@@ -113,7 +113,7 @@ jobs:
 
       - name: 📤 Upload Smoke Test Results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: smoke-test-results
           path: e2e/playwright-report/
@@ -124,32 +124,7 @@ jobs:
         uses: slackapi/slack-github-action@v1
         with:
           webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          payload: |
-            {
-              "text": "🚨 Production Smoke Tests Failed!",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Production Smoke Tests Failed* :fire:\n*Workflow:* ${{ github.workflow }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}"
-                  }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "View Logs"
-                      },
-                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-                    }
-                  ]
-                }
-              ]
-            }
+          payload: '{ "text": "🚨 Production Smoke Tests Failed!", "blocks": [ { "type": "section", "text": { "type": "mrkdwn", "text": "*Production Smoke Tests Failed* :fire:\n*Workflow:* ${{ github.workflow }}\n*Author:* ${{ github.actor }}" } } ] }'
 
   publish-results:
     name: 📊 Publish Test Results
@@ -159,7 +134,7 @@ jobs:
 
     steps:
       - name: ⬇️ Download All Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: 📊 Publish Test Report
         uses: dorny/test-reporter@v1

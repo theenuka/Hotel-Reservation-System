@@ -2,22 +2,10 @@ name: 🚀 Hotel Service CI/CD
 
 on:
   push:
-    branches: ["main", "staging", "production"]
-    paths:
-      - 'backend/services/hotel-service/**'
-      - '.github/workflows/hotel-service.yml'
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Target environment'
-        required: true
-        type: choice
-        options:
-          - staging
-          - production
-        default: staging
 
 permissions:
   id-token: write
@@ -26,7 +14,7 @@ permissions:
   security-events: write
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     uses: ./.github/workflows/reusable-microservice-build-deploy.yml
     permissions:
       contents: read
@@ -40,3 +28,4 @@ jobs:
     secrets:
       HARBOR_URL: ${{ secrets.HARBOR_URL }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
