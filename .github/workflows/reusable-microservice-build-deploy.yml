@@ -147,12 +147,6 @@ jobs:
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-      - name: 🐳 Build & Push
-=======
-=======
->>>>>>> main
       - name: 🏷️ Generate Docker Metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -167,69 +161,11 @@ jobs:
 
       - name: 🐳 Build & Push Multi-Arch Image
         id: build-and-push
-<<<<<<< HEAD
->>>>>>> c4b53be (fix: use username instead of phoenix-project in registry path)
-=======
->>>>>>> main
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ inputs.dockerfile-path }}
-<<<<<<< HEAD
-<<<<<<< HEAD
-          push: true
-          tags: |
-            ${{ secrets.HARBOR_URL }}/phoenix-project/${{ inputs.repo-image-name }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: ${{ inputs.docker-build-args }}
-
-
-      - name: 🏗️ Update Config Repo (GitOps)
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-          HARBOR_URL: ${{ secrets.HARBOR_URL }}
-          IMAGE_TAG: ${{ github.sha }}
-          CONFIG_FILE: ${{ inputs.config-repo-config-file }}
-          HELM_VALUE_PATH: ${{ inputs.helm-value-path }}
-          TARGET_BRANCH: ${{ inputs.target-env }}
-        run: |
-          # Install yq
-          sudo wget https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
-
-          # Configure Git
-          git config --global user.email "ci-bot@pheonix.live"
-          git config --global user.name "CI Bot"
-
-          # Clone Config Repo
-          git clone https://$GH_PAT@github.com/theenuka/pheonix-booking-config-repo.git config-repo
-          cd config-repo
-
-          # Checkout the target branch
-          git checkout $TARGET_BRANCH
-
-          if [ -f "$CONFIG_FILE" ]; then
-            echo "📝 Updating $CONFIG_FILE..."
-            if [ -n "$HELM_VALUE_PATH" ]; then
-              # Update image tag in Helm values file
-              yq -i ".${HELM_VALUE_PATH}" = "$IMAGE_TAG" "$CONFIG_FILE"
-            else
-              echo "Error: HELM_VALUE_PATH is not provided for GitOps update."
-              exit 1
-            fi
-            
-            git add "$CONFIG_FILE"
-            git commit -m "🚀 Deploy ${{ inputs.service-name }} to $TARGET_BRANCH: $IMAGE_TAG"
-            git push origin $TARGET_BRANCH
-          else
-            echo "⚠️ Target config file $CONFIG_FILE not found. Skipping GitOps update."
-            exit 1 # Fail the step if the config file isn't found
-          fi
-=======
-          platforms: linux/amd64,linux/arm64
-=======
           platforms: linux/amd64
->>>>>>> main
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -255,4 +191,3 @@ jobs:
       - name: 📌 Set Image Tag Output
         id: image_tag
         run: echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
->>>>>>> main
